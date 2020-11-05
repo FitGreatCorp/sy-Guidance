@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_161C4A">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="40dp"
+        android:gravity="center_horizontal"
+        android:text="@string/robot_init"
+        android:textColor="#FFFFFFFF"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/tv_net"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/init_progress_net"
+        android:layout_alignRight="@+id/init_progress_net"
+        android:layout_marginTop="150dp"
+        android:maxWidth="200dp"
+        android:text="@string/net_starting"
+        android:textAlignment="center"
+        android:textColor="#FF49B8AB"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/init_progress_net"
+        android:layout_alignTop="@+id/init_progress_net"
+        android:layout_alignRight="@+id/init_progress_net"
+        android:layout_alignBottom="@+id/init_progress_net"
+        android:background="@drawable/init_bg_circular"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/init_ic_load_server" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="19dp"
+            android:gravity="center"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="@string/link_server"
+            android:textColor="#FF333333"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+
+    <com.fitgreat.airfacerobot.launcher.widget.CircularProgressView
+        android:id="@+id/init_progress_net"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_below="@+id/tv_net"
+        android:layout_marginLeft="110dp"
+        android:layout_marginTop="35dp"
+        app:backColor="#4049b8ab"
+        app:backWidth="8dp"
+        app:progColor="#ff49b8ab"
+        app:progWidth="8dp"
+        app:progress="0" />
+
+    <LinearLayout
+        android:id="@+id/ll_net_timeout"
+        android:layout_width="210dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="98dp"
+        android:gravity="center"
+        android:layout_below="@+id/init_progress_net"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/btn_retry"
+            android:layout_width="116dp"
+            android:layout_height="36dp"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:text="重试"
+            android:background="@drawable/bg_green_btn" />
+        <TextView
+            android:id="@+id/tv_reseasn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#49B8AB"
+            android:text="网络质量差，请检查网络后重试"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tv_ros"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/init_progress_ros"
+        android:layout_alignRight="@+id/init_progress_ros"
+        android:layout_marginTop="150dp"
+        android:maxWidth="200dp"
+        android:text="@string/ros_starting"
+        android:textAlignment="center"
+        android:textColor="#F9AA33"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/init_progress_ros"
+        android:layout_alignTop="@+id/init_progress_ros"
+        android:layout_alignRight="@+id/init_progress_ros"
+        android:layout_alignBottom="@+id/init_progress_ros"
+        android:background="@drawable/init_bg_circular"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/init_ic_load_robot" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="19dp"
+            android:gravity="center"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="@string/link_robot"
+            android:textColor="#FF333333"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <com.fitgreat.airfacerobot.launcher.widget.CircularProgressView
+        android:id="@+id/init_progress_ros"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_below="@+id/tv_ros"
+        android:layout_marginLeft="105dp"
+        android:layout_marginTop="35dp"
+        android:layout_toRightOf="@+id/init_progress_net"
+        app:backColor="#40F9AA33"
+        app:backWidth="8dp"
+        app:progColor="#F9AA33"
+        app:progWidth="8dp"
+        app:progress="0" />
+
+
+    <TextView
+        android:id="@+id/tv_voice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/init_progress_talk"
+        android:layout_alignRight="@+id/init_progress_talk"
+        android:layout_marginTop="150dp"
+        android:maxWidth="200dp"
+        android:text="@string/voice_starting"
+        android:textAlignment="center"
+        android:textColor="#F66662"
+        android:textSize="16sp" />
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/init_progress_talk"
+        android:layout_alignTop="@+id/init_progress_talk"
+        android:layout_alignRight="@+id/init_progress_talk"
+        android:layout_alignBottom="@+id/init_progress_talk"
+        android:background="@drawable/init_bg_circular"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/init_ic_load_voice" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="19dp"
+            android:gravity="center"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
+            android:text="@string/link_voice"
+            android:textColor="#FF333333"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <com.fitgreat.airfacerobot.launcher.widget.CircularProgressView
+        android:id="@+id/init_progress_talk"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:layout_below="@+id/tv_voice"
+        android:layout_marginLeft="105dp"
+        android:layout_marginTop="35dp"
+        android:layout_toRightOf="@+id/init_progress_ros"
+        app:backColor="#40F66662"
+        app:backWidth="8dp"
+        app:progColor="#F66662"
+        app:progWidth="8dp"
+        app:progress="0" />
+</RelativeLayout>

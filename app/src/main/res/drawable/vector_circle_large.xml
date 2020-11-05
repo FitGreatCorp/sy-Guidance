@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48.0dip"
+    android:height="48.0dip"
+    android:viewportWidth="400"
+    android:viewportHeight="400">
+    <group
+        android:name="circle_container"
+        android:pivotX="200"
+        android:pivotY="200"
+        android:scaleX="1.0"
+        android:scaleY="1.0">
+        <path
+            android:name="circle"
+            android:pathData="M200,100 a100,100 0 1,0 1,0 z"
+            android:strokeWidth="14"
+            android:strokeColor="@color/primary_color_normal_dark" />
+    </group>
+    <group
+        android:name="cross_container"
+        android:pivotX="200"
+        android:pivotY="200">
+        <path
+            android:name="crossA"
+            android:pathData="M160,160 L240,240"
+            android:strokeWidth="10"
+            android:strokeColor="@color/primary_color_normal_dark"
+            android:trimPathStart="0.5"
+            android:trimPathEnd="0.5" />
+        <path
+            android:name="crossB"
+            android:pathData="M240,160 L160,240"
+            android:strokeWidth="10"
+            android:strokeColor="@color/primary_color_normal_dark"
+            android:trimPathStart="0.5"
+            android:trimPathEnd="0.5" />
+    </group>
+</vector>

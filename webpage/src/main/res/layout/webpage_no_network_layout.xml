@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_state_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <ImageView
+        android:id="@+id/iv_state_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="70dip"
+        android:src="@mipmap/ic_network_error"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/tv_state_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/iv_state_icon"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dip"
+        android:text="网络好像断开了～"
+        android:textColor="#8D8A82"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tv_try_again"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_state_message"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dip"
+        android:background="@mipmap/ic_try_again_bg"
+        android:gravity="center"
+        android:text="重新加载"
+        android:textColor="#ffffff"
+        android:textSize="16sp" />
+</RelativeLayout>

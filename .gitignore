@@ -1,0 +1,12 @@
+*.iml
+local.properties
+.gradle
+.idea
+gradle
+app/build
+archmvp/build
+headeractuator/build
+headeractuator/.cxx
+iflytekaiui/build
+jsbridge/build
+webpage/build

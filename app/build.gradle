@@ -1,0 +1,157 @@
+apply plugin: 'com.android.application'
+import groovy.json.JsonSlurper
+
+android {
+    compileSdkVersion rootProject.ext.complileSdkVersion
+    defaultConfig {
+        applicationId "com.fitgreat.airfacerobot"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
+        flavorDimensions "versionCode"
+        multiDexEnabled true
+
+        ndk {
+            abiFilters 'armeabi-v7a',"arm64-v8a","x86","x86_64"
+        }
+    }
+
+    signingConfigs {
+        release {
+            keyAlias 'fitgreat'
+            keyPassword '1234.com'
+            storeFile file('../AirFaceRobot.jks')
+            storePassword '1234.com'
+        }
+        debug {
+            keyAlias 'fitgreat'
+            keyPassword '1234.com'
+            storeFile file('../AirFaceRobot.jks')
+            storePassword '1234.com'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            flavorBag(release)
+        }
+        debug {
+            versionNameSuffix("dev")
+            signingConfig signingConfigs.debug
+            flavorBag(debug)
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    // 3.0 及以上支持
+    android.applicationVariants.all { variant ->
+        variant.outputs.all {
+//            outputFileName = "AirFaceRobot-${variant.name}-${variant.versionName}-${releaseTime()}.apk"
+            outputFileName = "RJH-Guidance-${variant.versionName}.apk"
+        }
+    }
+}
+
+def releaseTime() {
+    return new Date().format("MMdd", TimeZone.getDefault())
+}
+
+void flavorBag(buildType) {
+    def file = new File("app/flavorConfig.json")
+    def data = file.getText()
+    def slurper = new JsonSlurper()
+    List<Object> dataArray = slurper.parseText(data)
+    for (int i = 0; i < dataArray.size(); i++) {
+        def flavorInfo = dataArray.get(i)
+        if (flavorsName.equals(flavorInfo.FLAVOR_NAME)) {
+            buildType.buildConfigField("String", "FLAVOR_NAME", "\"" + flavorInfo.FLAVOR_NAME + "\"")
+            buildType.buildConfigField("String", "VEST_NAME", "\"" + flavorInfo.VEST_NAME + "\"")
+            buildType.buildConfigField("String", "BIZ_CODE", "\"" + flavorInfo.BIZ_CODE + "\"")
+            buildType.buildConfigField("int", "BAG_ID", flavorInfo.BAG_ID + "")
+            break
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'//this way we can find the .aar file in libs folder
+    }
+}
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(path: ':archmvp')
+    implementation rootProject.ext.dependencies["support"]["v7"]
+    implementation rootProject.ext.dependencies["support"]["constraint-layout"]
+    implementation rootProject.ext.dependencies["inject"]["butterknife"]
+    implementation files('libs/lib-robot-java-0.1.7.jar')
+    annotationProcessor rootProject.ext.dependencies["inject"]["butterknife-compiler"]
+    implementation rootProject.ext.dependencies["room"]
+    annotationProcessor rootProject.ext.dependencies["room-compiler"]
+    implementation rootProject.ext.dependencies["blankj"]
+    implementation rootProject.ext.dependencies["pdfview"]
+    implementation rootProject.ext.dependencies["flexbox"]
+    implementation rootProject.ext.dependencies["rxpermissions"]
+    implementation rootProject.ext.dependencies["rxjava"]["rxandroid"]
+    implementation rootProject.ext.dependencies["verticalseekbar"]
+    /**
+     *  信号处理
+     */
+    implementation files('libs/signalr.jar')
+    implementation files('libs/agora-rtc-sdk.jar')
+    implementation project(path: ':headeractuator')
+    //ros message
+    implementation 'org.ros.rosjava_core:rosjava:0.3.6'
+    implementation 'org.ros.rosjava_bootstrap:message_generation:0.3.3'
+    implementation 'org.ros.rosjava_messages:visualization_msgs:1.12.7'
+    implementation 'org.ros.rosjava_messages:geometry_msgs:1.12.7'
+    implementation 'org.ros.rosjava_messages:diagnostic_msgs:1.12.7'
+    implementation 'org.ros.rosjava_messages:sensor_msgs:1.12.7'
+    implementation 'org.ros.rosjava_messages:rosgraph_msgs:1.11.2'
+    implementation 'org.ros.rosjava_messages:nav_msgs:1.12.7'
+    implementation 'org.ros.rosjava_messages:std_msgs:0.5.11'
+    implementation 'org.ros.rosjava_messages:tf2_msgs:0.5.20'
+    implementation files('libs/airface_control_msgs-1.0.6.jar')
+    implementation files('libs/airface_drive_msgs-1.0.4.jar')
+    implementation files('libs/move_base_msgs-2.1.0.jar')
+    implementation project(path: ':webpage')
+
+
+    implementation 'joda-time:joda-time:2.10.6'
+    implementation "org.java-websocket:Java-WebSocket:1.5.1"
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation "org.slf4j:slf4j-api:1.7.2"
+    implementation 'com.github.tony19:logback-android:2.0.0'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+    /**
+     *  讯飞语音
+     */
+    implementation project(path: ':iflytekaiui')
+    /**
+     * speech语音
+     */
+    implementation(name: 'lib-dds-1.2.8.1-release', ext: 'aar')
+    implementation 'com.alibaba:fastjson:1.1.71.android'
+    implementation 'org.apache.commons:commons-lang3:3.7'
+    implementation 'com.zhy:okhttputils:2.6.2'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4'
+
+    configurations {
+        compile.exclude group: "org.hamcrest", module: "hamcrest-core"
+    }
+}

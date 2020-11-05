@@ -1,0 +1,21 @@
+[
+  {
+    "FLAVOR_NAME": "normal",
+    "VEST_NAME": "normal",
+    "BIZ_CODE": "normal",
+    "BAG_ID": 0
+  },
+  {
+    "FLAVOR_NAME": "nine",
+    "VEST_NAME": "nine",
+    "BIZ_CODE": "nine",
+    "BAG_ID": 1
+  },
+  {
+    "FLAVOR_NAME": "tongji",
+    "VEST_NAME": "tongji",
+    "BIZ_CODE": "tongji",
+    "BAG_ID": 2
+  }
+]
+

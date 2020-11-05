@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CircularProgressView">
+        <attr name="backWidth" format="dimension" />    <!--背景圆环宽度-->
+        <attr name="progWidth" format="dimension" />    <!--进度圆环宽度-->
+        <attr name="backColor" format="color" />        <!--背景圆环颜色-->
+        <attr name="progColor" format="color" />        <!--进度圆环颜色-->
+        <attr name="progStartColor" format="color" />   <!--进度圆环开始颜色-->
+        <attr name="progFirstColor" format="color" />   <!--进度圆环结束颜色-->
+        <attr name="progress" format="integer" />       <!--圆环进度-->
+    </declare-styleable>
+
+    <!--语音波浪-->
+    <declare-styleable name="WaveView">
+        <attr name="speed" format="float" />
+        <attr name="autoStart" format="boolean" />
+        <attr name="amplitude" format="float" />
+        <attr name="amplitudeFactor" format="float" />
+        <attr name="standByAmplitude" format="float" />
+        <attr name="ratio" format="float" />
+        <attr name="frequency" format="float" />
+    </declare-styleable>
+
+    <!--页面顶部公共标题-->
+    <declare-styleable name="TopTitleView">
+        <attr name="titleName" format="string" />
+    </declare-styleable>
+</resources>

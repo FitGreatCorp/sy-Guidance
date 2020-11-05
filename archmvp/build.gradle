@@ -1,0 +1,49 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.complileSdkVersion
+
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    api rootProject.ext.dependencies["support"]["design"]
+    api rootProject.ext.dependencies["support"]["v4"]
+    api rootProject.ext.dependencies["support"]["constraint-layout"]
+    api rootProject.ext.dependencies["glide"]["glide-base"]
+    annotationProcessor rootProject.ext.dependencies["glide"]["glide-compiler"]
+    api rootProject.ext.dependencies["glide"]["glide-recyclerview"]
+    api rootProject.ext.dependencies["eventbus"]
+    api rootProject.ext.dependencies["network"]["okhttp-urlconnection"]
+    api rootProject.ext.dependencies["network"]["logging-interceptor"]
+    api rootProject.ext.dependencies["network"]["gson"]
+    api rootProject.ext.dependencies["network"]["okhttp"]
+    api rootProject.ext.dependencies["immersionbar"]
+    api rootProject.ext.dependencies["inject"]["butterknife"]
+    annotationProcessor rootProject.ext.dependencies["inject"]["butterknife-compiler"]
+//    annotationProcessor rootProject.ext.dependencies["inject"]["dagger-compiler"]
+    api rootProject.ext.dependencies["room"]
+    annotationProcessor rootProject.ext.dependencies["room-compiler"]
+
+}

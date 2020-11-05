@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <string name="app_name">三亚导诊机器人</string>
+    <string name="robot_init">机器人初始化</string>
+    <string name="net_starting">第①步:\n正在连接服务器...</string>
+    <string name="net_success">第①步:\n连接服务器成功</string>
+    <string name="net_fail">第①步:\n连接服务器失败</string>
+    <string name="ros_wait">第②步:\n等待机器人自检</string>
+    <string name="ros_starting">第②步:\n机器人自检中...</string>
+    <string name="ros_success">第②步:\n机器人自检成功</string>
+    <string name="ros_fail">第②步:\n机器人自检失败</string>
+    <string name="voice_wait">第③步:\n等待连接语音平台</string>
+    <string name="voice_starting">第③步:\n连接语音平台中...</string>
+    <string name="voice_success">第③步:\n连接语音平台成功</string>
+    <string name="voice_fail">第③步:\n连接语音平台失败</string>
+    <string name="register_result_done">恭喜你,\t脸部登记成功!</string>
+    <string name="register_result_failure">抱歉,\t脸部登记失败</string>
+    <string name="ic_signal">信号</string>
+    <string name="battery_60">10%</string>
+    <string name="version">版本号 V1.0.0</string>
+    <string name="version_first">V </string>
+    <string name="location">儿童医学中心-呼吸科</string>
+    <string name="robot_name">XX号机器人</string>
+    <string name="robot_bluetooth_title">连接设备</string>
+    <string name="unsuppert">暂未支持</string>
+    <string name="unset_map">地图尚未设置</string>
+    <string name="show_t1">Hi，你可以叫我小白，请问我有什么可以帮助您的吗？</string>
+    <string name="retry_bt_text">重试</string>
+    <string name="register_bt_text">随行人员登记</string>
+    <string name="link_server">连接服务器</string>
+    <string name="link_robot">机器人自检</string>
+    <string name="link_voice">连接语音平台</string>
+    <string name="dialog_progress_show_content">正在识别中,请稍后...</string>
+    <string name="update_title">软件版本更新</string>
+    <string name="update_msg">检测到新版本! 正在升级,请稍后...</string>
+    <string name="update_wait">等待..</string>
+    <string name="sure_bt_text">确认</string>
+    <string name="low_charge_title">低电量</string>
+    <string name="low_charge_msg">电量不足!请及时充电!</string>
+    <string name="low_charge_voice">护士姐姐，我快没电了，请帮我充电！</string>
+    <string name="low_charge_go">去充电</string>
+    <string name="def_department">--科</string>
+    <string name="register_prompt_text">把脸完整移入框内,确认无误后,点击\"确认\"按钮.</string>
+    <string name="mic">麦克风</string>
+    <string name="callup">挂断</string>
+    <string name="controll_mode">控制模式</string>
+    <string name="drag_mode">拖动模式</string>
+    <string name="agora_app_id">8261ac1c92f342caaf9ab170ca885799</string>
+    <string name="volume">音量</string>
+    <string name="positive">确认</string>
+    <string name="negative">取消</string>
+    <string name="chargereminder">当前电量过低，我要去充电了</string>
+    <string name="battery_low_tip">当前电量低于20%,将在30后开始自动回充.</string>
+    <string name="title_note">注意</string>
+    <string name="auto_recharge">"自动回充"</string>
+    <string name="auto_mission">自主宣教</string>
+    <string name="prompt_no_navigation">该地点不在我不认识呢，请说出我知道的地点哦</string>
+    <string name="prompt_no_task">该任务我不会哦，请联系管理员大大给我配置吧</string>
+    <string name="wear_equipment">穿戴设备</string>
+    <string name="bluetooth_connection_device">蓝牙连接设备</string>
+    <string name="auscaltation">远程听诊</string>
+
+
+
+    <string name="home_go_title">我要去...</string>
+    <string name="home_question_title">常见问题</string>
+    <string name="home_introduction_title">院内介绍</string>
+<!--    <string name="robot_language_chinese">中</string>-->
+<!--    <string name="robot_language_english">En</string>-->
+
+    <string name="answer_yes">是</string>
+    <string name="answer_no">否</string>
+    <string name="switch_chinese_english">中英文切换</string>
+</resources>

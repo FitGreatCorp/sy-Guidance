@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/nine_home_bg">
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="135dp"
+        android:layout_marginTop="125dp"
+        android:scaleType="fitCenter"
+        android:src="@mipmap/im_home_robot" />
+
+    <ImageView
+        android:id="@+id/ic_signal"
+        android:layout_width="24dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="412dp"
+        android:layout_marginTop="40dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/home_signal" />
+
+    <TextView
+        android:layout_width="88dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="381dp"
+        android:layout_marginTop="88dp"
+        android:gravity="center_horizontal"
+        android:text="@string/ic_signal"
+        android:textColor="#ffff"
+        android:textSize="11sp" />
+
+    <ImageView
+        android:id="@+id/battery_img"
+        android:layout_width="27dp"
+        android:layout_height="15dp"
+        android:layout_marginStart="524dp"
+        android:layout_marginTop="44dp"
+        android:src="@drawable/ic_home_battery_60" />
+
+    <TextView
+        android:id="@+id/tv_battery"
+        android:layout_width="88dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="494dp"
+        android:layout_marginTop="88dp"
+        android:gravity="center_horizontal"
+        android:text="@string/battery_60"
+        android:textColor="#ffff"
+        android:textSize="11sp" />
+
+    <ImageView
+        android:layout_width="21dp"
+        android:layout_height="21dp"
+        android:layout_marginStart="640dp"
+        android:layout_marginTop="44dp"
+        android:src="@drawable/ic_home_version" />
+
+    <TextView
+        android:id="@+id/soft_version"
+        android:layout_width="88dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="607dp"
+        android:layout_marginTop="88dp"
+        android:gravity="center_horizontal"
+        android:maxLines="1"
+        android:text="@string/version"
+        android:textColor="#ffff"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/robot_name"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="744dp"
+        android:layout_marginTop="50dp"
+        android:maxLines="1"
+        android:text="@string/robot_name"
+        android:textColor="#ffff"
+        android:textSize="11sp" />
+
+    <TextView
+        android:id="@+id/robot_hospital"
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="744dp"
+        android:layout_marginTop="75dp"
+        android:maxLines="2"
+        android:text="@string/location"
+        android:textColor="#ffff"
+        android:textSize="11sp" />
+
+    <ImageView
+        android:layout_width="21dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="860dp"
+        android:layout_marginTop="40dp"
+        android:src="@drawable/ic_home_location" />
+
+    <Button
+        android:id="@+id/action1"
+        android:layout_width="260dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="352dp"
+        android:background="@drawable/btn_action_item"
+        android:drawablePadding="7dp"
+        android:text="入院须知"
+        android:textColor="#68BCDC"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/action2"
+        android:layout_width="260dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="350dp"
+        android:layout_marginTop="352dp"
+        android:background="@drawable/btn_action_item"
+        android:drawablePadding="7dp"
+        android:text="入院宣教"
+        android:textColor="#68BCDC"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/action3"
+        android:layout_width="260dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="644dp"
+        android:layout_marginTop="352dp"
+        android:background="@drawable/btn_action_item"
+        android:drawablePadding="7dp"
+        android:text="我要去..."
+        android:textColor="#68BCDC"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/msg1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="350dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/home_msg_bg"
+        android:ellipsize="end"
+        android:maxWidth="553dp"
+        android:maxLines="2"
+        android:padding="12dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:text="@string/show_t1"
+        android:textColor="#FFFFFFFF"
+        android:textSize="15sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/msg1"
+        android:layout_marginStart="350dp"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/home_msg_bg"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:padding="12dp"
+        android:text="你可以对我说“你好，小白。”"
+        android:textColor="#FFFFFFFF"
+        android:textSize="15sp" />
+
+    <ImageView
+        android:id="@+id/voice_anim"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="94dp"
+        android:layout_marginTop="273dp"
+        android:scaleType="fitCenter" />
+
+</RelativeLayout>

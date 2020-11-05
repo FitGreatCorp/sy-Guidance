@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".mediaplayer.PdfPlayActivity">
+
+    <RelativeLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="#ffffff">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="播放PPT"
+            android:textColor="#ffffff"
+            android:textSize="21sp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+
+    <com.github.barteksc.pdfviewer.PDFView
+        android:id="@+id/pdf_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/title"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/bottom"/>
+
+    <RelativeLayout
+        android:id="@+id/bottom"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:gravity="center_vertical"
+        android:background="#ffffff"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/btn_finish"
+            android:layout_width="160dp"
+            android:layout_height="48dp"
+            android:text="结束放映"
+            android:textSize="19sp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="32dp"
+            android:background="@drawable/btn_bg_normal"/>
+    </RelativeLayout>
+</RelativeLayout>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1F505B"
+    tools:context=".videocall.ui.VideoCallActivity">
+
+    <!-- foot-->
+    <FrameLayout
+        android:id="@+id/main_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#4d000000" />
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/text_btn_gap">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btn_mute"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="@dimen/imagebtn_height"
+                android:background="@null"
+                android:scaleType="fitXY"
+                android:src="@drawable/mic_img" />
+
+            <TextView
+                android:id="@+id/mic_text"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/text_btn_gap"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/mic"
+                android:textColor="@android:color/background_light"
+                android:textSize="@dimen/btn_textSize" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btn_disconnect"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="@dimen/imagebtn_height"
+                android:background="@mipmap/btn_callup"
+                android:scaleType="fitXY" />
+
+            <TextView
+                android:id="@+id/callup_text"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/text_btn_gap"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/callup"
+                android:textColor="@android:color/background_light"
+                android:textSize="@dimen/btn_textSize" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btn_controlmode"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="@dimen/imagebtn_height"
+                android:background="@null"
+                android:scaleType="fitXY"
+                android:src="@drawable/model_img" />
+
+            <TextView
+                android:id="@+id/mode_text"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/text_btn_gap"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/controll_mode"
+                android:textColor="@android:color/background_light"
+                android:textSize="@dimen/btn_textSize" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/btn_remote_tingzhen"
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="@dimen/imagebtn_height"
+                android:background="@null"
+                android:scaleType="fitXY"
+                android:src="@mipmap/btn_auscultation" />
+
+            <TextView
+                android:layout_width="@dimen/imagebtn_width"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/text_btn_gap"
+                android:gravity="center"
+                android:maxLines="1"
+                android:text="@string/auscaltation"
+                android:textColor="@android:color/background_light"
+                android:textSize="@dimen/btn_textSize" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
+        android:layout_width="wrap_content"
+        android:layout_height="190dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="31dp"
+        android:layout_marginBottom="108dp">
+
+        <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
+            android:id="@+id/sb_volume"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:splitTrack="false"
+            app:seekBarRotation="CW270" /> <!-- Rotation: CW90 or CW270 -->
+    </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
+
+    <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
+        android:layout_width="wrap_content"
+        android:layout_height="190dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="100dp"
+        android:layout_marginBottom="108dp">
+
+        <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
+            android:id="@+id/sb_britness"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:max="45"
+            android:splitTrack="false"
+            app:seekBarRotation="CW270" /> <!-- Rotation: CW90 or CW270 -->
+    </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
+
+
+    <ImageView
+        android:layout_width="23dp"
+        android:layout_height="19dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="31dp"
+        android:layout_marginBottom="69dp"
+        android:src="@mipmap/btn_volume_up" />
+
+    <ImageView
+        android:layout_width="23dp"
+        android:layout_height="23dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="100dp"
+        android:layout_marginBottom="69dp"
+        android:src="@drawable/ic_brightness_24" />
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="31dp"
+        android:layout_marginBottom="21dp"
+        android:text="@string/volume"
+        android:textColor="#FFFFFF"
+        android:textSize="24px" />
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="100dp"
+        android:layout_marginBottom="21dp"
+        android:text="亮度"
+        android:textColor="#FFFFFF"
+        android:textSize="24px" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true">
+
+        <!--        <include layout="@layout/layout_other_remote_videos" />-->
+        <com.google.android.flexbox.FlexboxLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/layout_flexbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#66ffffff"
+            android:orientation="vertical"
+            app:flexWrap="wrap">
+
+        </com.google.android.flexbox.FlexboxLayout>
+    </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="2dp"
+        android:background="@drawable/bg_video"
+        android:padding="2dp">
+
+        <FrameLayout
+            android:id="@+id/small_frame"
+            android:layout_width="200dp"
+            android:layout_height="110dp"
+            android:layout_alignParentLeft="true" />
+    </RelativeLayout>
+
+</RelativeLayout>

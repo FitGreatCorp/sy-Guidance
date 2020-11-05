@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ffffff</color>
+    <color name="colorPrimaryDark">#ffffff</color>
+    <color name="colorAccent">#49B8AB</color>
+
+    <color name="transparent">#00000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_a50">#7FFFFFFF</color>
+    <color name="white_a60">#99FFFFFF</color>
+    <color name="white_a30">#4CFFFFFF</color>
+    <color name="white_a80">#CCFFFFFF</color>
+    <color name="white_a10">#19FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="black_a50">#7F000000</color>
+    <color name="black_a60">#99000000</color>
+    <color name="black_a30">#4C000000</color>
+    <color name="black_a80">#CC000000</color>
+    <color name="black_a10">#19000000</color>
+    <color name="icon_foreground_pressed">#1AFFFFFF</color>
+    <color name="primary_color_normal">#80000000</color>
+    <!--<color name="primary_color_pressed">#30000000</color>-->
+    <color name="primary_color_pressed">#80000000</color>
+    <color name="primary_color_normal_dark">#DDFFFFFF</color>
+    <color name="color_49b8ab">#49b8ab</color>
+    <color name="color_666666">#666666</color>
+    <color name="colorSurfaceViewBgBlack">#4d000000</color>
+    <color name="colorSurfaceViewBgWhite">#66ffffff</color>
+    <color name="color_ff79807f">#ff79807f</color>
+    <color name="color_fff8f8f8">#fff8f8f8</color>
+    <color name="color_dedede">#DEDEDE</color>
+    <color name="color_F9AA33">#F9AA33</color>
+    <color name="color_161C4A">#FF161C4A</color>
+    <color name="color_444">#444444</color>
+    <color name="check_input_back">#FAFAFA</color>
+    <color name="line">#DEDEDE</color>
+    <color name="main_back">#fff8f8f8</color>
+    <color name="expert_main_back">#F8F8F8</color>
+    <color name="black_blue">#173F6F</color>
+    <color name="mode_back_start_color">#ff5091dc</color>
+    <color name="mode_back_end_color">#ff82eddb</color>
+    <color name="shadow_color">#ffcacccc</color>
+    <color name="expert_info_color">#8F8F8F</color>
+    <color name="check_appointment_back">#F8F8F8</color>
+    <color name="download_dialog_txt">#333333</color>
+</resources>

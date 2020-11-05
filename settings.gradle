@@ -1,0 +1,5 @@
+include ':app', ':archmvp', ':headeractuator'
+include ':webpage'
+include ':jsbridge'
+include ':iflytekaiui'
+rootProject.name = 'Android-sy-Guidance'
