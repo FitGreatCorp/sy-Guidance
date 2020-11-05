@@ -16,11 +16,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
-
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
@@ -46,17 +44,14 @@ import com.fitgreat.airfacerobot.launcher.widget.CommonTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.WarnningDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.launcher.widget.TimeCountDownDialog;
-import com.fitgreat.airfacerobot.launcher.widget.WaveView;
 import com.fitgreat.airfacerobot.remotesignal.model.FilePlayEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
-import com.fitgreat.airfacerobot.settings.SettingActivity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
 import com.fitgreat.airfacerobot.versionupdate.VersionInfo;
-import com.fitgreat.airfacerobot.visitregister.VisitRegisterActivity;
 import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.JsonUtils;
@@ -65,20 +60,15 @@ import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.ShellCmdUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.fitgreat.archmvp.base.util.UIUtils;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
 import butterknife.BindView;
-import butterknife.OnClick;
-
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
@@ -101,14 +91,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     TextView mTextBattery;
     @BindView(R.id.battery_img)
     ImageView mBatteryImg;
-    @BindView(R.id.robot_control_mode_image)
-    ImageView mRobotControlModeImage;
-    @BindView(R.id.robot_drag_mode_image)
-    ImageView mRobotDragModeImage;
-    @BindView(R.id.power_mode_txt)
-    TextView mPowerModeTxt;
-    @BindView(R.id.voice_animation)
-    WaveView mVoiceAnimation;
     @BindView(R.id.robot_name)
     TextView mRobotName;
     @BindView(R.id.voice_msg)
@@ -247,20 +229,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
         //更新本地导航位置,执行任务信息
         mPresenter.getLocationInfo();
-        //启动音浪动画
-        mVoiceAnimation.speechStarted();
         //机器人名字显示
         RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
         if (robotInfoData != null) {
             mRobotName.setText(robotInfoData.getF_Name());
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //关闭首页音浪动画
-        mVoiceAnimation.speechPaused();
     }
 
     @Override
@@ -313,30 +286,30 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @OnClick({R.id.btn_set_module, R.id.robot_control_mode_image, R.id.robot_drag_mode_image, R.id.constraintLayout_visit_register, R.id.constraintLayout_guid_explain})
-    public void onclick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_set_module: //跳转设置模块
-                ToastUtils.showSmallToast("设置");
-                RouteUtils.goToActivity(getContext(), SettingActivity.class);
-                break;
-            case R.id.constraintLayout_visit_register: //来访登记
-                RouteUtils.goToActivity(getContext(), VisitRegisterActivity.class);
-//                OperationUtils.startSpecialWorkFlow(1);
-                break;
-            case R.id.constraintLayout_guid_explain: //引导讲解
-                OperationUtils.startSpecialWorkFlow(2);
-                break;
-            case R.id.robot_control_mode_image: //设置机器人为控制模式
-                setRobotMode(true, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.controll_mode));
-                break;
-            case R.id.robot_drag_mode_image: //设置机器人为拖动模式
-                setRobotMode(false, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.drag_mode));
-                break;
-            default:
-                break;
-        }
-    }
+//    @OnClick({R.id.btn_set_module, R.id.robot_control_mode_image, R.id.robot_drag_mode_image, R.id.constraintLayout_visit_register, R.id.constraintLayout_guid_explain})
+//    public void onclick(View view) {
+//        switch (view.getId()) {
+//            case R.id.btn_set_module: //跳转设置模块
+//                ToastUtils.showSmallToast("设置");
+//                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+//                break;
+//            case R.id.constraintLayout_visit_register: //来访登记
+//                RouteUtils.goToActivity(getContext(), VisitRegisterActivity.class);
+////                OperationUtils.startSpecialWorkFlow(1);
+//                break;
+//            case R.id.constraintLayout_guid_explain: //引导讲解
+//                OperationUtils.startSpecialWorkFlow(2);
+//                break;
+//            case R.id.robot_control_mode_image: //设置机器人为控制模式
+//                setRobotMode(true, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.controll_mode));
+//                break;
+//            case R.id.robot_drag_mode_image: //设置机器人为拖动模式
+//                setRobotMode(false, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.drag_mode));
+//                break;
+//            default:
+//                break;
+//        }
+//    }
 
     /**
      * 设置机器人模式
@@ -358,7 +331,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             controlView.setSelected(false);
             dragView.setSelected(true);
         }
-        mPowerModeTxt.setText(modeTitle);
     }
 
     /**
@@ -844,17 +816,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 LogUtils.d(TAG, "PowerHealth() ====== " + robotSignalEvent.getPowerHealth());
                 boolean isLock = robotSignalEvent.getPowerHealth();
                 LogUtils.d(TAG, "isLock = " + isLock);
-                if (isLock) {
-                    mRobotDragModeImage.setSelected(false);
-                    mRobotControlModeImage.setSelected(true);
-                    mPowerModeTxt.setText("控制模式");
-                    SpUtils.putBoolean(getContext(), "isLock", true);
-                } else {
-                    mRobotControlModeImage.setSelected(false);
-                    mRobotDragModeImage.setSelected(true);
-                    mPowerModeTxt.setText("拖动模式");
-                    SpUtils.putBoolean(getContext(), "isLock", false);
-                }
                 break;
             default:
                 break;
