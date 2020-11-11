@@ -18,7 +18,7 @@ import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;

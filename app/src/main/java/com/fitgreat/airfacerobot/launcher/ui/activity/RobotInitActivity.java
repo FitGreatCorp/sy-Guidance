@@ -10,47 +10,39 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.aispeech.dui.dds.DDS;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotBrainService;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.ActionEvent;
 import com.fitgreat.airfacerobot.launcher.model.InitEvent;
-import com.fitgreat.airfacerobot.launcher.model.MyException;
-import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
+import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.CircularProgressView;
 import com.fitgreat.airfacerobot.launcher.widget.CommonTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.CountDownDialog;
 import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
-import com.fitgreat.airfacerobot.speech.SpeechManager;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
-import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.PhoneInfoUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
-import com.fitgreat.archmvp.base.util.SpUtils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Locale;
 import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
-import static com.fitgreat.airfacerobot.MyApp.getContext;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_RETRY_INIT_SIGNAL;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.REGISTERED_DDS_OBSERVER;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.WHETHER_CARRY_ON_BOOT;
 
 
 /**
@@ -116,6 +108,9 @@ public class RobotInitActivity extends MvpBaseActivity {
     public void initData() {
         LogUtils.d(TAG, "-------RobotInitActivity  create--------");
         EventBus.getDefault().register(this);
+        LanguageUtil.changeAppLanguage(this);
+//        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+//        LanguageUtil.changeAppLanguage(this, currentLanguage, RobotInitActivity.class);
 
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(true);
@@ -124,21 +119,24 @@ public class RobotInitActivity extends MvpBaseActivity {
         commonTipDialog = new CommonTipDialog(this);
         rxPermissions = new RxPermissions(this);
         startCheckSelf();
-        LogUtils.d("RobotInitToto", "---initData--------");
+
+        LogUtils.d("LanguageSettings", "---RobotInitActivity--------" + Locale.getDefault().getLanguage());
     }
 
     @Override
     public void disconnectNetWork() {
-        finish();
-        RouteUtils.goToActivity(RobotInitActivity.this, RobotInitActivity.class);
+        LogUtils.d("LanguageSettings", "---RobotInitActivity---断网-----");
+//        finish();
+//        RouteUtils.goToActivity(RobotInitActivity.this, RobotInitActivity.class);
     }
 
     @Override
     public void disconnectRos() {
+        LogUtils.d("LanguageSettings", "---RobotInitActivity---jros断开-----");
         //ros连接失败,重新了解ros机器人
-        ros_initaled = false;
-        updateCheckProgress(RobotConfig.INIT_TYPE_ROS_PROGRESS, "0");
-        initRos();
+//        ros_initaled = false;
+//        updateCheckProgress(RobotConfig.INIT_TYPE_ROS_PROGRESS, "0");
+//        initRos();
     }
 
     @OnClick({R.id.btn_retry})
@@ -240,12 +238,10 @@ public class RobotInitActivity extends MvpBaseActivity {
         //初始化DDS
 //        EventBus.getDefault().post(new InitUiEvent(RobotConfig.INIT_TYPE_VOICE, "start"));
         EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_VOICE_PROGRESS, "100"));
-
     }
 
     private void gotohome() {
         EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE_DONE, ""));
-        RouteUtils.goToActivity(getContext(), MainActivity.class);
         finish();
     }
 

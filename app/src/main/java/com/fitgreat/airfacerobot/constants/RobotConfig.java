@@ -210,4 +210,9 @@ public interface RobotConfig {
      * 200  取消当前任务
      */
     String WHETHER_CARRY_ON_BOOT = "whether_carry_on_boot";
+
+    /**
+     * 当前显示语言种类
+     */
+    String CURRENT_LANGUAGE = "current_language";
 }

@@ -19,7 +19,7 @@ import com.fitgreat.airfacerobot.launcher.utils.BitmapUtils;
 import com.fitgreat.airfacerobot.launcher.widget.DialogProgressActivity;
 import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 import com.fitgreat.airfacerobot.visitregister.result.VisitRegisterResultActivity;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 
 import java.io.File;
 import java.io.FileOutputStream;

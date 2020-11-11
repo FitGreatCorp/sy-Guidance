@@ -10,7 +10,7 @@ import android.widget.Button;
 
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.launcher.utils.BitmapUtils;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 
 import butterknife.BindView;
 import butterknife.OnClick;

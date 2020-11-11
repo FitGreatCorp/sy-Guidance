@@ -1,4 +1,4 @@
-package com.fitgreat.archmvp.base.ui;
+package com.fitgreat.airfacerobot.base;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -15,8 +15,14 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
+import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
+import com.fitgreat.archmvp.base.ui.BaseView;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.gyf.barlibrary.ImmersionBar;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -39,6 +45,8 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
     public String NETWORK_CONNECTION_CHECK_SUCCESS = "network.connection.check_success";
     public String NETWORK_CONNECTION_CHECK_FAILURE = "network.connection.check_failure";
     public String ROS_CONNECTION_CHECK_FAILURE = "ros.connection.check_failure";
+    //页面集合
+    private List<AppCompatActivity> activityList = new ArrayList<AppCompatActivity>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,9 +56,9 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         if (isImmersionBarEnabled()) {
             initImmersionBar(false);
         }
-        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
+//        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//        }
         setContentView(getLayoutResource());
         unbinder = ButterKnife.bind(this);
         StringBuilder stringBuilder = new StringBuilder();
@@ -66,40 +74,8 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         filter.addAction(NETWORK_CONNECTION_CHECK_FAILURE);
         filter.addAction(ROS_CONNECTION_CHECK_FAILURE);
         registerReceiver(myReceiver, filter);
-    }
-
-    private class NetWorkChangeBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            LogUtils.d(TAG, "NetWorkChangeBroadcastReceiver");
-            if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_FAILURE)) {
-                LogUtils.d(TAG, "网路连接断开");
-                disconnectNetWork();
-            } else if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_SUCCESS)) {
-                LogUtils.d(TAG, "网路连接可用");
-            }else if (intent.getAction().equals(ROS_CONNECTION_CHECK_FAILURE)) {
-                LogUtils.d(TAG, "ros连接断开");
-                disconnectRos();
-            }
-        }
-    }
-
-    /**
-     * 是否可以使用沉浸式
-     * Is immersion bar enabled boolean.
-     *
-     * @return the boolean
-     */
-    protected boolean isImmersionBarEnabled() {
-        return true;
-    }
-
-    protected void initImmersionBar(boolean isDarkFont) {
-        //在BaseActivity里初始化
-        mImmersionBar = ImmersionBar.with(this);
-        mImmersionBar.statusBarDarkFont(isDarkFont, 0.3f)
-                .statusBarColor(android.R.color.transparent)
-                .init();
+        //添加当前页面
+        activityList.add(this);
     }
 
     @Override
@@ -131,6 +107,18 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
             unbinder = null;
         }
         unregisterReceiver(myReceiver);
+        //清除当前页面
+        activityList.remove(this);
+    }
+
+    /**
+     * 退出页面时清空所有页面
+     */
+    public void clearActivity() {
+        for (AppCompatActivity appCompatActivity : activityList
+        ) {
+            appCompatActivity.finish();
+        }
     }
 
     @Override
@@ -138,19 +126,19 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         return this;
     }
 
-    /**
-     * 重置App界面的字体大小，fontScale 值为 1 代表默认字体大小
-     *
-     * @return suyan
-     */
-    @Override
-    public Resources getResources() {
-        Resources res = super.getResources();
-        Configuration config = res.getConfiguration();
-        config.fontScale = 1;
-        res.updateConfiguration(config, res.getDisplayMetrics());
-        return res;
-    }
+//    /**
+//     * 重置App界面的字体大小，fontScale 值为 1 代表默认字体大小
+//     *
+//     * @return suyan
+//     */
+//    @Override
+//    public Resources getResources() {
+//        Resources res = getResources();
+//        Configuration config = res.getConfiguration();
+//        config.fontScale = 1;
+//        res.updateConfiguration(config, res.getDisplayMetrics());
+//        return res;
+//    }
 
     public abstract <T> T createPresenter();
 
@@ -162,9 +150,48 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
      * 网络断开连接
      */
     public abstract void disconnectNetWork();
+
     /**
      * ros连接断开
      */
     public abstract void disconnectRos();
 
+    private class NetWorkChangeBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LogUtils.d(TAG, "NetWorkChangeBroadcastReceiver");
+            if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_FAILURE)) {
+                LogUtils.d(TAG, "网路连接断开");
+                disconnectNetWork();
+            } else if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_SUCCESS)) {
+                LogUtils.d(TAG, "网路连接可用");
+            } else if (intent.getAction().equals(ROS_CONNECTION_CHECK_FAILURE)) {
+                LogUtils.d(TAG, "ros连接断开");
+                disconnectRos();
+            }
+        }
+    }
+
+    /**
+     * 是否可以使用沉浸式
+     * Is immersion bar enabled boolean.
+     *
+     * @return the boolean
+     */
+    protected boolean isImmersionBarEnabled() {
+        return true;
+    }
+
+    protected void initImmersionBar(boolean isDarkFont) {
+        //在BaseActivity里初始化
+        mImmersionBar = ImmersionBar.with(this);
+        mImmersionBar.statusBarDarkFont(isDarkFont, 0.3f)
+                .statusBarColor(android.R.color.transparent)
+                .init();
+    }
+
+//    @Override
+//    protected void attachBaseContext(Context newBase) {
+//        super.attachBaseContext(LanguageUtil.attachBaseContext(newBase));
+//    }
 }

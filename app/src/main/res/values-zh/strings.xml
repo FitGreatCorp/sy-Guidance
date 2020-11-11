@@ -59,15 +59,11 @@
     <string name="wear_equipment">穿戴设备</string>
     <string name="bluetooth_connection_device">蓝牙连接设备</string>
     <string name="auscaltation">远程听诊</string>
-
-
-
     <string name="home_go_title">我要去...</string>
     <string name="home_question_title">常见问题</string>
     <string name="home_introduction_title">院内介绍</string>
-<!--    <string name="robot_language_chinese">中</string>-->
-<!--    <string name="robot_language_english">En</string>-->
-
+    <!--    <string name="robot_language_chinese">中</string>-->
+    <string name="setup_module_title">艾菲仕设置</string>
     <string name="answer_yes">是</string>
     <string name="answer_no">否</string>
     <string name="switch_chinese_english">中英文切换</string>

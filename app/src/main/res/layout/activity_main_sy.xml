@@ -124,8 +124,8 @@
 
         <ImageView
             android:id="@+id/me_want_go_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/px69"
+            android:layout_height="@dimen/px69"
             android:scaleType="fitCenter"
             android:src="@mipmap/bt_home_go"
             app:layout_constraintBottom_toTopOf="@+id/me_want_go_txt"
@@ -161,8 +161,8 @@
 
         <ImageView
             android:id="@+id/common_problem_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/px69"
+            android:layout_height="@dimen/px69"
             android:scaleType="fitCenter"
             android:src="@mipmap/bt_home_questions"
             app:layout_constraintBottom_toTopOf="@+id/common_problem_txt"
@@ -200,8 +200,8 @@
 
         <ImageView
             android:id="@+id/hospital_introduction_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/px69"
+            android:layout_height="@dimen/px69"
             android:scaleType="fitCenter"
             android:src="@mipmap/bt_home_introduction"
             app:layout_constraintBottom_toTopOf="@+id/hospital_introduction_txt"
@@ -264,8 +264,39 @@
         app:layout_constraintLeft_toRightOf="@+id/home_central_circle"
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout_me_want_go" />
 
-    <RadioGroup
-        android:id="@+id/robot_language_radiogroup"
+    <!--    <RadioGroup-->
+    <!--        android:id="@+id/robot_language_radiogroup"-->
+    <!--        android:layout_width="@dimen/px120"-->
+    <!--        android:layout_height="@dimen/px39"-->
+    <!--        android:layout_marginRight="@dimen/px20"-->
+    <!--        android:layout_marginBottom="@dimen/px15"-->
+    <!--        android:background="@drawable/square_back_blue"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintRight_toLeftOf="@+id/bt_home_setting">-->
+
+    <!--        <RadioButton-->
+    <!--            android:id="@+id/language_chinese"-->
+    <!--            android:layout_width="@dimen/px0"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:layout_weight="1"-->
+    <!--            android:background="@drawable/switch_language_selector"-->
+    <!--            android:button="@null"-->
+    <!--            android:gravity="center"-->
+    <!--            android:text="中" />-->
+
+    <!--        <RadioButton-->
+    <!--            android:id="@+id/language_english"-->
+    <!--            android:layout_width="@dimen/px0"-->
+    <!--            android:layout_height="match_parent"-->
+    <!--            android:layout_weight="1"-->
+    <!--            android:background="@drawable/switch_language_selector"-->
+    <!--            android:button="@null"-->
+    <!--            android:gravity="center"-->
+    <!--            android:text="En" />-->
+    <!--    </RadioGroup>-->
+    <LinearLayout
+        android:id="@+id/robot_language_linearLayout"
         android:layout_width="@dimen/px120"
         android:layout_height="@dimen/px39"
         android:layout_marginRight="@dimen/px20"
@@ -275,24 +306,28 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/bt_home_setting">
 
-        <RadioButton
+        <Button
+            android:id="@+id/language_chinese"
             android:layout_width="@dimen/px0"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/switch_language_selector"
             android:button="@null"
             android:gravity="center"
-            android:text="中" />
+            android:text="中"
+            android:textColor="@color/white" />
 
-        <RadioButton
+        <Button
+            android:id="@+id/language_english"
             android:layout_width="@dimen/px0"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@drawable/switch_language_selector"
             android:button="@null"
             android:gravity="center"
-            android:text="En" />
-    </RadioGroup>
+            android:text="En"
+            android:textColor="@color/white" />
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/bt_home_setting"

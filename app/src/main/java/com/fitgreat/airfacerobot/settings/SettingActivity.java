@@ -30,7 +30,7 @@ import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.VersionUtils;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.PhoneInfoUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
@@ -107,7 +107,7 @@ public class SettingActivity extends MvpBaseActivity {
     @Override
     public void initData() {
         initImmersionBar(true);
-        titleBar.setText("艾菲仕设置");
+        titleBar.setText(getString(R.string.setup_module_title));
         inputDialog = new InputDialog(this);
         rebootLayout.setVisibility(View.VISIBLE);
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -126,25 +126,25 @@ public class SettingActivity extends MvpBaseActivity {
         robotSerialNumber.setText(RobotInfoUtils.getAirFaceDeviceId());
         robotAppVersion.setText("V " + VersionUtils.getVersionName(this));
         robotOsVersion.setText("Android " + PhoneInfoUtils.getSystemVersion());
-        LogUtils.d(TAG,"HARDVERSION = "+RobotInfoUtils.getHardwareVersion());
+        LogUtils.d(TAG, "HARDVERSION = " + RobotInfoUtils.getHardwareVersion());
         robotHardwareVersion.setText("V " + RobotInfoUtils.getHardwareVersion().replace("v", "").replace("V", ""));
 
         if (TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")) {
             Drawable selected = this.getDrawable(R.mipmap.btn_selected);
-            selected.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
+            selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
             Drawable select = this.getDrawable(R.mipmap.btn_select);
-            select.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
-            testRb.setCompoundDrawables(selected,null,null,null);
-            productRb.setCompoundDrawables(select,null,null,null);
+            select.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
+            testRb.setCompoundDrawables(selected, null, null, null);
+            productRb.setCompoundDrawables(select, null, null, null);
             developLayout.setVisibility(View.VISIBLE);
 //            shutdownLayout.setVisibility(View.VISIBLE);
         } else {
             Drawable selected = this.getDrawable(R.mipmap.btn_selected);
-            selected.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
+            selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
             Drawable select = this.getDrawable(R.mipmap.btn_select);
-            select.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
-            testRb.setCompoundDrawables(select,null,null,null);
-            productRb.setCompoundDrawables(selected,null,null,null);
+            select.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
+            testRb.setCompoundDrawables(select, null, null, null);
+            productRb.setCompoundDrawables(selected, null, null, null);
         }
 
         STRING_HELLO = SpUtils.getString(getContext(), "hello_string", "");
@@ -211,7 +211,7 @@ public class SettingActivity extends MvpBaseActivity {
             , R.id.settings_apps_layout, R.id.settings_date_time_layout, R.id.settings_language_layout,
             R.id.settings_inputmethod_layout, R.id.settings_develop_layout, R.id.settings_reboot_layout,
             R.id.settings_shutdown_layout, R.id.settings_robot_official_website_layout, R.id.settings_wifi_layout,
-            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save,R.id.test_domains_radio,R.id.product_domains_radio})
+            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.ll_info:
@@ -265,8 +265,8 @@ public class SettingActivity extends MvpBaseActivity {
                 RouteUtils.goToActivity(this, AppListActivity.class);
                 break;
             case R.id.settings_reboot_layout:
-                if(myDialog!=null){
-                    if(myDialog.isShowing()){
+                if (myDialog != null) {
+                    if (myDialog.isShowing()) {
                         myDialog.dismiss();
                     }
                     myDialog = null;
@@ -308,16 +308,16 @@ public class SettingActivity extends MvpBaseActivity {
                         SpUtils.putInt(getContext(), "de_time", 10);
                         de_time.setText("10");
                         Toast.makeText(getContext(), "间隔时间不能小于10秒!", Toast.LENGTH_SHORT).show();
-                    }else{
+                    } else {
                         SpUtils.putInt(getContext(), "de_time", Integer.valueOf(de_time.getText().toString().trim()));
                         Toast.makeText(getContext(), "设置成功！", Toast.LENGTH_SHORT).show();
                     }
                 }
                 break;
             case R.id.test_domains_radio:
-                if(!TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")){
-                    if(myDialog!=null){
-                        if(myDialog.isShowing()){
+                if (!TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")) {
+                    if (myDialog != null) {
+                        if (myDialog.isShowing()) {
                             myDialog.dismiss();
                         }
                         myDialog = null;
@@ -337,11 +337,11 @@ public class SettingActivity extends MvpBaseActivity {
                             RouteUtils.sendDaemonBroadcast(SettingActivity.this, Constants.ACTION_DAEMON_MSG, test);
 
                             Drawable selected = SettingActivity.this.getDrawable(R.mipmap.btn_selected);
-                            selected.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
+                            selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
                             Drawable select = SettingActivity.this.getDrawable(R.mipmap.btn_select);
-                            select.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
-                            testRb.setCompoundDrawables(selected,null,null,null);
-                            productRb.setCompoundDrawables(select,null,null,null);
+                            select.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
+                            testRb.setCompoundDrawables(selected, null, null, null);
+                            productRb.setCompoundDrawables(select, null, null, null);
 
                             ToastUtils.showSmallToast("服务器环境已切换，即将重启生效");
 
@@ -350,7 +350,7 @@ public class SettingActivity extends MvpBaseActivity {
                                 public void run() {
                                     RouteUtils.sendDaemonBroadcast(SettingActivity.this, Constants.ACTION_REBOOT, null);
                                 }
-                            },1500);
+                            }, 1500);
                         }
                     });
                     myDialog.setNegativeOnclicListener("取消", new MyDialog.onNegativeClickListener() {
@@ -364,9 +364,9 @@ public class SettingActivity extends MvpBaseActivity {
 
                 break;
             case R.id.product_domains_radio:
-                if(TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")){
-                    if(myDialog!=null){
-                        if(myDialog.isShowing()){
+                if (TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")) {
+                    if (myDialog != null) {
+                        if (myDialog.isShowing()) {
                             myDialog.dismiss();
                         }
                         myDialog = null;
@@ -386,11 +386,11 @@ public class SettingActivity extends MvpBaseActivity {
                             RouteUtils.sendDaemonBroadcast(SettingActivity.this, Constants.ACTION_DAEMON_MSG, product);
 
                             Drawable selected = SettingActivity.this.getDrawable(R.mipmap.btn_selected);
-                            selected.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
+                            selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
                             Drawable select = SettingActivity.this.getDrawable(R.mipmap.btn_select);
-                            select.setBounds(0,0,selected.getMinimumWidth(),selected.getMinimumHeight());
-                            testRb.setCompoundDrawables(select,null,null,null);
-                            productRb.setCompoundDrawables(selected,null,null,null);
+                            select.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
+                            testRb.setCompoundDrawables(select, null, null, null);
+                            productRb.setCompoundDrawables(selected, null, null, null);
 
                             ToastUtils.showSmallToast("服务器环境已切换，即将重启生效");
 
@@ -399,7 +399,7 @@ public class SettingActivity extends MvpBaseActivity {
                                 public void run() {
                                     RouteUtils.sendDaemonBroadcast(SettingActivity.this, Constants.ACTION_REBOOT, null);
                                 }
-                            },1500);
+                            }, 1500);
                         }
                     });
                     myDialog.setNegativeOnclicListener("取消", new MyDialog.onNegativeClickListener() {

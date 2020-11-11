@@ -3,6 +3,7 @@ package com.fitgreat.airfacerobot.launcher.ui.activity;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -12,13 +13,20 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
@@ -38,6 +46,7 @@ import com.fitgreat.airfacerobot.launcher.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.launcher.presenter.MainPresenter;
+import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.CommonTipDialog;
@@ -48,11 +57,12 @@ import com.fitgreat.airfacerobot.remotesignal.model.FilePlayEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
+import com.fitgreat.airfacerobot.settings.SettingActivity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
 import com.fitgreat.airfacerobot.versionupdate.VersionInfo;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
@@ -60,15 +70,23 @@ import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.ShellCmdUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.fitgreat.archmvp.base.util.UIUtils;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import butterknife.BindView;
+import butterknife.OnClick;
+
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
@@ -98,6 +116,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @BindView(R.id.wink_speak_animation)
     ImageView mWinkSpeakAnimation;
 
+    @BindView(R.id.language_chinese)
+    Button mLanguageChinese;
+    @BindView(R.id.language_english)
+    Button mLanguageEnglish;
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ALERT_CODE = 6666;
@@ -137,7 +159,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     public void initData() {
         LogUtils.d(TAG, "-------MainActivity create-----------");
         EventBus.getDefault().register(this);
-        SpUtils.putBoolean(getContext(), "isLock", true);    //???
+        SpUtils.putBoolean(getContext(), "isLock", true);
         commonTipDialog = new CommonTipDialog(this);
         downloadingDialog = new DownloadingDialog(this);
         showFloatBall();
@@ -147,6 +169,20 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
         AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getDrawable();
         animationDrawable.start();
+
+        //重启时设置应用中英文语言
+//        String language = getResources().getConfiguration().locale.getCountry();
+//        Resources resources = getResources();
+//        Configuration config = resources.getConfiguration();
+//        DisplayMetrics dm = resources.getDisplayMetrics();
+//        if (language.equalsIgnoreCase("cn")) {
+//            config.locale = Locale.CHINA;
+//        } else {
+//            config.locale = Locale.US;
+//        }
+//        resources.updateConfiguration(config, dm);
+//        LogUtils.d("LanguageSettings", "---MainActivity--------" + Locale.getDefault().getLanguage());
+
     }
 
     /**
@@ -224,15 +260,28 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         super.onResume();
         isResume = true;
         string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "");
-        if (mPresenter != null) {
-            mPresenter.getNetSignalLevel(this);
+
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        if (currentLanguage.equals("en")) {
+            mLanguageEnglish.setSelected(true);
+            mLanguageChinese.setSelected(false);
+        } else if (currentLanguage.equals("zh")) {
+            mLanguageChinese.setSelected(true);
+            mLanguageEnglish.setSelected(false);
         }
-        //更新本地导航位置,执行任务信息
-        mPresenter.getLocationInfo();
-        //机器人名字显示
-        RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
-        if (robotInfoData != null) {
-            mRobotName.setText(robotInfoData.getF_Name());
+        //jRos初始化状态
+        boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
+        if (rosInitTagState) {
+            if (mPresenter != null) {
+                mPresenter.getNetSignalLevel(this);
+            }
+            //更新本地导航位置,执行任务信息
+            mPresenter.getLocationInfo();
+            //机器人名字显示
+            RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
+            if (robotInfoData != null) {
+                mRobotName.setText(robotInfoData.getF_Name());
+            }
         }
     }
 
@@ -286,51 +335,42 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-//    @OnClick({R.id.btn_set_module, R.id.robot_control_mode_image, R.id.robot_drag_mode_image, R.id.constraintLayout_visit_register, R.id.constraintLayout_guid_explain})
-//    public void onclick(View view) {
-//        switch (view.getId()) {
-//            case R.id.btn_set_module: //跳转设置模块
-//                ToastUtils.showSmallToast("设置");
-//                RouteUtils.goToActivity(getContext(), SettingActivity.class);
-//                break;
-//            case R.id.constraintLayout_visit_register: //来访登记
+    @OnClick({R.id.bt_home_setting, R.id.me_want_go_image, R.id.common_problem_image, R.id.hospital_introduction_image, R.id.language_chinese, R.id.language_english})
+    public void onclick(View view) {
+        switch (view.getId()) {
+            case R.id.bt_home_setting: //跳转设置模块
+                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+                break;
+            case R.id.me_want_go_image: //我要去
 //                RouteUtils.goToActivity(getContext(), VisitRegisterActivity.class);
-////                OperationUtils.startSpecialWorkFlow(1);
-//                break;
-//            case R.id.constraintLayout_guid_explain: //引导讲解
+                break;
+            case R.id.common_problem_image: //常见问题
 //                OperationUtils.startSpecialWorkFlow(2);
-//                break;
-//            case R.id.robot_control_mode_image: //设置机器人为控制模式
+                break;
+            case R.id.hospital_introduction_image: //院内介绍
 //                setRobotMode(true, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.controll_mode));
-//                break;
-//            case R.id.robot_drag_mode_image: //设置机器人为拖动模式
-//                setRobotMode(false, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.drag_mode));
-//                break;
-//            default:
-//                break;
-//        }
-//    }
+                break;
+            case R.id.language_chinese: //应用语言显示中文
+                setLanguage("zh", mLanguageChinese, mLanguageEnglish);
+                break;
+            case R.id.language_english: //应用语言显示英文
+                setLanguage("en", mLanguageEnglish, mLanguageChinese);
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
-     * 设置机器人模式
+     * 切换机器人显示语言
      */
-    private void setRobotMode(boolean isControl, ImageView controlView, ImageView dragView, String modeTitle) {
-        SignalDataEvent moveMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
-        if (isControl) { //控制模式
-            //更新JRos设置
-            moveMode.setPowerlock(1);
-            EventBus.getDefault().post(moveMode);
-            //更新页面ui显示
-            controlView.setSelected(true);
-            dragView.setSelected(false);
-        } else { //拖动模式
-            //更新JRos设置
-            moveMode.setPowerlock(2);
-            EventBus.getDefault().post(moveMode);
-            //更新页面ui显示
-            controlView.setSelected(false);
-            dragView.setSelected(true);
-        }
+    public void setLanguage(String language, Button selectButton, Button normalButton) {
+        SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, language);
+        LanguageUtil.changeAppLanguage(MainActivity.this);
+        finish();
+        RouteUtils.goHome(MainActivity.this);
+        selectButton.setSelected(true);
+        normalButton.setSelected(false);
     }
 
     /**
@@ -351,7 +391,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                             LogUtils.d(TAG, "----ON HOME CLICK-----" + isResume);
                             if (!isResume) {
                                 LogUtils.d("AirFaceApp", "-----------showFloatBall:-----isResume--" + isResume);
-                                RouteUtils.goToActivity(MainActivity.this, MainActivity.class);
+                                RouteUtils.goHome(MainActivity.this);
                             }
                         }
                     });
@@ -446,11 +486,25 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     floatWindow.show();
                     LogUtils.d(TAG, "----show float----");
                 }
-//                jumpCheckSelf();
+                jumpCheckSelf();
             } else {
                 requestAlertWindowPermission();
             }
         }
+    }
+
+    /**
+     * 跳转自检初始化界面
+     */
+    private void jumpCheckSelf() {
+        //如果栈顶是设置悬浮窗权限界面，执行返回键关闭此页面
+//        if (Utils.isForeground(this, "com.android.settings.Settings$AppDrawOverlaySettingsActivity")) {
+//            RouteUtils.goHome(this);
+//        }
+        if (handler.hasMessages(REQUEST_ALERT_CODE)) {
+            handler.removeMessages(REQUEST_ALERT_CODE);
+        }
+        RouteUtils.goToActivity(MainActivity.this, RobotInitActivity.class);
     }
 
     public MainActivity getContext() {
@@ -811,7 +865,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         }
                     }
                     mTextBattery.setText(battery + "%");
-                    LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus());
+                    LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus() + "---当前机器人电量---" + battery);
                 }
                 LogUtils.d(TAG, "PowerHealth() ====== " + robotSignalEvent.getPowerHealth());
                 boolean isLock = robotSignalEvent.getPowerHealth();
@@ -1026,5 +1080,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //改变当前机器人状态
         RobotInfoUtils.setRobotRunningStatus(String.valueOf(status));
     }
+
 }
 

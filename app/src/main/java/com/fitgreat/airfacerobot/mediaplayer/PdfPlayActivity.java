@@ -1,9 +1,7 @@
 package com.fitgreat.airfacerobot.mediaplayer;
 
-import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Message;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -11,30 +9,19 @@ import android.widget.Toast;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
-import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.model.InitEvent;
-import com.fitgreat.airfacerobot.launcher.model.MyException;
-import com.fitgreat.airfacerobot.launcher.ui.activity.MainActivity;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
-import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SpeakEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.github.barteksc.pdfviewer.PDFView;
-import com.github.barteksc.pdfviewer.listener.OnErrorListener;
-import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
-import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
-import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
-import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
-import com.github.barteksc.pdfviewer.listener.OnRenderListener;
-import com.github.barteksc.pdfviewer.listener.OnTapListener;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -45,9 +32,6 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_ST
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_CANCEL;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;
-import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.DOWNLOADING;
-import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.DOWNLOAD_FAILED;
-import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.DOWNLOAD_SUCCESS;
 
 public class PdfPlayActivity extends MvpBaseActivity {
     private static final String TAG = "PdfPlayActivity";

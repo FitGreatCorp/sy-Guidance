@@ -60,6 +60,7 @@
         <activity
             android:name=".launcher.ui.activity.MainActivity"
             android:clearTaskOnLaunch="true"
+            android:configChanges="keyboardHidden|orientation|locale|screenLayout|mcc|mnc|uiMode|screenSize|layoutDirection|fontScale|smallestScreenSize|navigation|keyboard|touchscreen"
             android:enabled="true"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
@@ -68,11 +69,7 @@
             android:stateNotNeeded="true"
             android:taskAffinity=""
             android:theme="@style/AppTheme"
-            android:windowSoftInputMode="adjustPan"/>
-        <activity
-            android:name=".launcher.ui.activity.RobotInitActivity"
-            android:configChanges="keyboard|keyboardHidden|navigation|orientation|mcc|mnc"
-            android:screenOrientation="landscape">
+            android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -81,6 +78,9 @@
                 <category android:name="android.intent.category.MONKEY" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".launcher.ui.activity.RobotInitActivity"
+            android:screenOrientation="landscape" />
         <activity
             android:name=".settings.SettingActivity"
             android:screenOrientation="landscape" />
@@ -116,6 +116,7 @@
             android:name=".launcher.widget.DialogProgressActivity"
             android:screenOrientation="landscape"
             android:theme="@style/ActivityDialog" />
+
         <service
             android:name=".RobotBrainService"
             android:exported="false" />

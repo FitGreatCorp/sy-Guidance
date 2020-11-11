@@ -4,14 +4,20 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.DisplayMetrics;
 
 import com.fitgreat.airfacerobot.launcher.utils.CrashHandler;
+import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
+
+import java.util.Locale;
 
 
 /**
@@ -43,15 +49,17 @@ public class MyApp extends Application {
         handler.postDelayed(() -> {
             LogUtils.d(TAG, "  isMainActivityRunning  ,  " + !isMainActivityRunning);
             if (!isMainActivityRunning) {
-                if (SpeechManager.isDdsInitialization()) {
-                    //DDS需要重新初始化
-                    SpeechManager.instance(this).restoreToDo();
-                }
-                //终止RobotBrainService服务
-                stopService(new Intent(this, RobotBrainService.class));
-                RouteUtils.goHome(this);
+//                if (SpeechManager.isDdsInitialization()) {
+//                    //DDS需要重新初始化
+//                    SpeechManager.instance(this).restoreToDo();
+//                }
+//                //终止RobotBrainService服务
+//                stopService(new Intent(this, RobotBrainService.class));
+                //重启应用
+//                RouteUtils.goHome(this);
             }
         }, 5 * 1000);
+        LanguageUtil.changeAppLanguage(this);
         LogUtils.d(TAG, "-----------START_APP_TAG------");
         MyCrashHandler handler = new MyCrashHandler();
         Thread.setDefaultUncaughtExceptionHandler(handler);

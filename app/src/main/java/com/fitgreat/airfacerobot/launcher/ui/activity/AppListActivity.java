@@ -7,13 +7,12 @@ import android.graphics.drawable.Drawable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.util.LogTime;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.launcher.model.AppInfo;
 import com.fitgreat.airfacerobot.launcher.ui.adapter.AppListAdapter;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
-import com.fitgreat.archmvp.base.ui.MvpBaseActivity;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 
