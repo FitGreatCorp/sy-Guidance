@@ -116,6 +116,13 @@
             android:name=".launcher.widget.DialogProgressActivity"
             android:screenOrientation="landscape"
             android:theme="@style/ActivityDialog" />
+        <activity
+            android:name=".chosedestination.ChoseDestinationActivity"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".commonproblem.CommonProblemActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/MyTranslucentTheme" />
 
         <service
             android:name=".RobotBrainService"

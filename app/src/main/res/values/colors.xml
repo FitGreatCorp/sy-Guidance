@@ -42,4 +42,5 @@
     <color name="expert_info_color">#8F8F8F</color>
     <color name="check_appointment_back">#F8F8F8</color>
     <color name="download_dialog_txt">#333333</color>
+    <color name="item_common_problem_normal">#E9ECEE</color>
 </resources>

@@ -1334,36 +1334,32 @@ public class RobotBrainService extends Service {
                                         videointent.putExtra("F_Type", instructionType);
                                         videointent.putExtra("operationType", operationType);
                                         videointent.putExtra("operationProcedureId", produceId);
-                                        handler.postDelayed(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                startActivity(videointent);
-                                            }
-                                        }, 2000);
+                                        handler.postDelayed(() -> startActivity(videointent), 2000);
                                         LogUtils.d("startSpecialWorkFlow", "开始播放视频任务\t\t");
                                     } else if (operationType.equals("3")) {
-                                        LogUtils.d("update_instruction", "speakTipsFuture = " + speakTipsFuture);
-                                        speakTipsFuture = ExecutorManager.getInstance().executeScheduledTask(speakTipsRunnable, 2, SpUtils.getInt(RobotBrainService.this, "de_time", 10), TimeUnit.SECONDS);
-                                        taskVideoCall = false;
-                                        DaemonEvent event = new DaemonEvent(TASK_DIALOG, "3");
-                                        event.extra = instructionName;
-                                        EventBus.getDefault().post(event);
+                                        Intent pdfintent = new Intent(RobotBrainService.this, PdfPlayActivity.class);
+                                        pdfintent.putExtra("container", container);
+                                        pdfintent.putExtra("blob", fileUrl);
+                                        pdfintent.putExtra("instructionId", instructionId);
+                                        pdfintent.putExtra("instructionName", instructionName);
+                                        pdfintent.putExtra("status", instruction_status);
+                                        pdfintent.putExtra("F_Type", instructionType);
+                                        pdfintent.putExtra("operationType", operationType);
+                                        pdfintent.putExtra("operationProcedureId", produceId);
+                                        handler.postDelayed(() -> startActivity(pdfintent), 2000);
                                     } else if (operationType.equals("4")) {
                                         speakTipsFuture = ExecutorManager.getInstance().executeScheduledTask(speakTipsRunnable, 2, SpUtils.getInt(RobotBrainService.this, "de_time", 10), TimeUnit.SECONDS);
                                         taskVideoCall = false;
                                         LogUtils.d("update_instruction", "txt url:" + fileUrl);
-
                                         DaemonEvent event = new DaemonEvent(TASK_DIALOG, "4");
                                         event.extra = instructionName;
                                         EventBus.getDefault().post(event);
-
                                     } else if (operationType.equals("5")) {
                                         taskVideoCall = false;
                                         jRos.op_runParking((byte) 1);
                                         handler.postDelayed(new Runnable() {
                                             @Override
                                             public void run() {
-//                                                aiuiManager.onPlayLineTTS("我正在自动回充中!");
                                                 speechManager.textTtsPlay("我正在自动回充中!", "0");
                                                 //更新提示信息到首页对话记录
                                                 EventBus.getDefault().post(new NavigationTip("我正在自动回充中!"));

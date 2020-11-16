@@ -7,5 +7,5 @@
         android:startColor="@color/mode_back_start_color"
         android:type="linear"
         android:useLevel="true" />
-    <corners android:radius="23dp" />
+    <corners android:radius="@dimen/px23" />
 </shape>

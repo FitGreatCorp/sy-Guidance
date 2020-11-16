@@ -67,4 +67,13 @@
     <string name="answer_yes">是</string>
     <string name="answer_no">否</string>
     <string name="switch_chinese_english">中英文切换</string>
+
+    <string name="reception_area_title">挂号处</string>
+    <string name="nurse_desk_title">护士台</string>
+    <string name="pharmacy_title">药房</string>
+    <string name="restroom_title">洗手间</string>
+
+
+
+    <string name="common_problem_title">常见问题</string>
 </resources>

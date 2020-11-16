@@ -66,5 +66,11 @@
     <string name="answer_yes">Yes</string>
     <string name="answer_no">No</string>
     <string name="setup_module_title">Efes settings</string>
+    <string name="reception_area_title">Reception Area</string>
+    <string name="nurse_desk_title">Nurse desk</string>
+    <string name="pharmacy_title">Pharmacy</string>
+    <string name="restroom_title">Restroom</string>
 
+
+    <string name="common_problem_title">Common Problem</string>
 </resources>

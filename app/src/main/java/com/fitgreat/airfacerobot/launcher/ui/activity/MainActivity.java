@@ -31,6 +31,8 @@ import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
+import com.fitgreat.airfacerobot.chosedestination.ChoseDestinationActivity;
+import com.fitgreat.airfacerobot.commonproblem.CommonProblemActivity;
 import com.fitgreat.airfacerobot.constants.Constants;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.floatball.AccessibilityConstant;
@@ -148,6 +150,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
     private String string_hello;
+    //进入设置页面第一次点击标志
+    private boolean firstClickTag = false;
+    private long firstClickTime;
 
     @Override
     public int getLayoutResource() {
@@ -169,20 +174,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
         AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getDrawable();
         animationDrawable.start();
-
-        //重启时设置应用中英文语言
-//        String language = getResources().getConfiguration().locale.getCountry();
-//        Resources resources = getResources();
-//        Configuration config = resources.getConfiguration();
-//        DisplayMetrics dm = resources.getDisplayMetrics();
-//        if (language.equalsIgnoreCase("cn")) {
-//            config.locale = Locale.CHINA;
-//        } else {
-//            config.locale = Locale.US;
-//        }
-//        resources.updateConfiguration(config, dm);
-//        LogUtils.d("LanguageSettings", "---MainActivity--------" + Locale.getDefault().getLanguage());
-
     }
 
     /**
@@ -335,20 +326,20 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @OnClick({R.id.bt_home_setting, R.id.me_want_go_image, R.id.common_problem_image, R.id.hospital_introduction_image, R.id.language_chinese, R.id.language_english})
+    @OnClick({R.id.bt_home_setting, R.id.me_want_go_image, R.id.common_problem_image, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
-                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+                jumpSetModule();
                 break;
             case R.id.me_want_go_image: //我要去
-//                RouteUtils.goToActivity(getContext(), VisitRegisterActivity.class);
+                RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
                 break;
             case R.id.common_problem_image: //常见问题
-//                OperationUtils.startSpecialWorkFlow(2);
+                RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
                 break;
-            case R.id.hospital_introduction_image: //院内介绍
-//                setRobotMode(true, mRobotControlModeImage, mRobotDragModeImage, getString(R.string.controll_mode));
+            case R.id.constraintLayout_hospital_introduction: //院内介绍
+                 OperationUtils.startSpecialWorkFlow(3);
                 break;
             case R.id.language_chinese: //应用语言显示中文
                 setLanguage("zh", mLanguageChinese, mLanguageEnglish);
@@ -358,6 +349,23 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * 连续两次点击时间间隔大于0.5秒,跳转进入设置模块
+     */
+    private void jumpSetModule() {
+        if (!firstClickTag) {
+            firstClickTag = true;
+            //记录第一次点击按钮时间单位为秒
+            firstClickTime = System.currentTimeMillis() ;
+        } else {
+            //两次点击按钮时间相差大于1秒进入设置模块,小于1秒需再次点击,第一次点击时间重新记录
+            if ((System.currentTimeMillis()- firstClickTime) > 500) {
+                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+            }
+            firstClickTag = false;
         }
     }
 

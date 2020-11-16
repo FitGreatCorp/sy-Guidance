@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chose_destination_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout_common_problem"
+        android:layout_width="@dimen/px710"
+        android:layout_height="@dimen/px289"
+        android:layout_marginTop="@dimen/px50"
+        android:background="@android:color/white"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints">
+
+        <TextView
+            android:id="@+id/common_problem_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/px20"
+            android:text="@string/common_problem_title"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/textSize17"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/close_bt"
+            android:layout_width="@dimen/px20"
+            android:layout_height="@dimen/px20"
+            android:layout_marginTop="@dimen/px18"
+            android:layout_marginRight="@dimen/px15"
+            android:background="@android:color/transparent"
+            android:src="@mipmap/ic_clear"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/common_problem_list"
+            android:layout_width="@dimen/px0"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/px20"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/common_problem_title" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/common_problem_robot_animation"
+        android:layout_width="@dimen/px120"
+        android:layout_height="@dimen/px150"
+        android:layout_marginLeft="@dimen/px20"
+        android:layout_marginBottom="@dimen/px20"
+        android:scaleType="fitCenter"
+        android:src="@drawable/wink_speak_animation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/common_problem_answer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px20"
+        android:layout_marginBottom="@dimen/px30"
+        android:background="@drawable/home_msg_bg"
+        android:ellipsize="end"
+        android:lineSpacingExtra="8dp"
+        android:maxWidth="@dimen/px280"
+        android:maxLines="3"
+        android:minWidth="@dimen/px280"
+        android:padding="@dimen/px15"
+        android:textColor="#FFFFFFFF"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/common_problem_robot_animation" />
+</androidx.constraintlayout.widget.ConstraintLayout>

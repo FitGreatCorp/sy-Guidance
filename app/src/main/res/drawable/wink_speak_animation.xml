@@ -5,13 +5,7 @@
         android:drawable="@drawable/wink_speak_1"
         android:duration="800" />
     <item
-        android:drawable="@drawable/wink_speak_2"
-        android:duration="800" />
-    <item
         android:drawable="@drawable/wink_speak_3"
-        android:duration="800" />
-    <item
-        android:drawable="@drawable/wink_speak_4"
         android:duration="800" />
     <item
         android:drawable="@drawable/wink_speak_5"

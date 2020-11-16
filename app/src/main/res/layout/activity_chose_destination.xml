@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/chose_destination_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/chose_destination_map_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="fitXY"
+        android:src="@mipmap/img_map_back"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/reception_area_bt"
+        android:layout_width="@dimen/px50"
+        android:layout_height="@dimen/px60"
+        android:layout_marginLeft="@dimen/px320"
+        android:background="@android:color/transparent"
+        android:drawableTop="@mipmap/ic_map_location_nor"
+        android:drawablePadding="@dimen/px5"
+        android:text="@string/reception_area_title"
+        android:textSize="@dimen/textSize13"
+        android:layout_marginTop="@dimen/px210"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+    <Button
+        android:id="@+id/nurse_desk_bt"
+        android:layout_width="@dimen/px50"
+        android:layout_height="@dimen/px60"
+        android:layout_marginLeft="@dimen/px400"
+        android:background="@android:color/transparent"
+        android:drawableTop="@mipmap/ic_map_location_nor"
+        android:drawablePadding="@dimen/px5"
+        android:text="@string/nurse_desk_title"
+        android:textSize="@dimen/textSize13"
+        android:layout_marginTop="@dimen/px330"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+    <Button
+        android:layout_width="@dimen/px50"
+        android:layout_height="@dimen/px60"
+        android:layout_marginLeft="@dimen/px220"
+        android:background="@android:color/transparent"
+        android:drawableTop="@mipmap/ic_map_location_nor"
+        android:drawablePadding="@dimen/px5"
+        android:text="@string/pharmacy_title"
+        android:textSize="@dimen/textSize13"
+        android:layout_marginTop="@dimen/px180"
+        app:layout_constraintLeft_toRightOf="@+id/reception_area_bt"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+    <Button
+        android:layout_width="@dimen/px50"
+        android:layout_height="@dimen/px60"
+        android:layout_marginLeft="@dimen/px220"
+        android:background="@android:color/transparent"
+        android:drawableTop="@mipmap/ic_map_location_nor"
+        android:drawablePadding="@dimen/px5"
+        android:text="@string/restroom_title"
+        android:textSize="@dimen/textSize13"
+        android:layout_marginTop="@dimen/px330"
+        app:layout_constraintLeft_toRightOf="@+id/nurse_desk_bt"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+</androidx.constraintlayout.widget.ConstraintLayout>

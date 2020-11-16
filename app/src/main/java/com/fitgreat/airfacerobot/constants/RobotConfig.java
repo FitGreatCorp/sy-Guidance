@@ -177,7 +177,7 @@ public interface RobotConfig {
     /**
      * SP存储默认编码
      */
-    int DEFAULT_POSITION = 00;
+    int DEFAULT_POSITION = 0;
     /**
      * 音量键显示
      */
@@ -215,4 +215,14 @@ public interface RobotConfig {
      * 当前显示语言种类
      */
     String CURRENT_LANGUAGE = "current_language";
+
+    /**
+     * 当前机器人工作流程状态
+     * 执行引导工作流 111  执行自动回充工作流  222
+     */
+    String CURRENT_WORK_STATUS_TAG = "current_work_status_tag";
+    /**
+     * 常见问题选择题目编号
+     */
+    String CHOOSE_COMMON_PROBLEM_POSITION = "choose_common_problem_position";
 }

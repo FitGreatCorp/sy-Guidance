@@ -264,37 +264,6 @@
         app:layout_constraintLeft_toRightOf="@+id/home_central_circle"
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout_me_want_go" />
 
-    <!--    <RadioGroup-->
-    <!--        android:id="@+id/robot_language_radiogroup"-->
-    <!--        android:layout_width="@dimen/px120"-->
-    <!--        android:layout_height="@dimen/px39"-->
-    <!--        android:layout_marginRight="@dimen/px20"-->
-    <!--        android:layout_marginBottom="@dimen/px15"-->
-    <!--        android:background="@drawable/square_back_blue"-->
-    <!--        android:orientation="horizontal"-->
-    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--        app:layout_constraintRight_toLeftOf="@+id/bt_home_setting">-->
-
-    <!--        <RadioButton-->
-    <!--            android:id="@+id/language_chinese"-->
-    <!--            android:layout_width="@dimen/px0"-->
-    <!--            android:layout_height="match_parent"-->
-    <!--            android:layout_weight="1"-->
-    <!--            android:background="@drawable/switch_language_selector"-->
-    <!--            android:button="@null"-->
-    <!--            android:gravity="center"-->
-    <!--            android:text="中" />-->
-
-    <!--        <RadioButton-->
-    <!--            android:id="@+id/language_english"-->
-    <!--            android:layout_width="@dimen/px0"-->
-    <!--            android:layout_height="match_parent"-->
-    <!--            android:layout_weight="1"-->
-    <!--            android:background="@drawable/switch_language_selector"-->
-    <!--            android:button="@null"-->
-    <!--            android:gravity="center"-->
-    <!--            android:text="En" />-->
-    <!--    </RadioGroup>-->
     <LinearLayout
         android:id="@+id/robot_language_linearLayout"
         android:layout_width="@dimen/px120"

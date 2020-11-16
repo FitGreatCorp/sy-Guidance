@@ -33,19 +33,23 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
@@ -125,7 +129,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
 
             @Override
@@ -175,13 +178,13 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             BusinessRequest.postStringRequest(JSON.toJSONString(parameterMap), ApiRequestUrl.GET_ONE_MAP, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    LogUtils.e("robotInfo", "获取地图,导航位置信息失败-->" + e.getMessage());
+                    LogUtils.e(TAG, "获取地图,导航位置信息失败-->" + e.getMessage());
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d("robotInfo", "获取地图,导航位置信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
+                    LogUtils.d(TAG, "获取地图,导航位置信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         String type = jsonObject.getString("type");
@@ -196,7 +199,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                                 handNavigationPointCash(msgObj);
                                 //获取执行任务数据
                                 getOperationList(robotInfo.getF_HospitalId());
-                                LogUtils.json("robotInfo", "获取导航地点信息locationList->" + JSON.toJSONString(locationList));
+                                LogUtils.json(TAG, "获取导航地点信息locationList->" + JSON.toJSONString(locationList));
                             }
                         } else {
                             mView.getLocationFailure(msg);
@@ -218,13 +221,13 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         BusinessRequest.postStringRequest(JSON.toJSONString(parameterMap), ApiRequestUrl.GET_OPERATION_LIST, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                LogUtils.e("robotInfo", "onError:获取执行任务列表信息失败-->" + e.getMessage());
+                LogUtils.e(TAG, "onError:获取执行任务列表信息失败-->" + e.getMessage());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String stringResponse = response.body().string();
-                LogUtils.json("robotInfo", "获取执行任务列表信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
+                LogUtils.json(TAG, "获取执行任务列表信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
                 try {
                     JSONObject msbObj = new JSONObject(stringResponse);
                     String type = msbObj.getString("type");
@@ -320,63 +323,11 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         }
         //地图信息缓存
         String mapString = msgObj.getString("map");
-        LogUtils.json("mapString", mapString);
+        LogUtils.json(TAG, mapString);
         SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, mapString);
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
-        //获取自动回充工作流
-        automaticRechargeWorkflow("charge");
-        //获取引导讲解工作流
-        automaticRechargeWorkflow("guide");
     }
-
-    /**
-     * 获取自动回充工作流信息    charge 自动回充
-     * guide    引导流程类型
-     */
-    public static void automaticRechargeWorkflow(String workflowType) {
-        //医院地图信息
-        String mapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
-        if (mapInfoString != null) {
-            //解析地图信息获取对象
-            MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
-            LogUtils.d(TAG, "获取特定工作流");
-            HashMap<String, String> param = new HashMap<>();
-            param.put("departmentId", mapEntity.getF_DepartmentId());
-            param.put("mapId", mapEntity.getF_Id());
-            param.put("type", workflowType);
-            LogUtils.json(TAG, JSON.toJSONString(param));
-            BusinessRequest.getRequestWithParam(param, ApiRequestUrl.SPECIFIC_WORK_FLOM, new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    LogUtils.e(TAG, "获取特定工作流失败: " + e.toString());
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String stringResponse = response.body().string();
-                    LogUtils.d(TAG, "获取特定工作流成功: " + stringResponse);
-                    try {
-                        JSONObject jsonObject = new JSONObject(stringResponse);
-                        if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
-                            String msgString = jsonObject.getString("msg");
-                            if (workflowType.equals("charge")) {
-                                //缓存自动回充工作流信息到本地
-                                SpUtils.putString(MyApp.getContext(), RECHARGE_SPECIFIC_WORKFLOW, msgString);
-                            } else {
-                                //缓存引导工作流信息到本地
-                                SpUtils.putString(MyApp.getContext(), GUIDE_SPECIFIC_WORKFLOW, msgString);
-                            }
-
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        }
-    }
-
     /**
      * 导航  执行任务
      */
