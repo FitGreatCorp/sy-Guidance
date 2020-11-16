@@ -506,7 +506,7 @@ public class SpeechManager {
 
         @Override
         public void onError(int what, final String msg) {
-            LogUtils.e(TAG, "DDSInitListener:onError=>: " + what + ", error: " + msg);
+            LogUtils.e("CommandTodo", "DDSInitListener:onError=>: " + what + ", error: " + msg);
             handler.post(() -> {
                 Toast.makeText(MyApp.getContext(), msg, Toast.LENGTH_SHORT).show();
             });
@@ -525,13 +525,8 @@ public class SpeechManager {
         @Override
         public void onAuthFailed(final String errId, final String error) {
             LogUtils.e(TAG, "DDSAuthListener:onAuthFailed=>: " + errId + ", error:" + error);
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MyApp.getContext(),
-                            "授权错误:" + errId + ":\n" + error + "\n请查看手册处理", Toast.LENGTH_SHORT).show();
-                }
-            });
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(MyApp.getContext(),
+                    "授权错误:" + errId + ":\n" + error + "\n请查看手册处理", Toast.LENGTH_SHORT).show());
         }
     };
 

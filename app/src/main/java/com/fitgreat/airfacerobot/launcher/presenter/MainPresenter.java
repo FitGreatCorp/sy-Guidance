@@ -70,7 +70,7 @@ import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE
 public class MainPresenter extends BasePresenterImpl<MainView> {
     private List<LocationEntity> locationList = new ArrayList<>();
     private List<OperationInfo> operationInfosList = new ArrayList<>();
-    private static final String TAG = "LauncherPresenter";
+    private static final String TAG = "MainPresenter";
     //当前执行任务信息
     private OperationInfo operationOne;
     //当前导航点信息

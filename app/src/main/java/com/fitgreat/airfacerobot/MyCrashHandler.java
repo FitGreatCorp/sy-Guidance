@@ -62,15 +62,6 @@ public class MyCrashHandler implements Thread.UncaughtExceptionHandler {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        File file = new File(logFilePath);
-//        if (!file.exists()) {
-//            boolean mkdirs = file.mkdirs();
-//            if (mkdirs) {
-//                writeStringToFile(errorMessage, file);
-//            }
-//        } else {
-//            writeStringToFile(errorMessage, file);
-//        }
     }
 
     private void writeStringToFile(final String errorMessage, final File file) {

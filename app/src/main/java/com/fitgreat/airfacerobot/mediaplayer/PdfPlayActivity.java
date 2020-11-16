@@ -42,7 +42,6 @@ public class PdfPlayActivity extends MvpBaseActivity {
     private String accessToken, container, blob, url, instructionId, status, F_Type, operationType, operationProcedureId, instructionName;
     private int totalpage;
     public static PdfPlayActivity instance;
-    private MyDialog myDialog;
     private boolean finished_one = false;
     private int progress = 0;
 
@@ -69,7 +68,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
                     break;
                 case DownloadUtils.DOWNLOAD_FAILED://下载失败
                     //pdf宣教文件下载失败
-                    OperationUtils.saveSpecialLog(instructionName+" FileDownloadFail",(String) msg.obj);
+                    OperationUtils.saveSpecialLog(instructionName + " FileDownloadFail", (String) msg.obj);
                     Toast.makeText(PdfPlayActivity.this, "文件下载失败，请稍后重试！", Toast.LENGTH_SHORT).show();
                     break;
             }
@@ -87,63 +86,21 @@ public class PdfPlayActivity extends MvpBaseActivity {
                 .enableDoubletap(false)
                 .defaultPage(0)
                 .onLoad(nbPages -> {
-
                 })
                 .onPageChange(((page, pageCount) -> totalpage = pageCount))
                 .onPageScroll((page, positionOffset) -> {
                     LogUtils.d(TAG, "onPageScrolled page = " + page);
-
-                    if (myDialog != null) {
-                        myDialog.dismiss();
-                        myDialog = null;
-                    }
-                    myDialog = new MyDialog(PdfPlayActivity.this);
-                    myDialog.setTitle("播放提示");
-                    myDialog.setMessage(instructionName + "播放结束！");
-                    LogUtils.d(TAG, "finished_one = " + finished_one + " , page = " + page + " , totalpage -1 = " + (totalpage - 1));
+                    LogUtils.d("startSpecialWorkFlow", "finished_one = " + finished_one + " , page = " + page + " , totalpage -1 = " + (totalpage - 1)+"  onPageScrolled page = " + page);
                     if ((page == (totalpage - 1)) || (page == (totalpage - 2))) {
+                        finishInstruction("2");
                         if (!finished_one) {
-                            SpeakEvent speakEvent = new SpeakEvent();
-                            speakEvent.setType(MSG_TTS);
-                            speakEvent.setText(instructionName + "播放结束,请点击屏幕上的\"确认\"按钮");
-                            EventBus.getDefault().post(speakEvent);
                             finished_one = true;
                         }
-                        handler.removeCallbacks(goNextPageRunnable);
-                        myDialog.setPositiveOnclicListener("再放一遍", () -> {
-                            myDialog.dismiss();
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    finished_one = false;
-                                }
-                            }, 3000);
-                            SpeakEvent speakEvent = new SpeakEvent();
-                            speakEvent.setType(MSG_TTS_CANCEL);
-                            EventBus.getDefault().post(speakEvent);
-                            pdfView.jumpTo(0);
-                            initPdfView();
-                            if (handler == null) {
-                                handler = new Handler();
-                            }
-                            handler.postDelayed(goNextPageRunnable, pdf_trun_time);
-                        });
-                        myDialog.setNegativeOnclicListener("确认", () -> {
-                            myDialog.dismiss();
-                            SpeakEvent speakEvent = new SpeakEvent();
-                            speakEvent.setType(MSG_TTS_CANCEL);
-                            EventBus.getDefault().post(speakEvent);
-                            finishInstruction("2");
-                        });
-                        myDialog.show();
-                    } else {
-                        myDialog.dismiss();
-                        myDialog = null;
                     }
                 })
                 .onError(t -> {
                     //pdf宣教文件加载失败
-                    OperationUtils.saveSpecialLog(instructionName+" FileError",t.getMessage());
+                    OperationUtils.saveSpecialLog(instructionName + " FileError", t.getMessage());
                 })
                 .onRender((nbPages, pageWidth, pageHeight) -> {
                     if (handler == null) {
@@ -166,12 +123,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
     private void initView() {
         pdfView = findViewById(R.id.pdf_view);
         btn_finish = findViewById(R.id.btn_finish);
-        btn_finish.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finishInstruction("2");
-            }
-        });
+        btn_finish.setOnClickListener(v -> finishInstruction("2"));
     }
 
     /**
@@ -188,15 +140,6 @@ public class PdfPlayActivity extends MvpBaseActivity {
 
     public void finishInstruction(String status) {
         LogUtils.d(TAG, "finishInstruction !!!!!!!!");
-//        if (handler.hasMessages(DOWNLOADING)) {
-//            handler.removeMessages(DOWNLOADING);
-//        }
-//        if (handler.hasMessages(DOWNLOAD_SUCCESS)) {
-//            handler.removeMessages(DOWNLOAD_SUCCESS);
-//        }
-//        if (handler.hasMessages(DOWNLOAD_FAILED)) {
-//            handler.removeMessages(DOWNLOAD_FAILED);
-//        }
         Canceldownload(ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, true);
         if (status.equals("3")) {
             if (downloadingDialog != null) {
@@ -205,13 +148,12 @@ public class PdfPlayActivity extends MvpBaseActivity {
                 }
             }
         }
-        //        更新任务完成状态
+        //更新任务完成状态
         SignalDataEvent instructEnd = new SignalDataEvent();
         instructEnd.setType(MSG_INSTRUCTION_STATUS_FINISHED);
         instructEnd.setInstructionId(instructionId);
         instructEnd.setAction(status);
         EventBus.getDefault().post(instructEnd);
-//        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
@@ -237,8 +179,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(true);
         EventBus.getDefault().post(initUiEvent);
-
-
+        //判断播放pdf文件本地是否已存在,不存在下载播放
         File file = new File(DownloadUtils.DOWNLOAD_PATH + blob);
         if (!file.exists()) {
             if (downloadingDialog == null) {
@@ -246,7 +187,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
             }
             downloadingDialog.show();
             downloadingDialog.setMessage("文件下载中...");
-            DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true,instructionName);
+            DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
         } else {
             url = DownloadUtils.DOWNLOAD_PATH + blob;
             initPdfView();
@@ -259,13 +200,6 @@ public class PdfPlayActivity extends MvpBaseActivity {
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
         EventBus.getDefault().post(initUiEvent);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-//        //        更新任务完成状态
-//        RobotInfoUtils.setRobotRunningStatus("1");
     }
 
     @Override

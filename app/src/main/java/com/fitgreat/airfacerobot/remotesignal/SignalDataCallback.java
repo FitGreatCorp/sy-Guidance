@@ -202,75 +202,75 @@ public class SignalDataCallback extends HubOnDataCallback {
                                 break;
                             case SignalConfig.MSG_TYPE_TASK:  //todo 任务  004
                                 //改变当前机器人状态为操作中
-                                saveRobotstatus(3);
-                                SignalDataEvent tasksuccess = new SignalDataEvent();
-                                tasksuccess.setType(MSG_RECEIVER_TASK_SUCCESS);
-                                EventBus.getDefault().post(tasksuccess);
-                                //更新时间戳
-                                BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
-                                LogUtils.d("startSpecialWorkFlow", "signalMsg.getResult()\t\t"+signalMsg.getResult());
-                                //获取下一步操作
-                                BusinessRequest.getNextStep(signalMsg.getResult(), new Callback() {
-                                    @Override
-                                    public void onFailure(Call call, IOException e) {
-                                        LogUtils.e(TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
-                                    }
-
-                                    @Override
-                                    public void onResponse(Call call, Response response) throws IOException {
-                                        String result = response.body().string();
-                                        try {
-                                            JSONObject baseResObj = new JSONObject(result);
-                                            if (baseResObj.has("type")) {
-                                                String type = baseResObj.getString("type");
-                                                if (type.equals("success")) {
-                                                    String msg = baseResObj.getString("msg");
-                                                    LogUtils.d("startSpecialWorkFlow", "获取到的下一步任务种类\t\tmsg");
-                                                    LogUtils.json("startSpecialWorkFlow", msg);
-                                                    NextOperationData nextOperationData = JsonUtils.decode(msg, NextOperationData.class);
-                                                    if (nextOperationData != null) {
-                                                        if (nextOperationData.getOperationType() == null || !nextOperationData.getOperationType().equals("End")) {
-                                                            SignalDataEvent autoMoveEvent = new SignalDataEvent();
-                                                            autoMoveEvent.setConnectionId(connectionId);
-                                                            autoMoveEvent.setTargetUser(targetUser);
-                                                            autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
-                                                            autoMoveEvent.setInstructionType(nextOperationData.getF_Type());
-                                                            autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
-                                                            autoMoveEvent.setContainer(nextOperationData.getF_Container());
-                                                            autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
-                                                            autoMoveEvent.setProduceId(signalMsg.getResult());
-                                                            autoMoveEvent.setOperationType(nextOperationData.getOperationType());
-                                                            autoMoveEvent.setX(nextOperationData.getF_X());
-                                                            autoMoveEvent.setY(nextOperationData.getF_Y());
-                                                            autoMoveEvent.setE(nextOperationData.getF_Z());
-                                                            boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
-                                                            if (startGuideWorkflowTag){  //当前启动为引导流程
-                                                                //语音播报提示
-                                                                EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
-                                                                //更新提示信息到首页对话记录
-                                                                EventBus.getDefault().post(new NavigationTip("我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
-                                                            }
-                                                            LogUtils.d("startSpecialWorkFlow", "获取到的下一步任务种类\t\tautoMoveEvent");
-                                                            LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
-                                                            if (nextOperationData.getF_Type().equals("Location")) {  //导航移动到某地
-                                                                autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
-                                                            } else { //更新任务指令
-                                                                autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
-                                                            }
-                                                            EventBus.getDefault().post(autoMoveEvent);
-                                                        } else {
-                                                            SignalDataEvent taskendEvent = new SignalDataEvent();
-                                                            taskendEvent.setType(MSG_TASK_END);
-                                                            EventBus.getDefault().post(taskendEvent);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
+//                                saveRobotstatus(3);
+//                                SignalDataEvent tasksuccess = new SignalDataEvent();
+//                                tasksuccess.setType(MSG_RECEIVER_TASK_SUCCESS);
+//                                EventBus.getDefault().post(tasksuccess);
+//                                //更新时间戳
+//                                BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
+//                                LogUtils.d("startSpecialWorkFlow", "signalMsg.getResult()\t\t"+signalMsg.getResult());
+//                                //获取下一步操作
+//                                BusinessRequest.getNextStep(signalMsg.getResult(), new Callback() {
+//                                    @Override
+//                                    public void onFailure(Call call, IOException e) {
+//                                        LogUtils.e(TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
+//                                    }
+//
+//                                    @Override
+//                                    public void onResponse(Call call, Response response) throws IOException {
+//                                        String result = response.body().string();
+//                                        try {
+//                                            JSONObject baseResObj = new JSONObject(result);
+//                                            if (baseResObj.has("type")) {
+//                                                String type = baseResObj.getString("type");
+//                                                if (type.equals("success")) {
+//                                                    String msg = baseResObj.getString("msg");
+//                                                    LogUtils.d("startSpecialWorkFlow", "获取到的下一步任务种类\t\tmsg");
+//                                                    LogUtils.json("startSpecialWorkFlow", msg);
+//                                                    NextOperationData nextOperationData = JsonUtils.decode(msg, NextOperationData.class);
+//                                                    if (nextOperationData != null) {
+//                                                        if (nextOperationData.getOperationType() == null || !nextOperationData.getOperationType().equals("End")) {
+//                                                            SignalDataEvent autoMoveEvent = new SignalDataEvent();
+//                                                            autoMoveEvent.setConnectionId(connectionId);
+//                                                            autoMoveEvent.setTargetUser(targetUser);
+//                                                            autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
+//                                                            autoMoveEvent.setInstructionType(nextOperationData.getF_Type());
+//                                                            autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
+//                                                            autoMoveEvent.setContainer(nextOperationData.getF_Container());
+//                                                            autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
+//                                                            autoMoveEvent.setProduceId(signalMsg.getResult());
+//                                                            autoMoveEvent.setOperationType(nextOperationData.getOperationType());
+//                                                            autoMoveEvent.setX(nextOperationData.getF_X());
+//                                                            autoMoveEvent.setY(nextOperationData.getF_Y());
+//                                                            autoMoveEvent.setE(nextOperationData.getF_Z());
+//                                                            boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
+//                                                            if (startGuideWorkflowTag){  //当前启动为引导流程
+//                                                                //语音播报提示
+//                                                                EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
+//                                                                //更新提示信息到首页对话记录
+//                                                                EventBus.getDefault().post(new NavigationTip("我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
+//                                                            }
+//                                                            LogUtils.d("startSpecialWorkFlow", "获取到的下一步任务种类\t\tautoMoveEvent");
+//                                                            LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
+//                                                            if (nextOperationData.getF_Type().equals("Location")) {  //导航移动到某地
+//                                                                autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
+//                                                            } else { //更新任务指令
+//                                                                autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
+//                                                            }
+//                                                            EventBus.getDefault().post(autoMoveEvent);
+//                                                        } else {
+//                                                            SignalDataEvent taskendEvent = new SignalDataEvent();
+//                                                            taskendEvent.setType(MSG_TASK_END);
+//                                                            EventBus.getDefault().post(taskendEvent);
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+//                                        } catch (JSONException e) {
+//                                            e.printStackTrace();
+//                                        }
+//                                    }
+//                                });
                                 break;
                             case MSG_STOP_TASK:
                                 //改变当前机器人状态为空闲

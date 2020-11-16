@@ -231,6 +231,8 @@ public class RobotBrainService extends Service {
             }
         }
     };
+    private Timer batteryTimer;
+    private TimerTask batteryTimerTask;
 
     @Nullable
     @Override
@@ -496,7 +498,7 @@ public class RobotBrainService extends Service {
                     } else {
                         speechManager.textTtsPlay("当前任务出现异常,我将回原点了", "0");
                         boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
-                        if (startGuideWorkflowTag){
+                        if (startGuideWorkflowTag) {
                             //引导工作流启动标志
                             SpUtils.putBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
                         }
@@ -577,7 +579,7 @@ public class RobotBrainService extends Service {
                     switch (initUiEvent.action) {
                         case "start":
                             if (speechManager != null) {
-//                                speechManager.initialization();
+                                speechManager.initialization();
                             }
                             break;
                         case "stop":
@@ -642,22 +644,34 @@ public class RobotBrainService extends Service {
                 } else {
                     RobotInfoUtils.setRobotRunningStatus("1");
                 }
-                ExecutorManager.getInstance().executeScheduledTask(() -> {
-                    RobotSignalEvent batteryEvent = new RobotSignalEvent(ROS_MSG_BATTERY, "");
-                    batteryEvent.setBattery(jRos.getRobotState().percentage);
-                    batteryEvent.setPowerTechnology(jRos.getRobotState().isUrgent);
-                    batteryEvent.setPowerHealth(jRos.getRobotState().isLocked);
-                    batteryEvent.setConnect(jRos.IsConnected());
-                    batteryEvent.setPowerStatus(jRos.getRobotState().isCharge);
-                    EventBus.getDefault().post(batteryEvent);
-                    LogUtils.json("RobotSignalEvent", JSON.toJSONString(batteryEvent));
-
-                    SignalDataEvent positionEvent = new SignalDataEvent(ROS_MSG_ROBOT_POSITION, "");
-                    positionEvent.setPosition_X(jRos.op_GetPose().x);
-                    positionEvent.setPosition_Y(jRos.op_GetPose().y);
-                    positionEvent.setPosition_Z(jRos.op_GetPose().yaw);
-                    EventBus.getDefault().post(positionEvent);
-                }, 1, 2, TimeUnit.SECONDS);
+                //连续获取电量更新电量状态显示
+                batteryTimer = new Timer();
+                batteryTimerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            RobotSignalEvent batteryEvent = new RobotSignalEvent(ROS_MSG_BATTERY, "");
+                            batteryEvent.setBattery(jRos.getRobotState().percentage);
+                            batteryEvent.setPowerTechnology(jRos.getRobotState().isUrgent);
+                            batteryEvent.setPowerHealth(jRos.getRobotState().isLocked);
+                            batteryEvent.setConnect(jRos.IsConnected());
+                            batteryEvent.setPowerStatus(jRos.getRobotState().isCharge);
+                            EventBus.getDefault().post(batteryEvent);
+                            LogUtils.json("RobotSignalEvent", JSON.toJSONString(batteryEvent));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            LogUtils.e("RobotSignalEvent", "连续获取机器人电量异常:  " + e.getMessage());
+                        }
+                    }
+                };
+                batteryTimer.scheduleAtFixedRate(batteryTimerTask,0,1000);
+//                ExecutorManager.getInstance().executeScheduledTask(() -> {
+//                    SignalDataEvent positionEvent = new SignalDataEvent(ROS_MSG_ROBOT_POSITION, "");
+//                    positionEvent.setPosition_X(jRos.op_GetPose().x);
+//                    positionEvent.setPosition_Y(jRos.op_GetPose().y);
+//                    positionEvent.setPosition_Z(jRos.op_GetPose().yaw);
+//                    EventBus.getDefault().post(positionEvent);
+//                }, 0, 5, TimeUnit.SECONDS);
                 //ros初始化成功
                 SpUtils.putBoolean(MyApp.getContext(), INIT_ROS_KEY_TAG, true);
             }
@@ -1030,12 +1044,12 @@ public class RobotBrainService extends Service {
                 BusinessRequest.updateRobotPosition(position_x, position_y, position_z, new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
-
+                        LogUtils.e("RobotSignalEvent", e.getMessage());
                     }
 
                     @Override
                     public void onResponse(Call call, Response response) {
-                        LogUtils.d(TAG, "response = " + response);
+                        LogUtils.d("RobotSignalEvent", "response = " + response);
                     }
                 });
                 break;
@@ -1347,6 +1361,7 @@ public class RobotBrainService extends Service {
                                         pdfintent.putExtra("operationType", operationType);
                                         pdfintent.putExtra("operationProcedureId", produceId);
                                         handler.postDelayed(() -> startActivity(pdfintent), 2000);
+                                        LogUtils.d("startSpecialWorkFlow", "开始播放pdf资料任务\t\t");
                                     } else if (operationType.equals("4")) {
                                         speakTipsFuture = ExecutorManager.getInstance().executeScheduledTask(speakTipsRunnable, 2, SpUtils.getInt(RobotBrainService.this, "de_time", 10), TimeUnit.SECONDS);
                                         taskVideoCall = false;
@@ -1365,7 +1380,6 @@ public class RobotBrainService extends Service {
                                                 EventBus.getDefault().post(new NavigationTip("我正在自动回充中!"));
                                             }
                                         }, 2000);
-
                                     } else if (operationType.equals("6")) {
                                         taskVideoCall = true;
                                         instruction_status = "2";
@@ -1434,77 +1448,16 @@ public class RobotBrainService extends Service {
                                 currentNavigationX = nextOperationData.getF_X();
                                 currentNavigationY = nextOperationData.getF_Y();
                                 currentNavigationZ = nextOperationData.getF_Z();
-                                waiteTimer = new Timer();
-                                waiteTimerTask = new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        countdownTip++;
-                                        if (countdownTip == 15) {
-                                            speechManager.textTtsPlay("请确认是否需要带你前往" + currentNavigationDestination, "0");
-                                            //更新显示语音数据到首页
-                                            EventBus.getDefault().post(new NavigationTip("请确认是否需要带你前往" + currentNavigationDestination));
-                                            Intent intent = new Intent(MyApp.getContext(), DialogActivity.class);
-                                            intent.putExtra(BASE_DIALOG_TITLE, "引导讲解");
-                                            intent.putExtra(BASE_DIALOG_CONTENT, "请确认是否继续进行后续任务?");
-                                            intent.putExtra(BASE_DIALOG_YES, "确认");
-                                            intent.putExtra(BASE_DIALOG_NO, "取消");
-                                            startActivity(intent);
-                                            LogUtils.d("startSpecialWorkFlow", "弹窗提示导航去下一个地点");
-                                        } else {
-                                            int carryOnBootTag = SpUtils.getInt(getContext(), WHETHER_CARRY_ON_BOOT, 0);
-                                            //根据提示弹窗的选择是否继续去下一个导航地点
-                                            if (carryOnBootTag != 0) {
-                                                waiteTimer.cancel();
-                                                waiteTimerTask.cancel();
-                                                countdownTip = 0;
-                                                if (carryOnBootTag == 100) {  //继续导航去下一个地点
-                                                    SpUtils.putInt(getContext(), WHETHER_CARRY_ON_BOOT, 0);
-                                                    ExecutorManager.getInstance().executeTask(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            jRos.op_setAutoMove((byte) 1, Double.valueOf(nextOperationData.getF_X()), Double.valueOf(nextOperationData.getF_Y()), Double.valueOf(nextOperationData.getF_Z()));
-                                                        }
-                                                    });
-                                                    instruction_status = "1";
-                                                    BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
-                                                    LogUtils.d("startSpecialWorkFlow", "下一个导航地点任务弹窗提示选择确定");
-                                                } else if (carryOnBootTag == 200) {  //取消当前任务,返回原点冲电
-                                                    SpUtils.putInt(getContext(), WHETHER_CARRY_ON_BOOT, 0);
-                                                    cancelTask();
-                                                }
-                                            }
-                                            //1分钟后  回到原点冲电
-                                            if (countdownTip == 60) {
-                                                waiteTimer.cancel();
-                                                waiteTimerTask.cancel();
-                                                countdownTip = 0;
-                                                cancelTask();
-                                            }
-                                        }
-                                    }
-                                };
-                                waiteTimer.schedule(waiteTimerTask, 0, 1000);
+                                instruction_status = "1";
+                                BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                             } else if (instructionType.equals("Operation")) {
                                 saveRobotstatus(3);
-                                Intent videointent = new Intent(RobotBrainService.this, VideoPlayActivity.class);
-                                videointent.putExtra("container", container);
-                                videointent.putExtra("blob", fileUrl);
-                                videointent.putExtra("instructionId", instructionId);
-                                videointent.putExtra("status", instruction_status);
-                                videointent.putExtra("instructionName", instructionName);
-                                videointent.putExtra("F_Type", instructionType);
-                                videointent.putExtra("operationType", operationType);
-                                videointent.putExtra("operationProcedureId", produceId);
-                                handler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        startActivity(videointent);
-                                    }
-                                }, 2000);
+                                instruction_status = "1";
+                                BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                             }
                         } else if (instructionType.equals("End")) {   //引导流程结束
                             boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
-                            if (startGuideWorkflowTag){
+                            if (startGuideWorkflowTag) {
                                 //引导工作流启动标志
                                 SpUtils.putBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
                             }

@@ -201,16 +201,6 @@ public class RobotInitActivity extends MvpBaseActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-//        if (DDS.getInstance().getAgent() == null) {
-//            LogUtils.e(TAG, "onStart agent is null, return ...");
-//            return;
-//        }
-//        EventBus.getDefault().post(new ActionEvent(REGISTERED_DDS_OBSERVER, ""));
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (commonTipDialog != null && commonTipDialog.isShowing()) {
@@ -236,7 +226,7 @@ public class RobotInitActivity extends MvpBaseActivity {
 
     private void initVoice() {
         //初始化DDS
-//        EventBus.getDefault().post(new InitUiEvent(RobotConfig.INIT_TYPE_VOICE, "start"));
+        EventBus.getDefault().post(new InitUiEvent(RobotConfig.INIT_TYPE_VOICE, "start"));
         EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_VOICE_PROGRESS, "100"));
     }
 

@@ -1,17 +1,17 @@
 package com.fitgreat.airfacerobot.chosedestination;
 
 import android.widget.RelativeLayout;
-
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.automission.adapter.OperationAdapter;
 import com.fitgreat.airfacerobot.automission.view.AutoMissionView;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
+import com.fitgreat.airfacerobot.launcher.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
-
+import org.greenrobot.eventbus.EventBus;
 import java.util.List;
-
 import butterknife.BindView;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 
 /**
  * 选择我要去目的地页面
@@ -36,6 +36,10 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
     @Override
     public void initData() {
+        //显示悬浮窗
+        InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
+        initUiEvent.setHideFloatBall(false);
+        EventBus.getDefault().post(initUiEvent);
     }
 
     @Override

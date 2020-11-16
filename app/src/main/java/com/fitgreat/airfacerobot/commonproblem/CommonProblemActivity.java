@@ -13,6 +13,7 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
 import java.util.List;
 import butterknife.BindView;
+import butterknife.OnClick;
 
 /**
  * 常见问题展示选择页面
@@ -41,6 +42,17 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     @Override
     public void initData() {
 
+    }
+
+    @OnClick({R.id.close_bt})
+    public void onclick(View view) {
+        switch (view.getId()) {
+            case R.id.close_bt: //跳转设置模块
+                finish();
+                break;
+            default:
+                break;
+        }
     }
 
     @Override

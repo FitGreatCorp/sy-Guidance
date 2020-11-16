@@ -63,14 +63,14 @@ public class OperationUtils {
     public static void startSpecialWorkFlow(int workFlowType) {
         //获取机器人信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
-        LogUtils.d(TAG,"----启动医院介绍工作流程---"+workFlowType);
+        LogUtils.d("startSpecialWorkFlow", "----启动医院介绍工作流程---" + workFlowType);
         if (workFlowType == 1) {
             //自动回充工作流启动标志
             SpUtils.putInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 222);
             //更新自动回充工作流信息
             automaticRechargeWorkflow("charge", robotInfo, workFlowType);
         } else if (workFlowType == 3) {
-            LogUtils.d(TAG,"启动医院介绍工作流程");
+            LogUtils.d("startSpecialWorkFlow", "启动医院介绍工作流程");
             //医院介绍工作流启动标志
             SpUtils.putInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 111);
             //更新引导工作流信息
@@ -88,12 +88,12 @@ public class OperationUtils {
         if (mapInfoString != null) {
             //解析地图信息获取对象
             MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
-            LogUtils.d(TAG, "获取特定工作流");
+            LogUtils.d("startSpecialWorkFlow", "获取特定工作流");
             HashMap<String, String> param = new HashMap<>();
             param.put("departmentId", mapEntity.getF_DepartmentId());
             param.put("mapId", mapEntity.getF_Id());
             param.put("type", workflowType);
-            LogUtils.json(TAG, JSON.toJSONString(param));
+            LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(param));
             BusinessRequest.getRequestWithParam(param, ApiRequestUrl.SPECIFIC_WORK_FLOM, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -103,7 +103,7 @@ public class OperationUtils {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d(TAG, "获取特定工作流成功: " + stringResponse);
+                    LogUtils.d("startSpecialWorkFlow", "获取特定工作流成功: " + stringResponse);
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
@@ -185,20 +185,18 @@ public class OperationUtils {
                                                                             autoMoveEvent.setY(nextOperationData.getF_Y());
                                                                             autoMoveEvent.setE(nextOperationData.getF_Z());
                                                                             int startGuideWorkflowTag = SpUtils.getInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 0);
-                                                                            if (startGuideWorkflowTag == 111) {  //当前启动为引导流程
-                                                                                //语音播报提示
-                                                                                EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
-                                                                                //更新提示信息到首页对话记录
-                                                                                EventBus.getDefault().post(new NavigationTip("我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
-                                                                            }
+//                                                                            if (startGuideWorkflowTag == 111) {  //当前启动为引导流程
+//                                                                                //语音播报提示
+//                                                                                EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
+//                                                                                //更新提示信息到首页对话记录
+//                                                                                EventBus.getDefault().post(new NavigationTip("我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
+//                                                                            }
                                                                             LogUtils.d("startSpecialWorkFlow", "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
                                                                             LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
-//                                                                            if (nextOperationData.getF_Type().equals("Location")) {  //导航移动到某地
-//                                                                                autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
-//                                                                            } else {
-//                                                                                autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
-//                                                                            }
-//                                                                            EventBus.getDefault().post(autoMoveEvent);
+                                                                            if (nextOperationData.getF_Type().equals("Operation")) {  //导航移动到某地
+                                                                                autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
+                                                                            }
+                                                                            EventBus.getDefault().post(autoMoveEvent);
                                                                         }
                                                                     }
                                                                 }
@@ -212,7 +210,7 @@ public class OperationUtils {
                                         } else {
                                             //当前机器人工作流程状态标志初始化,可再次发起引导工作流
                                             SpUtils.putInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 0);
-                                            if (workFlowTypeInt == 2) {  //后台没有配置自动引导流程,需要语音提示
+                                            if (workFlowTypeInt == 3) {  //后台没有配置自动引导流程,需要语音提示
                                                 playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                                                 new Handler(Looper.getMainLooper()).post(() -> {
                                                     ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
@@ -224,7 +222,11 @@ public class OperationUtils {
                                     }
                                 }
                             });
-
+                        }else {  //后台没有配置医院介绍工作流
+                            playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
+                            new Handler(Looper.getMainLooper()).post(() -> {
+                                ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
+                            });
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -276,7 +278,6 @@ public class OperationUtils {
             //换行输出流
             bufferedWriter.write(stringBuilderError.toString());
             bufferedWriter.newLine();
-
 //            Intent uploadLogIntent = new Intent(AirFaceApp.getContext(), UploadLogService.class);
 //            AirFaceApp.getContext().startService(uploadLogIntent);
         } catch (IOException e) {

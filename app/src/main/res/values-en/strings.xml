@@ -70,7 +70,6 @@
     <string name="nurse_desk_title">Nurse desk</string>
     <string name="pharmacy_title">Pharmacy</string>
     <string name="restroom_title">Restroom</string>
-
-
+    <string name="home_prompt_text">Hello, I am Xiaobai, I am very happy to serve you. I can show you the way if you don’t understand, you can also ask me.</string>
     <string name="common_problem_title">Common Problem</string>
 </resources>

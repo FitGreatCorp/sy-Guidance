@@ -149,7 +149,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private int countDownTime = 30;
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
-    private String string_hello;
     //进入设置页面第一次点击标志
     private boolean firstClickTag = false;
     private long firstClickTime;
@@ -237,7 +236,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
     private void requestAlertWindowPermission() {
-        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);  //???
+        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         intent.setData(Uri.parse("package:" + this.getPackageName()));
         startActivityForResult(intent, REQUEST_ALERT_CODE);
         if (handler.hasMessages(REQUEST_ALERT_CODE)) {
@@ -250,8 +249,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     protected void onResume() {
         super.onResume();
         isResume = true;
-        string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "");
-
+        //切换当前机器显示语言选择状态
         String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
         if (currentLanguage.equals("en")) {
             mLanguageEnglish.setSelected(true);
@@ -273,6 +271,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             if (robotInfoData != null) {
                 mRobotName.setText(robotInfoData.getF_Name());
             }
+            //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
+//            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
+            mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
         }
     }
 
@@ -294,6 +295,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             floatWindow.remove();
             floatWindow = null;
         }
+        //应用退出时执行以下操作
         String[] kill = {"su", "-c", "am force-stop " + getPackageName()};
         ShellCmdUtils.execCmd(kill);
         System.gc();
@@ -319,14 +321,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 if (Settings.System.canWrite(getApplicationContext())) {
                     // 5.调用修改Settings屏幕亮度的方法 屏幕亮度值 200
                 } else {
-                    Toast.makeText(MainActivity.this, "您已拒绝修系统Setting的屏幕亮度权限",
-                            Toast.LENGTH_SHORT).show();
+                    ToastUtils.showSmallToast("您已拒绝修系统Setting的屏幕亮度权限");
                 }
             }
         }
     }
 
-    @OnClick({R.id.bt_home_setting, R.id.me_want_go_image, R.id.common_problem_image, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english})
+    @OnClick({R.id.bt_home_setting, R.id.me_want_go_image, R.id.common_problem_image, R.id.hospital_introduction_image, R.id.language_chinese, R.id.language_english})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
@@ -338,8 +339,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case R.id.common_problem_image: //常见问题
                 RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
                 break;
-            case R.id.constraintLayout_hospital_introduction: //院内介绍
-                 OperationUtils.startSpecialWorkFlow(3);
+            case R.id.hospital_introduction_image: //院内介绍
+                OperationUtils.startSpecialWorkFlow(3);
                 break;
             case R.id.language_chinese: //应用语言显示中文
                 setLanguage("zh", mLanguageChinese, mLanguageEnglish);
@@ -359,10 +360,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         if (!firstClickTag) {
             firstClickTag = true;
             //记录第一次点击按钮时间单位为秒
-            firstClickTime = System.currentTimeMillis() ;
+            firstClickTime = System.currentTimeMillis();
         } else {
             //两次点击按钮时间相差大于1秒进入设置模块,小于1秒需再次点击,第一次点击时间重新记录
-            if ((System.currentTimeMillis()- firstClickTime) > 500) {
+            if ((System.currentTimeMillis() - firstClickTime) > 500) {
                 RouteUtils.goToActivity(getContext(), SettingActivity.class);
             }
             firstClickTag = false;
@@ -505,10 +506,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 跳转自检初始化界面
      */
     private void jumpCheckSelf() {
-        //如果栈顶是设置悬浮窗权限界面，执行返回键关闭此页面
-//        if (Utils.isForeground(this, "com.android.settings.Settings$AppDrawOverlaySettingsActivity")) {
-//            RouteUtils.goHome(this);
-//        }
         if (handler.hasMessages(REQUEST_ALERT_CODE)) {
             handler.removeMessages(REQUEST_ALERT_CODE);
         }
@@ -832,11 +829,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 }
                 break;
             case RobotConfig.ROS_MSG_BATTERY:
-                LogUtils.d(TAG, "RobotConfig.ROS_MSG_BATTERY !!!!");
-                if (mTextBattery != null) {
+                if (mTextBattery != null&&isResume) {
                     int battery = Math.round(robotSignalEvent.getBattery());
                     if (robotSignalEvent.isPowerStatus()) { //机器人充电中
-                        LogUtils.d("task_robot_status", "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
+                        LogUtils.d("RobotSignalEvent", "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
                         SpUtils.putBoolean(getContext(), "isCharge", true);
                         if (SpUtils.getBoolean(getContext(), "isVideocall", false)) {  //机器人视频中
                             saveRobotstatus(4);
@@ -858,8 +854,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                             if (!RobotInfoUtils.getRobotRunningStatus().equals("3") && !RobotInfoUtils.getRobotRunningStatus().equals("6")) {  //没充电时,机器人当前状态不为"执行操作中"  "升级中" 时切换为 "空闲"
                                 saveRobotstatus(1);
                             }
-                            LogUtils.d("task_robot_status", "机器人没有充电,当前机器人状态:,    " + RobotInfoUtils.getRobotRunningStatus());
                         }
+                        LogUtils.d("RobotSignalEvent", "机器人没有充电,当前机器人状态: " + RobotInfoUtils.getRobotRunningStatus() + "  当前机器人电量:  " + battery);
                         if (battery <= 20) {
                             mBatteryImg.setImageLevel(0);
                         } else if (battery <= 40) {
@@ -873,11 +869,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         }
                     }
                     mTextBattery.setText(battery + "%");
-                    LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus() + "---当前机器人电量---" + battery);
                 }
-                LogUtils.d(TAG, "PowerHealth() ====== " + robotSignalEvent.getPowerHealth());
-                boolean isLock = robotSignalEvent.getPowerHealth();
-                LogUtils.d(TAG, "isLock = " + isLock);
                 break;
             default:
                 break;
@@ -894,7 +886,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             LogUtils.d(TAG, "showBackCommandData:取消任务指令,当前机器人状态  " + RobotInfoUtils.getRobotRunningStatus());
             if (!RobotInfoUtils.getRobotRunningStatus().equals("1")) {//机器人空闲时不接收取消指令
                 EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "确定取消当前任务吗?"));
-//                promptTerminationTask();
             }
         }
     }

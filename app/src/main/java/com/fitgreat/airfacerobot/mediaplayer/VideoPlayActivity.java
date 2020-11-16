@@ -3,6 +3,7 @@ package com.fitgreat.airfacerobot.mediaplayer;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
@@ -74,7 +75,7 @@ public class VideoPlayActivity extends MvpBaseActivity {
                     break;
                 case DownloadUtils.DOWNLOAD_FAILED://下载失败
                     //视频宣教文件下载失败
-                    OperationUtils.saveSpecialLog(instructionName+" FileDownloadFail",(String) msg.obj);
+                    OperationUtils.saveSpecialLog(instructionName + " FileDownloadFail", (String) msg.obj);
                     Toast.makeText(VideoPlayActivity.this, "下载失败!", Toast.LENGTH_SHORT).show();
                     break;
                 default:
@@ -86,23 +87,25 @@ public class VideoPlayActivity extends MvpBaseActivity {
     private ContentResolver contentResolver;
     private float previousX;
     private float previousY;
+    private File playFile;
 
     @Override
     protected void onResume() {
         super.onResume();
+        //隐藏应用返回首页悬浮按钮
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(true);
         EventBus.getDefault().post(initUiEvent);
 
-        File file = new File(DownloadUtils.DOWNLOAD_PATH + blob);
-        LogUtils.d(TAG, "onResume  file.exists() :" + file.exists());
-        if (!file.exists()) {
+        playFile = new File(DownloadUtils.DOWNLOAD_PATH + blob);
+        LogUtils.d("startSpecialWorkFlow", "onResume  playFile.exists() :" + playFile.exists() + "----播放视频文件路径---" + playFile.getAbsolutePath());
+        if (!playFile.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(this);
             }
             downloadingDialog.show();
             downloadingDialog.setMessage("文件下载中...");
-            DownloadUtils.downloadApp(handler, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true,instructionName);
+            DownloadUtils.downloadApp(handler, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
         } else {
             url = DownloadUtils.DOWNLOAD_PATH + blob;
             initView();
@@ -121,38 +124,21 @@ public class VideoPlayActivity extends MvpBaseActivity {
         File file = new File(url);
         video.setVideoPath(file.getAbsolutePath());
         video.setOnCompletionListener(mp -> {
-//            SpeakEvent speakEvent = new SpeakEvent();
-//            speakEvent.setType(MSG_TTS);
-//            speakEvent.setText(instructionName + "播放结束,请点击屏幕上的\"确认\"按钮");
-//            EventBus.getDefault().post(speakEvent);
-//            if (myDialog != null) {
-//                myDialog.dismiss();
-//                myDialog = null;
-//            }
-//            myDialog = new MyDialog(VideoPlayActivity.this);
-//            myDialog.setTitle("播放提示");
-//            myDialog.setMessage(instructionName + "播放结束！");
-//            myDialog.setPositiveOnclicListener("再放一遍", () -> {
-//                myDialog.dismiss();
-//                SpeakEvent speakEvent1 = new SpeakEvent();
-//                speakEvent1.setType(MSG_TTS_CANCEL);
-//                EventBus.getDefault().post(speakEvent1);
-//                initView();
-//            });
-//            myDialog.setNegativeOnclicListener("确认", () -> {
-//                myDialog.dismiss();
-//                SpeakEvent speakEvent12 = new SpeakEvent();
-//                speakEvent12.setType(MSG_TTS_CANCEL);
-//                EventBus.getDefault().post(speakEvent12);
-//                finishInstruction("2");
-//            });
-//            myDialog.show();
             finishInstruction("2");
         });
         video.setOnErrorListener((mp, what, extra) -> {
-            //视频宣教文件播放失败 秒
-            OperationUtils.saveSpecialLog(instructionName+"FileError","视频宣教播放错误");
-            return false;
+            LogUtils.d("startSpecialWorkFlow", "setOnErrorListener  playFile.exists() :" + playFile.exists() + "----播放视频文件路径---" + playFile.getAbsolutePath());
+            if (!playFile.exists()) {
+                video.stopPlayback();
+                video.setVideoURI(Uri.fromFile(playFile));
+                video.requestFocus();
+                video.start();
+                return true;
+            } else {
+                //视频宣教文件播放失败 秒
+                OperationUtils.saveSpecialLog(instructionName + "FileError", "视频宣教播放错误");
+                return false;
+            }
         });
         video.start();
         volumeBrightView = findViewById(R.id.volume_bright_view);
