@@ -5,16 +5,12 @@ import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
 import com.fitgreat.airfacerobot.launcher.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
-import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
-import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
-import com.fitgreat.airfacerobot.remotesignal.model.SpeakEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
@@ -22,16 +18,13 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.github.barteksc.pdfviewer.PDFView;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
-
+import butterknife.OnClick;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_CANCEL;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;
+import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 
 public class PdfPlayActivity extends MvpBaseActivity {
     private static final String TAG = "PdfPlayActivity";
@@ -44,7 +37,8 @@ public class PdfPlayActivity extends MvpBaseActivity {
     public static PdfPlayActivity instance;
     private boolean finished_one = false;
     private int progress = 0;
-
+    //任务视频播放结束提示次数
+    private int playEndTipTime = 0;
     private DownloadingDialog downloadingDialog;
 
 
@@ -75,6 +69,11 @@ public class PdfPlayActivity extends MvpBaseActivity {
         }
     };
 
+    @Override
+    public int getLayoutResource() {
+        return R.layout.activity_pdf_play;
+    }
+
     /**
      * 加载pdf
      */
@@ -89,12 +88,10 @@ public class PdfPlayActivity extends MvpBaseActivity {
                 })
                 .onPageChange(((page, pageCount) -> totalpage = pageCount))
                 .onPageScroll((page, positionOffset) -> {
-                    LogUtils.d(TAG, "onPageScrolled page = " + page);
-                    LogUtils.d("startSpecialWorkFlow", "finished_one = " + finished_one + " , page = " + page + " , totalpage -1 = " + (totalpage - 1)+"  onPageScrolled page = " + page);
                     if ((page == (totalpage - 1)) || (page == (totalpage - 2))) {
-                        finishInstruction("2");
-                        if (!finished_one) {
-                            finished_one = true;
+                        playEndTipTime++;
+                        if (playEndTipTime==1){
+                            finishInstruction("2");
                         }
                     }
                 })
@@ -109,7 +106,6 @@ public class PdfPlayActivity extends MvpBaseActivity {
                     }
                 })
                 .onPageError((page, t) -> {
-
                 })
                 .onTap(e -> false)
                 .enableAnnotationRendering(false)
@@ -148,6 +144,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
                 }
             }
         }
+        LogUtils.d("startSpecialWorkFlow", "pdf播放结束\t\t");
         //更新任务完成状态
         SignalDataEvent instructEnd = new SignalDataEvent();
         instructEnd.setType(MSG_INSTRUCTION_STATUS_FINISHED);
@@ -202,10 +199,20 @@ public class PdfPlayActivity extends MvpBaseActivity {
         EventBus.getDefault().post(initUiEvent);
     }
 
-    @Override
-    public int getLayoutResource() {
-        return R.layout.activity_pdf_play;
+    @OnClick({R.id.pdf_view})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.pdf_view:  //返回首页,终止当前工作流执行
+                SignalDataEvent instruct = new SignalDataEvent();
+                instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+                instruct.setInstructionId(instructionId);
+                instruct.setAction("-1");
+                EventBus.getDefault().post(instruct);
+                finish();
+                break;
+        }
     }
+
 
     @Override
     public void initData() {

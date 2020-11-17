@@ -17,8 +17,8 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATIN
  * 选择我要去目的地页面
  */
 public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationView, ChoseDestinationPresenter> implements AutoMissionView {
-    @BindView(R.id.chose_destination_container)
-    RelativeLayout mChoseDestinationContainer;
+//    @BindView(R.id.chose_destination_container)
+//    RelativeLayout mChoseDestinationContainer;
 
     private MyDialog myDialog;
     private OperationAdapter operationAdapter;

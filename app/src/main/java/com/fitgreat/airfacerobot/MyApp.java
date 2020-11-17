@@ -47,7 +47,7 @@ public class MyApp extends Application {
         registerLifecycle();
         //app进程唤醒5秒后如果主页没启动，则启动主页
         handler.postDelayed(() -> {
-            LogUtils.d(TAG, "  isMainActivityRunning  ,  " + !isMainActivityRunning);
+            LogUtils.d("startSpecialWorkFlow", "  isMainActivityRunning  ,  " + !isMainActivityRunning);
             if (!isMainActivityRunning) {
 //                if (SpeechManager.isDdsInitialization()) {
 //                    //DDS需要重新初始化
@@ -56,7 +56,7 @@ public class MyApp extends Application {
 //                //终止RobotBrainService服务
 //                stopService(new Intent(this, RobotBrainService.class));
                 //重启应用
-//                RouteUtils.goHome(this);
+                RouteUtils.goHome(this);
             }
         }, 5 * 1000);
         LanguageUtil.changeAppLanguage(this);
@@ -84,6 +84,7 @@ public class MyApp extends Application {
             public void onActivityResumed(Activity activity) {
                 if ("MainActivity".equals(activity.getClass().getSimpleName())) {
                     lowBatteryPromptTag = true;
+//                    isMainActivityRunning = true;
                 }
             }
 

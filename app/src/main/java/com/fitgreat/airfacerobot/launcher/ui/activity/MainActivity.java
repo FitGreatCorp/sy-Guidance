@@ -95,6 +95,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_ON;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.TYPE_CHECK_STATE_DONE;
 
 
@@ -173,6 +174,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
         AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getDrawable();
         animationDrawable.start();
+        //医院介绍工作流启动标志
+        SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
     }
 
     /**
@@ -340,7 +343,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
                 break;
             case R.id.hospital_introduction_image: //院内介绍
-                OperationUtils.startSpecialWorkFlow(3);
+                startIntroductionWorkFlow();
                 break;
             case R.id.language_chinese: //应用语言显示中文
                 setLanguage("zh", mLanguageChinese, mLanguageEnglish);
@@ -351,6 +354,27 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             default:
                 break;
         }
+    }
+
+    /**
+     * 启动院内介绍工作流
+     */
+    private void startIntroductionWorkFlow() {
+        //启动院内介绍工作流程次数限制
+        boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+        if (startIntroductionWorkflowTag) {
+            playShowText("抱歉，机器人当前正在忙碌中，请稍后。。。");
+            return;
+        }
+        OperationUtils.startSpecialWorkFlow(3);
+    }
+
+    /**
+     * 播放并首页展示对应文案
+     */
+    public void playShowText(String content) {
+        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, content));
+        EventBus.getDefault().post(new NavigationTip(content));
     }
 
     /**
@@ -829,7 +853,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 }
                 break;
             case RobotConfig.ROS_MSG_BATTERY:
-                if (mTextBattery != null&&isResume) {
+                if (mTextBattery != null && isResume) {
                     int battery = Math.round(robotSignalEvent.getBattery());
                     if (robotSignalEvent.isPowerStatus()) { //机器人充电中
                         LogUtils.d("RobotSignalEvent", "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
@@ -855,7 +879,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                                 saveRobotstatus(1);
                             }
                         }
-                        LogUtils.d("RobotSignalEvent", "机器人没有充电,当前机器人状态: " + RobotInfoUtils.getRobotRunningStatus() + "  当前机器人电量:  " + battery);
+                        LogUtils.d(TAG, "机器人没有充电,当前机器人状态: " + RobotInfoUtils.getRobotRunningStatus() + "  当前机器人电量:  " + battery);
                         if (battery <= 20) {
                             mBatteryImg.setImageLevel(0);
                         } else if (battery <= 40) {

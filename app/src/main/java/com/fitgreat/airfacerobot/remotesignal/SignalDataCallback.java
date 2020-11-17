@@ -38,24 +38,15 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
-import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_STOP_MOVE;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TASK_END;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.REMOTE_TASK_JOIN_SUCCESS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.START_GUIDE_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_CLOSE_ANDROID_SHARE;
-import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_RECEIVER_TASK_SUCCESS;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_STOP_TASK;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_4_MOVE;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_8_MOVE;
-import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_LIFT_VERTICAL;
 
 /**

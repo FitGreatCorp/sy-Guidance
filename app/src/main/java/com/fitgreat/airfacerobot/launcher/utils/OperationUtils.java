@@ -2,7 +2,6 @@ package com.fitgreat.airfacerobot.launcher.utils;
 
 import android.os.Handler;
 import android.os.Looper;
-
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -10,10 +9,8 @@ import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.launcher.model.ActionEvent;
-import com.fitgreat.airfacerobot.launcher.model.LocationEntity;
 import com.fitgreat.airfacerobot.launcher.model.MapEntity;
 import com.fitgreat.airfacerobot.launcher.model.NavigationTip;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
 import com.fitgreat.airfacerobot.launcher.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
@@ -21,25 +18,19 @@ import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
 import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_WORK_STATUS_TAG;
@@ -49,8 +40,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_SPECIFIC_WORKFLOW;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.START_GUIDE_WORK_FLOW_TAG;
-import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 
 public class OperationUtils {
     private static final String TAG = "OperationUtils";
@@ -72,7 +62,7 @@ public class OperationUtils {
         } else if (workFlowType == 3) {
             LogUtils.d("startSpecialWorkFlow", "启动医院介绍工作流程");
             //医院介绍工作流启动标志
-            SpUtils.putInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 111);
+            SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, true);
             //更新引导工作流信息
             automaticRechargeWorkflow("introduction-sy", robotInfo, workFlowType);
         }

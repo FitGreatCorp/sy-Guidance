@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
 import android.widget.Toast;
@@ -33,6 +34,9 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import butterknife.OnClick;
+
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CANCEL_WORKFLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;
@@ -54,6 +58,13 @@ public class VideoPlayActivity extends MvpBaseActivity {
     private DownloadingDialog downloadingDialog;
     private int progress = 0;
     private VolumeBrightView volumeBrightView;
+    private AudioManager audioManager;
+    private ContentResolver contentResolver;
+    private float previousX;
+    private float previousY;
+    private File playFile;
+    //任务视频播放结束提示次数
+    private int playEndTipTime = 0;
 
     private Handler handler = new Handler() {
         @Override
@@ -83,11 +94,12 @@ public class VideoPlayActivity extends MvpBaseActivity {
             }
         }
     };
-    private AudioManager audioManager;
-    private ContentResolver contentResolver;
-    private float previousX;
-    private float previousY;
-    private File playFile;
+
+    @Override
+    public int getLayoutResource() {
+        return R.layout.activity_video_play;
+    }
+
 
     @Override
     protected void onResume() {
@@ -124,7 +136,10 @@ public class VideoPlayActivity extends MvpBaseActivity {
         File file = new File(url);
         video.setVideoPath(file.getAbsolutePath());
         video.setOnCompletionListener(mp -> {
-            finishInstruction("2");
+            playEndTipTime++;
+            if (playEndTipTime==1){
+                finishInstruction("2");
+            }
         });
         video.setOnErrorListener((mp, what, extra) -> {
             LogUtils.d("startSpecialWorkFlow", "setOnErrorListener  playFile.exists() :" + playFile.exists() + "----播放视频文件路径---" + playFile.getAbsolutePath());
@@ -147,9 +162,24 @@ public class VideoPlayActivity extends MvpBaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        //显示悬浮窗
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
         EventBus.getDefault().post(initUiEvent);
+    }
+
+    @OnClick({R.id.main_video_play})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.main_video_play:  //返回首页,终止当前工作流执行
+                SignalDataEvent instruct = new SignalDataEvent();
+                instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+                instruct.setInstructionId(instructionId);
+                instruct.setAction("-1");
+                EventBus.getDefault().post(instruct);
+                finish();
+                break;
+        }
     }
 
     @Override
@@ -213,15 +243,6 @@ public class VideoPlayActivity extends MvpBaseActivity {
     }
 
     public void finishInstruction(String status) {
-//        if (handler.hasMessages(DOWNLOADING)) {
-//            handler.removeMessages(DOWNLOADING);
-//        }
-//        if (handler.hasMessages(DOWNLOAD_SUCCESS)) {
-//            handler.removeMessages(DOWNLOAD_SUCCESS);
-//        }
-//        if (handler.hasMessages(DOWNLOAD_FAILED)) {
-//            handler.removeMessages(DOWNLOAD_FAILED);
-//        }
         Canceldownload(ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, true);
         if (status.equals("3")) {
             if (downloadingDialog != null) {
@@ -230,21 +251,16 @@ public class VideoPlayActivity extends MvpBaseActivity {
                 }
             }
         }
-        //        更新任务完成状态
+        LogUtils.d("startSpecialWorkFlow", "视频播放结束\t\t");
+        //更新任务完成状态
         SignalDataEvent instructEnd = new SignalDataEvent();
         instructEnd.setType(MSG_INSTRUCTION_STATUS_FINISHED);
         instructEnd.setInstructionId(instructionId);
         instructEnd.setAction(status);
         EventBus.getDefault().post(instructEnd);
-//        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
-    @Override
-    public int getLayoutResource() {
-        return R.layout.activity_video_play;
-
-    }
 
     @Override
     public void initData() {

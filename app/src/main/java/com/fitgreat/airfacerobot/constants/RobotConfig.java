@@ -106,9 +106,9 @@ public interface RobotConfig {
      */
     String REMOTE_TASK_JOIN_SUCCESS = "remote_task_join_success";
     /**
-     * 引导工作流开启标志
+     * 院内介绍工作流开启标志
      */
-    String START_GUIDE_WORK_FLOW_TAG = "start_guide_work_flow_tag";
+    String START_INTRODUCTION_WORK_FLOW_TAG = "start_introduction_work_flow_tag";
     /**
      * 通过语音终止当前任务
      */
@@ -225,4 +225,11 @@ public interface RobotConfig {
      * 常见问题选择题目编号
      */
     String CHOOSE_COMMON_PROBLEM_POSITION = "choose_common_problem_position";
+
+
+    /**
+     * 取消工作流
+     */
+    String CANCEL_WORKFLOW_TAG = "cancel_workflow_tag";
+
 }
