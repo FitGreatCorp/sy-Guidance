@@ -3,17 +3,14 @@ package com.fitgreat.airfacerobot.launcher.widget;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.fitgreat.airfacerobot.R;
-
 import java.util.Timer;
 import java.util.TimerTask;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
 
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_CONTENT;
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_TITLE;
 
 /**
  * 内容带圆形进度条弹窗
@@ -54,8 +51,8 @@ public class DialogProgressActivity extends AppCompatActivity {
         timer.schedule(timerTask, 0, 1000);
         //设置弹窗标题  内容  按钮文字
         Intent intent = getIntent();
-        String dialogTitle = intent.getStringExtra(BASE_DIALOG_TITLE);
-        String dialogContent = intent.getStringExtra(BASE_DIALOG_CONTENT);
+        String dialogTitle = intent.getStringExtra(DIALOG_TITLE);
+        String dialogContent = intent.getStringExtra(DIALOG_CONTENT);
         dialogProgressTitleView.setText(dialogTitle);
         dialogProgressContentView.setText(dialogContent);
     }

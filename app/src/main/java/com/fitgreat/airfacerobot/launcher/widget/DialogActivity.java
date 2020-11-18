@@ -17,10 +17,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.fitgreat.airfacerobot.MyApp.getContext;
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_CONTENT;
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_NO;
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_TITLE;
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_YES;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.WHETHER_CARRY_ON_BOOT;
 
 /**
@@ -67,10 +67,10 @@ public class DialogActivity extends AppCompatActivity {
         timer.schedule(timerTask, 0, 1000);
         //设置弹窗标题  内容  按钮文字
         Intent intent = getIntent();
-        String dialogTitle = intent.getStringExtra(BASE_DIALOG_TITLE);
-        String dialogContent = intent.getStringExtra(BASE_DIALOG_CONTENT);
-        String yesBtContent = intent.getStringExtra(BASE_DIALOG_YES);
-        String noBtContent = intent.getStringExtra(BASE_DIALOG_NO);
+        String dialogTitle = intent.getStringExtra(DIALOG_TITLE);
+        String dialogContent = intent.getStringExtra(DIALOG_CONTENT);
+        String yesBtContent = intent.getStringExtra(DIALOG_YES);
+        String noBtContent = intent.getStringExtra(DIALOG_NO);
         dialogTitleView.setText(dialogTitle);
         dialogContentView.setText(dialogContent);
         choseYesBtView.setText(yesBtContent);

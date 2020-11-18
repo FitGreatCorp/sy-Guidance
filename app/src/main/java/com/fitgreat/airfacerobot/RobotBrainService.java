@@ -188,17 +188,11 @@ public class RobotBrainService extends Service {
     private String currentNavigationZ = null;
     //导航失败重试次数
     private int navigationTimes = 0;
-    private Timer waiteTimer;
-    private TimerTask waiteTimerTask;
     private DuiMessageObserver mMessageObserver = new DuiMessageObserver();// 消息监听器
     private DuiCommandObserver mCommandObserver = new DuiCommandObserver();// 命令监听器
     private DuiUpdateObserver mUpdateObserver = new DuiUpdateObserver();   //更新监听器
-    private Timer batteryTimer;
-    private TimerTask batteryTimerTask;
-    //院内介绍工作流程终止后空闲倒计时 3分钟后再次启动院内介绍工作流
-    private Timer introductionTimer;
-    private TimerTask introductionTimerTask;
-    private int introductionCountdown = 0;
+    private Timer batteryTimer = null;
+    private TimerTask batteryTimerTask = null;
 
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -207,7 +201,6 @@ public class RobotBrainService extends Service {
                 case NET_DELAY_INIT:
                     //网络稳定开始从signal服务初始化
                     if (signalManager != null && !signalManager.isJoinSuccess()) {
-
                         EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_SIGNAL_PROGRESS, "10"));
                         signalManager.getRobotToken();
 
@@ -660,13 +653,6 @@ public class RobotBrainService extends Service {
                     }
                 };
                 batteryTimer.scheduleAtFixedRate(batteryTimerTask, 0, 1000);
-//                ExecutorManager.getInstance().executeScheduledTask(() -> {
-//                    SignalDataEvent positionEvent = new SignalDataEvent(ROS_MSG_ROBOT_POSITION, "");
-//                    positionEvent.setPosition_X(jRos.op_GetPose().x);
-//                    positionEvent.setPosition_Y(jRos.op_GetPose().y);
-//                    positionEvent.setPosition_Z(jRos.op_GetPose().yaw);
-//                    EventBus.getDefault().post(positionEvent);
-//                }, 0, 5, TimeUnit.SECONDS);
                 //ros初始化成功
                 SpUtils.putBoolean(MyApp.getContext(), INIT_ROS_KEY_TAG, true);
             }
@@ -1478,18 +1464,6 @@ public class RobotBrainService extends Service {
     };
 
     /**
-     * 取消终止引导流程
-     */
-    private void cancelTask() {
-        //引导工作流启动标志
-//        SpUtils.putBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
-        String actionIdValue = SpUtils.getString(MyApp.getContext(), GUIDE_WORK_FLOW_ACTION_ID, null);
-        speechManager.textTtsPlay("我要回去啦，下次有事在叫我哦。", "0");
-        instruction_status = "-1";
-        BusinessRequest.UpdateInstructionStatue(actionIdValue, instruction_status, updateInstructionCallback);
-    }
-
-    /**
      * 返回终止任务的信息
      */
     private Callback stopTaskCallback = new HttpMainCallback() {
@@ -1537,26 +1511,12 @@ public class RobotBrainService extends Service {
                     if (startIntroductionWorkflowTag) {
                         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
                         LogUtils.d("startSpecialWorkFlow", "院内介绍工作流取消---启动计时器3分钟后再次启动院内介绍工作流----stopTaskCallback-------");
-                        //医院介绍工作流程结束后,3分钟无操作后再次启动院内介绍工作流
-                        introductionTimer = new Timer();
-                        introductionTimerTask = new TimerTask() {
-                            @Override
-                            public void run() {
-                                introductionCountdown++;
-                                if (introductionCountdown == 180) {
-                                    introductionTimer.cancel();
-                                    introductionTimerTask.cancel();
-                                    LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
-                                    OperationUtils.startSpecialWorkFlow(3);
-                                }
-                            }
-                        };
-                        introductionTimer.schedule(introductionTimerTask, 0, 1000);
                     }
                 }
             }
         }
     };
+
 
     /**
      * 更改机器人状态信息

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import com.fitgreat.airfacerobot.RobotBrainService;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
 import com.fitgreat.airfacerobot.constants.Constants;
+import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.ui.activity.AppListActivity;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
@@ -28,6 +30,7 @@ import com.fitgreat.airfacerobot.launcher.utils.WebPageUtils;
 import com.fitgreat.airfacerobot.launcher.widget.InputDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
+import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.VersionUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
@@ -36,8 +39,12 @@ import com.fitgreat.archmvp.base.util.PhoneInfoUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 
+import org.greenrobot.eventbus.EventBus;
+
 import butterknife.BindView;
 import butterknife.OnClick;
+
+import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 
 /**
  * 设置activity<p>
@@ -90,6 +97,10 @@ public class SettingActivity extends MvpBaseActivity {
     EditText et_hello;
     @BindView(R.id.de_time)
     EditText de_time;
+    @BindView(R.id.drag_mode_radio)
+    TextView dragModeRadio;
+    @BindView(R.id.control_mode_radio)
+    TextView controlModeRadio;
 
     LinearLayout info;
     LinearLayout hello;
@@ -98,6 +109,8 @@ public class SettingActivity extends MvpBaseActivity {
     private MyDialog myDialog;
     private String STRING_HELLO;
     private static final String TAG = "SettingActivity";
+    private Drawable selectedDrawable;
+    private Drawable normalDrawable;
 
     @Override
     public int getLayoutResource() {
@@ -122,13 +135,11 @@ public class SettingActivity extends MvpBaseActivity {
             robotName.setText(robotInfoData.getF_Name());
             robotDepartment.setText(robotInfoData.getF_Account());
         }
-
         robotSerialNumber.setText(RobotInfoUtils.getAirFaceDeviceId());
         robotAppVersion.setText("V " + VersionUtils.getVersionName(this));
         robotOsVersion.setText("Android " + PhoneInfoUtils.getSystemVersion());
         LogUtils.d(TAG, "HARDVERSION = " + RobotInfoUtils.getHardwareVersion());
         robotHardwareVersion.setText("V " + RobotInfoUtils.getHardwareVersion().replace("v", "").replace("V", ""));
-
         if (TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")) {
             Drawable selected = this.getDrawable(R.mipmap.btn_selected);
             selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
@@ -146,15 +157,25 @@ public class SettingActivity extends MvpBaseActivity {
             testRb.setCompoundDrawables(select, null, null, null);
             productRb.setCompoundDrawables(selected, null, null, null);
         }
-
         STRING_HELLO = SpUtils.getString(getContext(), "hello_string", "");
         et_hello.setText(STRING_HELLO);
-
-
         if (SpUtils.getInt(getContext(), "de_time", 10) != 10) {
             de_time.setText(String.valueOf(SpUtils.getInt(getContext(), "de_time", 10)));
         } else {
             de_time.setText("10");
+        }
+        //机器人工作模式状态
+        boolean isControlModel = SpUtils.getBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
+        selectedDrawable = SettingActivity.this.getDrawable(R.mipmap.btn_selected);
+        selectedDrawable.setBounds(0, 0, selectedDrawable.getMinimumWidth(), selectedDrawable.getMinimumHeight());
+        normalDrawable = SettingActivity.this.getDrawable(R.mipmap.btn_select);
+        normalDrawable.setBounds(0, 0, normalDrawable.getMinimumWidth(), normalDrawable.getMinimumHeight());
+        if (isControlModel) {
+            controlModeRadio.setCompoundDrawables(selectedDrawable, null, null, null);
+            dragModeRadio.setCompoundDrawables(normalDrawable, null, null, null);
+        } else {
+            dragModeRadio.setCompoundDrawables(selectedDrawable, null, null, null);
+            controlModeRadio.setCompoundDrawables(normalDrawable, null, null, null);
         }
     }
 
@@ -211,7 +232,7 @@ public class SettingActivity extends MvpBaseActivity {
             , R.id.settings_apps_layout, R.id.settings_date_time_layout, R.id.settings_language_layout,
             R.id.settings_inputmethod_layout, R.id.settings_develop_layout, R.id.settings_reboot_layout,
             R.id.settings_shutdown_layout, R.id.settings_robot_official_website_layout, R.id.settings_wifi_layout,
-            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio})
+            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio, R.id.drag_mode_radio, R.id.control_mode_radio})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.ll_info:
@@ -335,16 +356,13 @@ public class SettingActivity extends MvpBaseActivity {
                             test.putString("type", "environment");
                             test.putString("action", "debug");
                             RouteUtils.sendDaemonBroadcast(SettingActivity.this, Constants.ACTION_DAEMON_MSG, test);
-
                             Drawable selected = SettingActivity.this.getDrawable(R.mipmap.btn_selected);
                             selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
                             Drawable select = SettingActivity.this.getDrawable(R.mipmap.btn_select);
                             select.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
                             testRb.setCompoundDrawables(selected, null, null, null);
                             productRb.setCompoundDrawables(select, null, null, null);
-
                             ToastUtils.showSmallToast("服务器环境已切换，即将重启生效");
-
                             new Handler().postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
@@ -411,11 +429,42 @@ public class SettingActivity extends MvpBaseActivity {
                     myDialog.show();
                 }
                 break;
+            case R.id.drag_mode_radio:  //切换拖动模式
+                switchRobotModel(false, controlModeRadio, dragModeRadio);
+                break;
+            case R.id.control_mode_radio: //切换控制模式
+                switchRobotModel(true, controlModeRadio, dragModeRadio);
+                break;
             default:
                 break;
         }
     }
 
+    /**
+     * 切换机器人模式
+     */
+    public void switchRobotModel(boolean isControl, TextView controlView, TextView dragView) {
+        SignalDataEvent moveMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
+        if (isControl) { //控制模式
+            //更新JRos设置
+            moveMode.setPowerlock(1);
+            EventBus.getDefault().post(moveMode);
+            //更新页面ui显示
+            controlView.setCompoundDrawables(selectedDrawable, null, null, null);
+            dragView.setCompoundDrawables(normalDrawable, null, null, null);
+            //当前为控制模式
+            SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, true);
+        } else { //拖动模式
+            //更新JRos设置
+            moveMode.setPowerlock(2);
+            EventBus.getDefault().post(moveMode);
+            //更新页面ui显示
+            dragView.setCompoundDrawables(selectedDrawable, null, null, null);
+            controlView.setCompoundDrawables(normalDrawable, null, null, null);
+            //当前为拖动模式
+            SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
+        }
+    }
 
     /**
      * 跳转自检初始化界面

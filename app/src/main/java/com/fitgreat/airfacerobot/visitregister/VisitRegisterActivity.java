@@ -9,9 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
 import androidx.annotation.Nullable;
-
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.camera.CameraPreview;
@@ -20,7 +18,6 @@ import com.fitgreat.airfacerobot.launcher.widget.DialogProgressActivity;
 import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 import com.fitgreat.airfacerobot.visitregister.result.VisitRegisterResultActivity;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,12 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import butterknife.BindView;
 import butterknife.OnClick;
-
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_CONTENT;
-import static com.fitgreat.airfacerobot.constants.Constants.BASE_DIALOG_TITLE;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
 
 /**
  * 来访人员人脸数据登记
@@ -148,8 +143,8 @@ public class VisitRegisterActivity extends MvpBaseActivity implements TopTitleVi
             }
         });
         Intent intent = new Intent(MyApp.getContext(), DialogProgressActivity.class);
-        intent.putExtra(BASE_DIALOG_TITLE, "脸谱识别");
-        intent.putExtra(BASE_DIALOG_CONTENT, getString(R.string.dialog_progress_show_content));
+        intent.putExtra(DIALOG_TITLE, "脸谱识别");
+        intent.putExtra(DIALOG_CONTENT, getString(R.string.dialog_progress_show_content));
         startActivityForResult(intent, PROMPT_UPLOAD_TAG);
     }
 

@@ -75,21 +75,21 @@ public interface Constants {
     /**
      * 公用弹窗标题
      */
-    String BASE_DIALOG_TITLE = "base_dialog_title";
+    String DIALOG_TITLE = "dialog_title";
 
     /**
      * 公用弹窗提示内容
      */
-    String BASE_DIALOG_CONTENT = "base_dialog_content";
+    String DIALOG_CONTENT = "dialog_content";
 
     /**
      * 公用弹窗选择按钮是
      */
-    String BASE_DIALOG_YES = "base_dialog_yes";
+    String DIALOG_YES = "dialog_yes";
 
     /**
      * 公用弹窗选择按钮否
      */
-    String BASE_DIALOG_NO = "base_dialog_no";
+    String DIALOG_NO = "dialog_no";
 
 }

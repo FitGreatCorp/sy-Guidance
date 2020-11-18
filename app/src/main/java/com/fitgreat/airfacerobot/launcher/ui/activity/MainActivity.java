@@ -153,6 +153,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     //进入设置页面第一次点击标志
     private boolean firstClickTag = false;
     private long firstClickTime;
+    private Timer introductionTimer;
+    private TimerTask introductionTimerTask;
+    private int introductionCountdown;
 
     @Override
     public int getLayoutResource() {
@@ -252,32 +255,24 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     protected void onResume() {
         super.onResume();
         isResume = true;
-        //切换当前机器显示语言选择状态
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-        if (currentLanguage.equals("en")) {
-            mLanguageEnglish.setSelected(true);
-            mLanguageChinese.setSelected(false);
-        } else if (currentLanguage.equals("zh")) {
-            mLanguageChinese.setSelected(true);
-            mLanguageEnglish.setSelected(false);
+        initResume();
+    }
+
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //取消启动院内介绍工作流3分钟计时
+        if (introductionTimer != null) {
+            introductionTimer.cancel();
+            introductionTimer=null;
         }
-        //jRos初始化状态
-        boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
-        if (rosInitTagState) {
-            if (mPresenter != null) {
-                mPresenter.getNetSignalLevel(this);
-            }
-            //更新本地导航位置,执行任务信息
-            mPresenter.getLocationInfo();
-            //机器人名字显示
-            RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
-            if (robotInfoData != null) {
-                mRobotName.setText(robotInfoData.getF_Name());
-            }
-            //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
-//            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
-            mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
+        if (introductionTimerTask != null) {
+            introductionTimerTask.cancel();
+            introductionTimerTask=null;
         }
+        introductionCountdown = 0;
     }
 
     @Override
@@ -355,7 +350,36 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 break;
         }
     }
-
+    private void initResume() {
+        //切换当前机器显示语言选择状态
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        if (currentLanguage.equals("en")) {
+            mLanguageEnglish.setSelected(true);
+            mLanguageChinese.setSelected(false);
+        } else if (currentLanguage.equals("zh")) {
+            mLanguageChinese.setSelected(true);
+            mLanguageEnglish.setSelected(false);
+        }
+        //jRos初始化状态
+        boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
+        if (rosInitTagState) {
+            if (mPresenter != null) {
+                mPresenter.getNetSignalLevel(this);
+            }
+            //更新本地导航位置,执行任务信息
+            mPresenter.getLocationInfo();
+            //机器人名字显示
+            RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
+            if (robotInfoData != null) {
+                mRobotName.setText(robotInfoData.getF_Name());
+            }
+            //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
+//            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
+            mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
+            //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
+            startIntroductionCountdown();
+        }
+    }
     /**
      * 启动院内介绍工作流
      */
@@ -404,6 +428,27 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         RouteUtils.goHome(MainActivity.this);
         selectButton.setSelected(true);
         normalButton.setSelected(false);
+    }
+
+    /**
+     * 机器人空闲时,启动计时器3分钟后启动院内介绍工作流
+     */
+    public void startIntroductionCountdown() {
+        introductionTimer = new Timer();
+        introductionTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                introductionCountdown++;
+                if (introductionCountdown == 180) {
+                    introductionCountdown = 0;
+                    introductionTimer.cancel();
+                    introductionTimerTask.cancel();
+                    LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
+                    OperationUtils.startSpecialWorkFlow(3);
+                }
+            }
+        };
+        introductionTimer.schedule(introductionTimerTask, 0, 1000);
     }
 
     /**

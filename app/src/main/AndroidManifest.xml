@@ -123,6 +123,10 @@
             android:name=".commonproblem.CommonProblemActivity"
             android:screenOrientation="landscape"
             android:theme="@style/MyTranslucentTheme" />
+        <activity
+            android:name=".launcher.widget.YesOrNoDialogActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/ActivityDialog" />
 
         <service
             android:name=".RobotBrainService"

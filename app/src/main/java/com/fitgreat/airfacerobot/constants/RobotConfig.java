@@ -231,5 +231,8 @@ public interface RobotConfig {
      * 取消工作流
      */
     String CANCEL_WORKFLOW_TAG = "cancel_workflow_tag";
-
+    /**
+     * 机器人是否为控制模式
+     */
+    String IS_CONTROL_MODEL = "is_control_model";
 }
