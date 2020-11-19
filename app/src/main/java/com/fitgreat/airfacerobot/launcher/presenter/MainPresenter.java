@@ -5,9 +5,7 @@ import android.os.Build;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
-
 import androidx.annotation.RequiresApi;
-
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -16,11 +14,10 @@ import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
-import com.fitgreat.airfacerobot.launcher.model.DaemonEvent;
-import com.fitgreat.airfacerobot.launcher.model.LocationEntity;
-import com.fitgreat.airfacerobot.launcher.model.MapEntity;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
-import com.fitgreat.airfacerobot.launcher.model.RobotSignalEvent;
+import com.fitgreat.airfacerobot.model.DaemonEvent;
+import com.fitgreat.airfacerobot.model.LocationEntity;
+import com.fitgreat.airfacerobot.model.OperationInfo;
+import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.launcher.utils.LocalCashUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
@@ -33,7 +30,6 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
@@ -50,22 +46,17 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TASK_END;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_OPERATION_INFO;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 
 /**
  * 启动页数据接口<p>
- *
- * @author zixuefei
- * @since 2020/3/11 0011 10:18
  */
 public class MainPresenter extends BasePresenterImpl<MainView> {
     private List<LocationEntity> locationList = new ArrayList<>();
@@ -75,7 +66,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     private OperationInfo operationOne;
     //当前导航点信息
     private LocationEntity locationOne;
-
 
     /**
      * 检查hardware版本更新
@@ -234,7 +224,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                     String msg = msbObj.getString("msg");
                     if (type.equals("success")) {
                         handOperationCash(msg);
-                        LocalCashUtils.getOperationList();
                     } else {
                         mView.getOperationListFailure(msg);
                     }
@@ -308,16 +297,23 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                 locationEntity.setF_Name(locationObj.getString("F_Name"));
             }
             if (locationObj.has("F_X")) {
-                locationEntity.setF_X(locationObj.getDouble("F_X"));
+                locationEntity.setF_X(locationObj.getString("F_X"));
             }
             if (locationObj.has("F_Y")) {
-                locationEntity.setF_Y(locationObj.getDouble("F_Y"));
+                locationEntity.setF_Y(locationObj.getString("F_Y"));
             }
             if (locationObj.has("F_Z")) {
-                locationEntity.setF_Z(locationObj.getDouble("F_Z"));
+                locationEntity.setF_Z(locationObj.getString("F_Z"));
             }
             if (locationObj.has("F_Memo")) {
                 locationEntity.setF_Memo(locationObj.getString("F_Memo"));
+            }
+            //显示设计完的地图上点坐标
+            if (locationObj.has("S_X")) {
+                locationEntity.setS_X(locationObj.getString("S_X"));
+            }
+            if (locationObj.has("S_Y")) {
+                locationEntity.setS_Y(locationObj.getString("S_Y"));
             }
             locationList.add(locationEntity);
         }
@@ -328,6 +324,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
     }
+
     /**
      * 导航  执行任务
      */

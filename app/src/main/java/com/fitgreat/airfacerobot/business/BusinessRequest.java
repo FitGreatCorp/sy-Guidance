@@ -15,6 +15,7 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -300,7 +301,7 @@ public class BusinessRequest {
     /**
      * post请求,所传参数以form表单的形式上传
      */
-    public static void postFormRequest(HashMap<String, String> paramsMap, String url, Callback callback) {
+    public static void postFormRequest(ConcurrentHashMap<String, String> paramsMap, String url, Callback callback) {
         FormBody.Builder builder = new FormBody.Builder();
         for (String key : paramsMap.keySet()) {
             //追加表单信息
@@ -312,7 +313,7 @@ public class BusinessRequest {
     /**
      * post请求,上传键值对,上传文件
      */
-    public static void postFormAndFileRequest(HashMap<String, String> paramsMap, String url, File file, Callback callback) {
+    public static void postFormAndFileRequest(ConcurrentHashMap<String, String> paramsMap, String url, File file, Callback callback) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
         for (String key : paramsMap.keySet()) {
             //追加表单信息
@@ -326,7 +327,7 @@ public class BusinessRequest {
     /**
      * get请求带参数
      */
-    public static void getRequestWithParam(HashMap<String, String> paramsMap, String url, Callback callback) {
+    public static void getRequestWithParam(ConcurrentHashMap<String, String> paramsMap, String url, Callback callback) {
         RequestManager.startGet(attachHttpGetParams(url, paramsMap), callback);
     }
 
@@ -344,7 +345,7 @@ public class BusinessRequest {
      * @param params
      * @return
      */
-    public static String attachHttpGetParams(String url, HashMap<String, String> params) {
+    public static String attachHttpGetParams(String url, ConcurrentHashMap<String, String> params) {
         Iterator<String> keys = params.keySet().iterator();
         Iterator<String> values = params.values().iterator();
         StringBuffer stringBuffer = new StringBuffer();

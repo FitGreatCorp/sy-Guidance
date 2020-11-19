@@ -200,9 +200,9 @@ public interface RobotConfig {
     String INIT_ROS_KEY_TAG = "init_ros_key_tag";
 
     /**
-     * DDS注册observer
+     * 单点导航任务成功提示
      */
-    String REGISTERED_DDS_OBSERVER = "registered_dds_observer";
+    String NAVIGATION_SUCCESS_TIP_TAG = "navigation_success_tip_tag";
 
     /**
      * 是否继续进行下一个导航任务
@@ -217,10 +217,9 @@ public interface RobotConfig {
     String CURRENT_LANGUAGE = "current_language";
 
     /**
-     * 当前机器人工作流程状态
-     * 执行引导工作流 111  执行自动回充工作流  222
+     * 自动回充工作流程启动状态
      */
-    String CURRENT_WORK_STATUS_TAG = "current_work_status_tag";
+    String AUTOMATIC_RECHARGE_TAG = "automatic_recharge_tag";
     /**
      * 常见问题选择题目编号
      */

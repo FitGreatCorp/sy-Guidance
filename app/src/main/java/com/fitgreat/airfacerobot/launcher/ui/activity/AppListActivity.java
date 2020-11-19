@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
-import com.fitgreat.airfacerobot.launcher.model.AppInfo;
+import com.fitgreat.airfacerobot.model.AppInfo;
 import com.fitgreat.airfacerobot.launcher.ui.adapter.AppListAdapter;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;

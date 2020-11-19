@@ -2,7 +2,7 @@ package com.fitgreat.airfacerobot.aiui;
 
 import android.text.TextUtils;
 
-import com.fitgreat.airfacerobot.launcher.model.IflytekAnswerData;
+import com.fitgreat.airfacerobot.model.IflytekAnswerData;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.iflytek.aiui.AIUIConstant;

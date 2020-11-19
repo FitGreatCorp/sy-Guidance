@@ -52,9 +52,11 @@ public class YesOrNoDialogFragment extends DialogFragment {
         Display defaultDisplay = getDialog().getWindow().getWindowManager().getDefaultDisplay();
         Point sizePoint = new Point();
         defaultDisplay.getSize(sizePoint);
-        attributes.width = (int) ((sizePoint.x) * 0.4);
+        attributes.width = (int) ((sizePoint.x) * 0.44);
         attributes.height = (int) ((sizePoint.y) * 0.35);
         getDialog().getWindow().setAttributes(attributes);
+        //点空白处不能关闭弹窗
+        getDialog().setCanceledOnTouchOutside(false);
         super.onResume();
     }
 
@@ -68,11 +70,13 @@ public class YesOrNoDialogFragment extends DialogFragment {
                 case R.id.chose_no_bt:
                     if (mSelectYesNoListener != null) {
                         mSelectYesNoListener.selectNo();
+                        dismiss();
                     }
                     break;
                 case R.id.chose_yes_bt:
                     if (mSelectYesNoListener != null) {
                         mSelectYesNoListener.selectYes();
+                        dismiss();
                     }
                     break;
             }

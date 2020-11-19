@@ -1,4 +1,4 @@
-package com.fitgreat.airfacerobot.launcher.model;
+package com.fitgreat.airfacerobot.model;
 
 /**
  * 地图信息对象
@@ -33,29 +33,29 @@ public class MapEntity {
      */
 
     private String F_Id;
-    private Object F_CreatorUserId;
+    private String F_CreatorUserId;
     private String F_CreatorTime;
-    private Object F_DeleteUserId;
+    private String F_DeleteUserId;
     private String F_DeleteTime;
-    private Object F_LastModifyUserId;
+    private String F_LastModifyUserId;
     private String F_LastModifyTime;
     private boolean F_DeleteMark;
-    private Object F_Code;
+    private String F_Code;
     private String F_Name;
     private String F_HospitalId;
-    private Object F_Type;
-    private Object F_Floor;
+    private String F_Type;
+    private String F_Floor;
     private String F_DepartmentId;
     private String F_MapUrl;
-    private Object F_MapFileUrl;
-    private Object F_Memo;
+    private String F_MapFileUrl;
+    private String F_Memo;
     private double F_oX;
     private double F_oY;
     private double F_oZ;
     private String F_Resolution;
     private String F_Scaling;
-    private Object Hosptial;
-    private Object Department;
+    private String Hosptial;
+    private String Department;
     private String F_Container;
 
     public String getF_Id() {
@@ -70,7 +70,7 @@ public class MapEntity {
         return F_CreatorUserId;
     }
 
-    public void setF_CreatorUserId(Object F_CreatorUserId) {
+    public void setF_CreatorUserId(String F_CreatorUserId) {
         this.F_CreatorUserId = F_CreatorUserId;
     }
 
@@ -86,7 +86,7 @@ public class MapEntity {
         return F_DeleteUserId;
     }
 
-    public void setF_DeleteUserId(Object F_DeleteUserId) {
+    public void setF_DeleteUserId(String F_DeleteUserId) {
         this.F_DeleteUserId = F_DeleteUserId;
     }
 
@@ -102,7 +102,7 @@ public class MapEntity {
         return F_LastModifyUserId;
     }
 
-    public void setF_LastModifyUserId(Object F_LastModifyUserId) {
+    public void setF_LastModifyUserId(String F_LastModifyUserId) {
         this.F_LastModifyUserId = F_LastModifyUserId;
     }
 
@@ -126,7 +126,7 @@ public class MapEntity {
         return F_Code;
     }
 
-    public void setF_Code(Object F_Code) {
+    public void setF_Code(String F_Code) {
         this.F_Code = F_Code;
     }
 
@@ -150,7 +150,7 @@ public class MapEntity {
         return F_Type;
     }
 
-    public void setF_Type(Object F_Type) {
+    public void setF_Type(String F_Type) {
         this.F_Type = F_Type;
     }
 
@@ -158,7 +158,7 @@ public class MapEntity {
         return F_Floor;
     }
 
-    public void setF_Floor(Object F_Floor) {
+    public void setF_Floor(String F_Floor) {
         this.F_Floor = F_Floor;
     }
 
@@ -178,11 +178,11 @@ public class MapEntity {
         this.F_MapUrl = F_MapUrl;
     }
 
-    public Object getF_MapFileUrl() {
+    public String getF_MapFileUrl() {
         return F_MapFileUrl;
     }
 
-    public void setF_MapFileUrl(Object F_MapFileUrl) {
+    public void setF_MapFileUrl(String F_MapFileUrl) {
         this.F_MapFileUrl = F_MapFileUrl;
     }
 
@@ -190,7 +190,7 @@ public class MapEntity {
         return F_Memo;
     }
 
-    public void setF_Memo(Object F_Memo) {
+    public void setF_Memo(String F_Memo) {
         this.F_Memo = F_Memo;
     }
 
@@ -238,7 +238,7 @@ public class MapEntity {
         return Hosptial;
     }
 
-    public void setHosptial(Object Hosptial) {
+    public void setHosptial(String Hosptial) {
         this.Hosptial = Hosptial;
     }
 
@@ -246,7 +246,7 @@ public class MapEntity {
         return Department;
     }
 
-    public void setDepartment(Object Department) {
+    public void setDepartment(String Department) {
         this.Department = Department;
     }
 

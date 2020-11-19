@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
-import com.fitgreat.airfacerobot.launcher.model.NavigationTip;
+import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.remotesignal.model.SpeakEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;

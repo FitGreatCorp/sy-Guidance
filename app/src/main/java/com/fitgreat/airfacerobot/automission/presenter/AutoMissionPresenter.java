@@ -1,20 +1,19 @@
 package com.fitgreat.airfacerobot.automission.presenter;
 
 import com.alibaba.fastjson.JSON;
-import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.automission.view.AutoMissionView;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
+import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.launcher.utils.LocalCashUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.LogUtils;
-import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;

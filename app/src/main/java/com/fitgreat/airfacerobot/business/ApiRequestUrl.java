@@ -119,7 +119,9 @@ public interface ApiRequestUrl {
     /**
      * 获取机器人地图,导航地点数据
      */
-    String GET_ONE_MAP = ApiDomainManager.getFitgreatDomain() + "/api/robot/map/info";
+//    String GET_ONE_MAP = ApiDomainManager.getFitgreatDomain() + "/api/robot/map/info";
+
+    String GET_ONE_MAP = ApiDomainManager.getFitgreatDomain() + "/api/robot/map/v1/info";
     /**
      * 获取医院操作任务数据
      */
@@ -147,4 +149,9 @@ public interface ApiRequestUrl {
      * 定时上传本地日志文件
      */
     String UPLOAD_LOCAL_LOG = ApiDomainManager.getFitgreatDomain() + "/api/upload/log";
+
+    /**
+     * 获取常见问题列表
+     */
+    String COMMON_PROBLEM_LIST = ApiDomainManager.getFitgreatDomain() + "/api/question/list";
 }

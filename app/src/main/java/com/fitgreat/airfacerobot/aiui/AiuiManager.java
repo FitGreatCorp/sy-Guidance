@@ -11,9 +11,9 @@ import android.text.TextUtils;
 
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.IflytekAnswerData;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
-import com.fitgreat.airfacerobot.launcher.model.RobotSignalEvent;
+import com.fitgreat.airfacerobot.model.IflytekAnswerData;
+import com.fitgreat.airfacerobot.model.InitEvent;
+import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.iflytek.aiui.AIUIAgent;

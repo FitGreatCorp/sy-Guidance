@@ -14,7 +14,7 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.automission.adapter.OperationAdapter;
 import com.fitgreat.airfacerobot.automission.presenter.AutoMissionPresenter;
 import com.fitgreat.airfacerobot.automission.view.AutoMissionView;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
+import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.speech.SpeechManager;

@@ -8,7 +8,7 @@ import android.widget.Toast;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;

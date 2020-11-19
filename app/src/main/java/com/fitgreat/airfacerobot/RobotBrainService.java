@@ -29,13 +29,14 @@ import com.fitgreat.airfacerobot.aiui.PlayTtsTask;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.headeractuator.HeaderActuatorManager;
-import com.fitgreat.airfacerobot.launcher.model.ActionEvent;
-import com.fitgreat.airfacerobot.launcher.model.DaemonEvent;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
-import com.fitgreat.airfacerobot.launcher.model.RobotSignalEvent;
-import com.fitgreat.airfacerobot.launcher.model.NavigationTip;
+import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.DaemonEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
+import com.fitgreat.airfacerobot.model.RobotSignalEvent;
+import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.service.UploadLogService;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
+import com.fitgreat.airfacerobot.launcher.widget.YesOrNoDialogActivity;
 import com.fitgreat.airfacerobot.mediaplayer.PdfPlayActivity;
 import com.fitgreat.airfacerobot.mediaplayer.VideoPlayActivity;
 import com.fitgreat.airfacerobot.remotesignal.SignalConfig;
@@ -90,11 +91,17 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.fitgreat.airfacerobot.MyApp.getContext;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
+import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_TYPE_DDS_SUCCESS;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_POWER_LOCK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
@@ -333,10 +340,10 @@ public class RobotBrainService extends Service {
                                 if (!workFlowString.equals("null") && MyApp.isNeedLowBatteryPrompt()) {   //服务端配置自动回充工作流
                                     //电量低于20% 语音播报"当前电量过低，我要去充电了"
                                     if (speechManager != null) {
-                                        speechManager.textTtsPlay(getResources().getString(R.string.chargereminder), "0");
+//                                        speechManager.textTtsPlay(getResources().getString(R.string.chargereminder), "0");
                                     }
                                     //弹窗提示回充,倒计时30秒,结束后开始回充
-                                    EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
+//                                    EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
                                 }
                             }
                         }
@@ -485,11 +492,6 @@ public class RobotBrainService extends Service {
                         });
                     } else {
                         speechManager.textTtsPlay("当前任务出现异常,我将回原点了", "0");
-//                        boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
-//                        if (startGuideWorkflowTag) {
-//                            //引导工作流启动标志
-//                            SpUtils.putBoolean(MyApp.getContext(), START_GUIDE_WORK_FLOW_TAG, false);
-//                        }
                         //取消引导流程任务
                         String actionIdValue = SpUtils.getString(MyApp.getContext(), GUIDE_WORK_FLOW_ACTION_ID, null);
                         if (actionIdValue != null) {
@@ -504,13 +506,22 @@ public class RobotBrainService extends Service {
                     currentNavigationZ = null;
                     //导航失败重试次数
                     navigationTimes = 0;
-                    //语音播报到达目的地
-                    speechManager.textTtsPlay("我已到达" + instructionName, "0");
-                    //更新提示信息到首页对话记录
-                    EventBus.getDefault().post(new NavigationTip("我已到达" + instructionName));
+                    //更新导航任务状态
                     instruction_status = "2";
-                    LogUtils.d("navigation_arrived", "instructionId = " + instructionId + " 导航成功到达  " + instructionName);
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                    //自动回充工作流启动后,导航到目的地后不弹窗提示
+                    boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                    if (!startRechargeTag) {
+                        //导航成功弹窗语音提示
+                        Intent intent = new Intent(MyApp.getContext(), YesOrNoDialogActivity.class);
+                        intent.putExtra(DIALOG_TITLE, "提示");
+                        intent.putExtra(DIALOG_CONTENT, "已到达\t" + instructionName + "\t是否还需要其他服务?");
+                        intent.putExtra(DIALOG_YES, "需要");
+                        intent.putExtra(DIALOG_NO, "不需要");
+                        intent.putExtra("instructionName", instructionName);
+                        startActivity(intent);
+                    }
+                    LogUtils.d("startSpecialWorkFlow", "导航成功,自动回充工作流启动状态  " + startRechargeTag);
                     break;
                 case "parking_success":         //充电成功
                     speechManager.textTtsPlay("充电成功!", "0");
@@ -526,6 +537,8 @@ public class RobotBrainService extends Service {
                     });
                     instruction_status = "2";
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                    //自动回充工作流结束
+                    SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                     break;
                 case "parking_timeout":         //充电失败
                     LogUtils.d(TAG, "parking_success !!!!!!!!!!!!!!!!!!");
@@ -534,6 +547,8 @@ public class RobotBrainService extends Service {
                     EventBus.getDefault().post(new NavigationTip("充电失败，未扫描到充电桩!"));
                     instruction_status = "-1";
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                    //自动回充工作流结束
+                    SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                     break;
             }
         }
@@ -646,6 +661,12 @@ public class RobotBrainService extends Service {
                             batteryEvent.setPowerStatus(jRos.getRobotState().isCharge);
                             EventBus.getDefault().post(batteryEvent);
                             LogUtils.json("RobotSignalEvent", JSON.toJSONString(batteryEvent));
+                            //保存机器人工作模式到本地
+                            if (jRos.getRobotState().isLocked) {
+                                SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, true);
+                            } else {
+                                SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                             LogUtils.e("RobotSignalEvent", "连续获取机器人电量异常:  " + e.getMessage());
@@ -914,7 +935,6 @@ public class RobotBrainService extends Service {
                 currentNavigationZ = signalDataEvent.getE();
                 LogUtils.d("startSpecialWorkFlow", "开始导航任务");
                 LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(signalDataEvent));
-//                handler.sendEmptyMessageDelayed(MSG_SPEAK_POSITION,1000);
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -943,7 +963,7 @@ public class RobotBrainService extends Service {
                 connectionId = signalDataEvent.getConnectionId();
                 instructionId = signalDataEvent.getInstructionId();
                 instruction_status = "1";
-                LogUtils.d(TAG, "MSG_UPDATE_INSTARUCTION_STATUS !!!!!!!!!!!!           instructionType = " + instructionType + " , operationType = " + operationType + " ,instructionId = " + instructionId);
+                LogUtils.d("startSpecialWorkFlow", "MSG_UPDATE_INSTARUCTION_STATUS !!!!!!!!!!!!           instructionType = " + instructionType + " , operationType = " + operationType + " ,instructionId = " + instructionId);
                 BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                 break;
             case MSG_STOP_MOVE:
@@ -1284,7 +1304,7 @@ public class RobotBrainService extends Service {
     private Callback updateInstructionCallback = new Callback() {
         @Override
         public void onFailure(Call call, IOException e) {
-            LogUtils.e("update_instruction", "onFailure : " + e.toString());
+            LogUtils.e("startSpecialWorkFlow", "onFailure : " + e.toString());
         }
 
         @Override
@@ -1432,8 +1452,8 @@ public class RobotBrainService extends Service {
                                 BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                             }
                         } else if (instructionType.equals("End")) {   //引导流程结束
-                            LogUtils.d("startSpecialWorkFlow", "院内介绍工作流结束重启该工作流");
                             boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+                            LogUtils.d("startSpecialWorkFlow", "院内介绍工作流结束重启该工作流  " + startGuideWorkflowTag);
                             if (startGuideWorkflowTag) {
                                 //重启院内介绍工作流程
                                 OperationUtils.startSpecialWorkFlow(3);

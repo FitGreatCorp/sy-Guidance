@@ -2,13 +2,16 @@ package com.fitgreat.airfacerobot.launcher.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
-import com.fitgreat.airfacerobot.launcher.model.LocationEntity;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
+import com.fitgreat.airfacerobot.model.LocationEntity;
+import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 
 import java.util.List;
 
+/**
+ * 导航点  执行任务操作工具类
+ */
 public class LocalCashUtils {
     private static final String TAG = "LocationOperationUtils";
 

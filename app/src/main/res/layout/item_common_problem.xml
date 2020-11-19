@@ -2,13 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/item_common_problem"
+    android:id="@+id/main_item_common_problem"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     tools:ignore="MissingConstraints">
 
     <TextView
-        android:id="@+id/common_problem_title"
+        android:id="@+id/item_common_problem_title"
         android:layout_width="@dimen/px210"
         android:layout_height="@dimen/px52"
         android:background="@drawable/common_problem_back_selector"

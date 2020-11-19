@@ -3,27 +3,15 @@ package com.fitgreat.airfacerobot.ros;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.text.TextUtils;
-import android.util.Log;
 
-import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.DaemonEvent;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
-import com.fitgreat.airfacerobot.launcher.model.RobotSignalEvent;
-import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
-import com.fitgreat.archmvp.base.util.Base64;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
-import com.fitgreat.archmvp.base.util.FileUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
-import com.fitgreat.archmvp.base.util.ShellCmdUtils;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 import org.ros.address.InetAddressFactory;
-import org.ros.exception.RemoteException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
@@ -38,36 +26,28 @@ import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Publisher;
 import org.ros.node.topic.Subscriber;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 
-import airface_control_msgs.CommandFile;
 import airface_control_msgs.CommandFileRequest;
 import airface_control_msgs.CommandFileResponse;
-import airface_control_msgs.ControlSwitch;
 import airface_control_msgs.ControlSwitchRequest;
 import airface_control_msgs.ControlSwitchResponse;
-import airface_control_msgs.QueryVersion;
 import airface_control_msgs.QueryVersionRequest;
 import airface_control_msgs.QueryVersionResponse;
 import airface_control_msgs.SetMapRequest;
 import airface_control_msgs.SetMapResponse;
-import airface_control_msgs.TransferFile;
 import airface_control_msgs.TransferFileRequest;
 import airface_control_msgs.TransferFileResponse;
 import airface_drive_msgs.AutoMoveInfo;
-import airface_drive_msgs.automove;
 import airface_drive_msgs.automoveRequest;
 import airface_drive_msgs.automoveResponse;
 import airface_drive_msgs.autopark;
 import airface_drive_msgs.autoparkRequest;
 import airface_drive_msgs.autoparkResponse;
-import airface_drive_msgs.getpose;
 import airface_drive_msgs.getposeRequest;
 import airface_drive_msgs.getposeResponse;
-import airface_drive_msgs.setmode;
 import airface_drive_msgs.setmodeRequest;
 import airface_drive_msgs.setmodeResponse;
 import geometry_msgs.Twist;
@@ -77,12 +57,7 @@ import move_base_msgs.RunValidStateResponse;
 import sensor_msgs.BatteryState;
 import std_msgs.Byte;
 
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_CANT_CONNECT;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_SET_LIGHT_SUCCESS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_MSG_BATTERY;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_MSG_ROBOT_POSITION;
-import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_LIFT_VERTICAL;
 
 /**
  * ros工控制主机管理者<p>

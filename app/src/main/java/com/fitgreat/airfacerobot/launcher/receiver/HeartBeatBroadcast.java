@@ -10,7 +10,7 @@ import android.os.Looper;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.Constants;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.DaemonEvent;
+import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;

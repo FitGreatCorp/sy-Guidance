@@ -4,7 +4,7 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
+import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

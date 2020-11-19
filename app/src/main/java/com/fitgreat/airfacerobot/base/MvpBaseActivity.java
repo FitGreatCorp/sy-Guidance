@@ -56,12 +56,8 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         if (isImmersionBarEnabled()) {
             initImmersionBar(false);
         }
-//        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-//        }
         setContentView(getLayoutResource());
         unbinder = ButterKnife.bind(this);
-        StringBuilder stringBuilder = new StringBuilder();
         mPresenter = createPresenter();
         if (mPresenter != null) {
             mPresenter.attachView((V) this);

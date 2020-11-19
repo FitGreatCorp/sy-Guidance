@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fitgreat.airfacerobot.R;
-import com.fitgreat.airfacerobot.launcher.model.AppInfo;
+import com.fitgreat.airfacerobot.model.AppInfo;
 import com.fitgreat.archmvp.base.util.LogUtils;
 
 import java.util.List;

@@ -2,16 +2,12 @@ package com.fitgreat.airfacerobot.headeractuator;
 
 import android.os.Handler;
 
-import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.headeractuator.ActuatorConnector;
 import com.fitgreat.headeractuator.ActuatorConstant;
 import com.fitgreat.headeractuator.model.RecvPacket;
 import com.fitgreat.headeractuator.model.SendPacket;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
 

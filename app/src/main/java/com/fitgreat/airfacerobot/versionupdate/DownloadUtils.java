@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
 import com.fitgreat.airfacerobot.business.RequestManager;
-import com.fitgreat.airfacerobot.launcher.model.MyException;
+import com.fitgreat.airfacerobot.model.MyException;
 import com.fitgreat.archmvp.base.okhttp.HttpRequestClient;
 import com.fitgreat.archmvp.base.util.LogUtils;
 

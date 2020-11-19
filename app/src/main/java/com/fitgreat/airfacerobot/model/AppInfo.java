@@ -1,4 +1,4 @@
-package com.fitgreat.airfacerobot.launcher.model;
+package com.fitgreat.airfacerobot.model;
 
 import android.graphics.drawable.Drawable;
 

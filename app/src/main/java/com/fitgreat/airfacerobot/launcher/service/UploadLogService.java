@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -40,7 +41,7 @@ public class UploadLogService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         File uploadLogFile = new File(LOG_FILE_PATH);
         if (uploadLogFile.exists()) {
-            HashMap<String, String> parms = new HashMap<>();
+            ConcurrentHashMap<String, String> parms = new ConcurrentHashMap<>();
             parms.put("containerName", RobotInfoUtils.getRobotInfo().getF_Id());
             BusinessRequest.postFormAndFileRequest(parms, UPLOAD_LOCAL_LOG, uploadLogFile, new Callback() {
                 @Override

@@ -27,7 +27,7 @@ import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
@@ -313,7 +313,7 @@ public class VideoCallActivity extends MvpBaseActivity {
                 mRtcEngine = null;
             }
 
-            mRtcEngine = RtcEngine.create(getBaseContext(), getString(R.string.agora_app_id), mRtcEventHandler);
+            mRtcEngine = RtcEngine.create(getApplicationContext(), getString(R.string.agora_app_id), mRtcEventHandler);
             mRtcEngine.setLogFile("/sdcard/agoralog.log");
             mRtcEngine.setLogFileSize(1024);
         } catch (Exception e) {

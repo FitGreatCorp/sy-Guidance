@@ -2,14 +2,9 @@ package com.fitgreat.airfacerobot.speech.observer;
 
 import com.aispeech.dui.dds.DDS;
 import com.aispeech.dui.dsk.duiwidget.CommandObserver;
-import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
-import com.fitgreat.airfacerobot.R;
-import com.fitgreat.airfacerobot.launcher.model.ActionEvent;
-import com.fitgreat.airfacerobot.launcher.model.CommandDataEvent;
-import com.fitgreat.airfacerobot.launcher.model.LocationEntity;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
-import com.fitgreat.airfacerobot.launcher.utils.LocalCashUtils;
+import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.google.gson.Gson;

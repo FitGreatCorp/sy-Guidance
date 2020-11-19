@@ -17,7 +17,7 @@ import android.widget.VideoView;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
@@ -36,7 +36,6 @@ import java.io.File;
 
 import butterknife.OnClick;
 
-import static com.fitgreat.airfacerobot.constants.RobotConfig.CANCEL_WORKFLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;

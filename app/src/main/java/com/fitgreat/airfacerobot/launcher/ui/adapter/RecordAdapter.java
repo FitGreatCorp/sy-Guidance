@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.fitgreat.airfacerobot.R;
-import com.fitgreat.airfacerobot.launcher.model.RecordInfo;
+import com.fitgreat.airfacerobot.model.RecordInfo;
 import com.fitgreat.archmvp.base.util.LogUtils;
 
 import org.jetbrains.annotations.NotNull;

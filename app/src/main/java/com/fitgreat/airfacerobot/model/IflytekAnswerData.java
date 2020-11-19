@@ -1,4 +1,4 @@
-package com.fitgreat.airfacerobot.launcher.model;
+package com.fitgreat.airfacerobot.model;
 
 /**
  * 讯飞提供结果数据<p>

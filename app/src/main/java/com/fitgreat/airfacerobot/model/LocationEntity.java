@@ -1,10 +1,17 @@
-package com.fitgreat.airfacerobot.launcher.model;
+package com.fitgreat.airfacerobot.model;
 
 public class LocationEntity {
 
     String F_Id;
     String F_MapId;
     String F_Name;
+    String F_X;
+    String F_Y;
+    String F_Z;
+    String F_Memo;
+    //三亚显示地图点坐标
+    String S_X;
+    String S_Y;
 
     public String getF_Id() {
         return F_Id;
@@ -30,27 +37,27 @@ public class LocationEntity {
         F_Name = f_Name;
     }
 
-    public double getF_X() {
+    public String getF_X() {
         return F_X;
     }
 
-    public void setF_X(double f_X) {
+    public void setF_X(String f_X) {
         F_X = f_X;
     }
 
-    public double getF_Y() {
+    public String getF_Y() {
         return F_Y;
     }
 
-    public void setF_Y(double f_Y) {
+    public void setF_Y(String f_Y) {
         F_Y = f_Y;
     }
 
-    public double getF_Z() {
+    public String getF_Z() {
         return F_Z;
     }
 
-    public void setF_Z(double f_Z) {
+    public void setF_Z(String f_Z) {
         F_Z = f_Z;
     }
 
@@ -62,9 +69,20 @@ public class LocationEntity {
         F_Memo = f_Memo;
     }
 
-    double F_X;
-    double F_Y;
-    double F_Z;
-    String F_Memo;
 
+    public String getS_X() {
+        return S_X;
+    }
+
+    public void setS_X(String s_X) {
+        S_X = s_X;
+    }
+
+    public String getS_Y() {
+        return S_Y;
+    }
+
+    public void setS_Y(String s_Y) {
+        S_Y = s_Y;
+    }
 }

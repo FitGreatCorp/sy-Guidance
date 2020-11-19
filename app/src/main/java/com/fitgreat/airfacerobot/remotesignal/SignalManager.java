@@ -12,7 +12,7 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.AuthData;
 import com.fitgreat.airfacerobot.remotesignal.model.GroupInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;

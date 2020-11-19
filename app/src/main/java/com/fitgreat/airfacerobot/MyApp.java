@@ -38,8 +38,6 @@ public class MyApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-//        LogUtils.DEBUG = TextUtils.equals(SpUtils.getString(this, ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug");
-//        LogUtils.init(true, "AirFaceRobotHxk");
         LogUtils.init(true);
         CrashHandler crashHandler = CrashHandler.getInstance();
         crashHandler.init(getApplicationContext());
@@ -49,12 +47,6 @@ public class MyApp extends Application {
         handler.postDelayed(() -> {
             LogUtils.d("startSpecialWorkFlow", "  isMainActivityRunning  ,  " + !isMainActivityRunning);
             if (!isMainActivityRunning) {
-//                if (SpeechManager.isDdsInitialization()) {
-//                    //DDS需要重新初始化
-//                    SpeechManager.instance(this).restoreToDo();
-//                }
-//                //终止RobotBrainService服务
-//                stopService(new Intent(this, RobotBrainService.class));
                 //重启应用
                 RouteUtils.goHome(this);
             }

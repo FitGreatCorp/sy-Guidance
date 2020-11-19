@@ -19,8 +19,8 @@ import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.ActionEvent;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
+import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,9 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_COMPLETE;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_FAILURE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_TYPE_DDS_SUCCESS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_TYPE_ROS_SUCCESS;
 
 
 public class SpeechManager {

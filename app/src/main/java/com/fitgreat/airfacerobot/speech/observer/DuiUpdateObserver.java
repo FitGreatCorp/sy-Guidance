@@ -4,18 +4,7 @@ import com.aispeech.dui.dds.DDS;
 import com.aispeech.dui.dds.agent.MessageObserver;
 import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
 import com.aispeech.dui.dds.update.DDSUpdateListener;
-import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.DialogStateEvent;
-import com.fitgreat.airfacerobot.launcher.model.RobotSignalEvent;
-import com.fitgreat.airfacerobot.speech.model.MessageBean;
-import com.fitgreat.airfacerobot.speech.model.WeatherBean;
 import com.fitgreat.archmvp.base.util.LogUtils;
-import com.google.gson.Gson;
-
-import org.greenrobot.eventbus.EventBus;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * 客户端MessageObserver, 用于处理客户端动作的消息响应.

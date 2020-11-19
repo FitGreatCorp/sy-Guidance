@@ -1,13 +1,11 @@
-package com.fitgreat.airfacerobot.chosedestination;
+package com.fitgreat.airfacerobot.chosedestination.presenter;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
-import com.fitgreat.airfacerobot.automission.view.AutoMissionView;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
-import com.fitgreat.airfacerobot.launcher.model.OperationInfo;
-import com.fitgreat.airfacerobot.launcher.utils.LocalCashUtils;
+import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -18,46 +16,30 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
+import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinationView> {
-    private static final String TAG = "ChoseDestinationPresenter";
-
-    /**
-     * 获取操作任务信息
-     */
-    public void getLocationList() {
-        List<OperationInfo> currentOperationList = new ArrayList<>();
-        List<OperationInfo> operationList = LocalCashUtils.getOperationList();
-        //自助宣教页面筛选 播放视频  txt pdf可执行任务显示
-        for (OperationInfo operationInfo : operationList) {
-            if (operationInfo.getF_Type().equals("2") || operationInfo.getF_Type().equals("3") || operationInfo.getF_Type().equals("4")) {
-                currentOperationList.add(operationInfo);
-            }
-        }
-        mView.showOperationList(currentOperationList);
-    }
+    private static final String TAG = "ChoseDestinationPresent";
 
     /**
      * 发起操作任务
      */
-    public void startOperationTask(OperationInfo operationInfo) {
+    public void startLocationTask(LocationEntity locationInfo) {
         JSONArray operationList = new JSONArray();
         JSONArray instructionList = new JSONArray();
         //添加操作任务
-        JSONObject operation = new JSONObject();
+        JSONObject location = new JSONObject();
         try {
-            operation.put("Type", "Operation");
-            operation.put("InstructionId", operationInfo.getF_id());
-            operation.put("InstructionName", operationInfo.getF_Name());
-            operation.put("Sort", "1");
-            instructionList.put(operation);
+            location.put("Type", "Location");
+            location.put("InstructionId", locationInfo.getF_Id());
+            location.put("InstructionName", locationInfo.getF_Name());
+            location.put("Sort", "1");
+            instructionList.put(location);
             JSONObject operationObj = new JSONObject();
             operationObj.put("InstructionList", instructionList);
             operationObj.put("Sort", "1");
@@ -94,24 +76,23 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             jsonObject.put("F_Promoter", processInitiatorId);
             jsonObject.put("OperationList", operationList);
             info.put("Info", jsonObject.toString());
-            LogUtils.d(TAG, "拼接参数:info=>" + info.toString());
             BusinessRequest.postStringRequest(info.toString(), ApiRequestUrl.CREATE_ACTION, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    LogUtils.e(TAG, ":发起活动流程失败:onFailure=>" + e.toString());
+                    LogUtils.e("startSpecialWorkFlow", ":发起活动流程失败:onFailure=>" + e.toString());
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d(TAG, "发起活动流程成功:onResponse=>" + stringResponse);
+                    LogUtils.d("startSpecialWorkFlow", "发起活动流程成功:onResponse=>" + stringResponse);
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                             String actionId = jsonObject.getString("msg");
                             //控制端当前活动id本地缓存
 //                            SpUtils.putString(MyApp.getContext(), CURRENT_ACTION_ID, actionId);
-                            LogUtils.d(TAG, "当前活动id , " + actionId);
+                            LogUtils.d("startSpecialWorkFlow", "当前活动id , " + actionId);
                             //改变当前机器人状态为操作中
                             RobotInfoUtils.setRobotRunningStatus(String.valueOf(3));
                             //更新时间戳
@@ -144,15 +125,15 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String result = response.body().string();
-                LogUtils.d(TAG, "获取下一步操作成功==>" + result);
+                LogUtils.d("startSpecialWorkFlow", "获取下一步操作成功==>" + result);
                 try {
                     JSONObject baseResObj = new JSONObject(result);
                     if (baseResObj.has("type") && baseResObj.getString("type").equals("success")) {
                         String msgString = baseResObj.getString("msg");
-                        LogUtils.json(TAG, msgString);
+                        LogUtils.json("startSpecialWorkFlow", msgString);
                         if (msgString != null) {
                             NextOperationData nextOperationData = JSON.parseObject(msgString, NextOperationData.class);
-                            LogUtils.d(TAG, JSON.toJSONString(nextOperationData));
+                            LogUtils.d("startSpecialWorkFlow", JSON.toJSONString(nextOperationData));
                             SignalDataEvent autoMoveEvent = new SignalDataEvent();
                             if (!nextOperationData.getF_Type().equals("End")) {
                                 autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
@@ -165,10 +146,10 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                                 autoMoveEvent.setX(nextOperationData.getF_X());
                                 autoMoveEvent.setY(nextOperationData.getF_Y());
                                 autoMoveEvent.setE(nextOperationData.getF_Z());
-                                LogUtils.d(TAG, "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
-                                autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
+                                LogUtils.d("startSpecialWorkFlow", "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
+                                autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                 EventBus.getDefault().post(autoMoveEvent);
-                                mView.startTaskSuccess();
+
                             }
                         }
                     }

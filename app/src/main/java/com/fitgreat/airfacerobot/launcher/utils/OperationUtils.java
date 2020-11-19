@@ -8,10 +8,10 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
-import com.fitgreat.airfacerobot.launcher.model.ActionEvent;
-import com.fitgreat.airfacerobot.launcher.model.MapEntity;
-import com.fitgreat.airfacerobot.launcher.model.NavigationTip;
-import com.fitgreat.airfacerobot.launcher.model.WorkflowEntity;
+import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.MapEntity;
+import com.fitgreat.airfacerobot.model.NavigationTip;
+import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -28,12 +28,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_WORK_STATUS_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
@@ -41,6 +43,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARU
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
+import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 public class OperationUtils {
     private static final String TAG = "OperationUtils";
@@ -53,14 +56,14 @@ public class OperationUtils {
     public static void startSpecialWorkFlow(int workFlowType) {
         //获取机器人信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
-        LogUtils.d("startSpecialWorkFlow", "----启动医院介绍工作流程---" + workFlowType);
         if (workFlowType == 1) {
+            LogUtils.d("startSpecialWorkFlow", "--启动自动回充工作流程--" + workFlowType);
             //自动回充工作流启动标志
-            SpUtils.putInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 222);
+            SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, true);
             //更新自动回充工作流信息
             automaticRechargeWorkflow("charge", robotInfo, workFlowType);
         } else if (workFlowType == 3) {
-            LogUtils.d("startSpecialWorkFlow", "启动医院介绍工作流程");
+            LogUtils.d("startSpecialWorkFlow", "--启动院内介绍工作流程--");
             //医院介绍工作流启动标志
             SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, true);
             //更新引导工作流信息
@@ -79,7 +82,7 @@ public class OperationUtils {
             //解析地图信息获取对象
             MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
             LogUtils.d("startSpecialWorkFlow", "获取特定工作流");
-            HashMap<String, String> param = new HashMap<>();
+            ConcurrentHashMap<String, String> param = new ConcurrentHashMap<>();
             param.put("departmentId", mapEntity.getF_DepartmentId());
             param.put("mapId", mapEntity.getF_Id());
             param.put("type", workflowType);
@@ -174,17 +177,12 @@ public class OperationUtils {
                                                                             autoMoveEvent.setX(nextOperationData.getF_X());
                                                                             autoMoveEvent.setY(nextOperationData.getF_Y());
                                                                             autoMoveEvent.setE(nextOperationData.getF_Z());
-                                                                            int startGuideWorkflowTag = SpUtils.getInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 0);
-//                                                                            if (startGuideWorkflowTag == 111) {  //当前启动为引导流程
-//                                                                                //语音播报提示
-//                                                                                EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
-//                                                                                //更新提示信息到首页对话记录
-//                                                                                EventBus.getDefault().post(new NavigationTip("我将带您参观学术大厅，现在将去的是" + nextOperationData.getF_InstructionName()));
-//                                                                            }
                                                                             LogUtils.d("startSpecialWorkFlow", "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
                                                                             LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
-                                                                            if (nextOperationData.getF_Type().equals("Operation")) {  //导航移动到某地
+                                                                            if (nextOperationData.getF_Type().equals("Operation")) { //执行操作任务
                                                                                 autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
+                                                                            }else { //导航移动到某地
+                                                                                autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                                                             }
                                                                             EventBus.getDefault().post(autoMoveEvent);
                                                                         }
@@ -198,13 +196,18 @@ public class OperationUtils {
                                                 });
                                             }
                                         } else {
-                                            //当前机器人工作流程状态标志初始化,可再次发起引导工作流
-                                            SpUtils.putInt(MyApp.getContext(), CURRENT_WORK_STATUS_TAG, 0);
                                             if (workFlowTypeInt == 3) {  //后台没有配置自动引导流程,需要语音提示
                                                 playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                                                 new Handler(Looper.getMainLooper()).post(() -> {
                                                     ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                                                 });
+                                            }else {
+                                                playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                                                new Handler(Looper.getMainLooper()).post(() -> {
+                                                    ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                                                });
+                                                //当前机器人工作流程状态标志初始化,可再次发起引导工作流
+                                                SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                                             }
                                         }
                                     } catch (JSONException e) {

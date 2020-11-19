@@ -16,7 +16,7 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.launcher.model.InitEvent;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.CircularProgressView;
@@ -27,7 +27,6 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.PhoneInfoUtils;
-import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import org.greenrobot.eventbus.EventBus;

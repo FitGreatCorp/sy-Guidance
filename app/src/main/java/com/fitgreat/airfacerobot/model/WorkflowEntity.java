@@ -1,4 +1,4 @@
-package com.fitgreat.airfacerobot.launcher.model;
+package com.fitgreat.airfacerobot.model;
 
 /**
  * 控制端自动回充,第一步获取特定工作流
