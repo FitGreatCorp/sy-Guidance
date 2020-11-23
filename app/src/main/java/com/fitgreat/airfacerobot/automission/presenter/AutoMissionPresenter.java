@@ -7,7 +7,7 @@ import com.fitgreat.airfacerobot.automission.view.AutoMissionView;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.model.OperationInfo;
-import com.fitgreat.airfacerobot.launcher.utils.LocalCashUtils;
+import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -34,7 +34,7 @@ public class AutoMissionPresenter extends BasePresenterImpl<AutoMissionView> {
      */
     public void getLocationList() {
         List<OperationInfo> currentOperationList = new ArrayList<>();
-        List<OperationInfo> operationList = LocalCashUtils.getOperationList();
+        List<OperationInfo> operationList = CashUtils.getOperationList();
         //自助宣教页面筛选 播放视频  txt pdf可执行任务显示
         for (OperationInfo operationInfo : operationList) {
             if (operationInfo.getF_Type().equals("2") || operationInfo.getF_Type().equals("3") || operationInfo.getF_Type().equals("4")) {

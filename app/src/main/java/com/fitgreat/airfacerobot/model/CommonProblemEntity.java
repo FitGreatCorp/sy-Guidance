@@ -1,9 +1,11 @@
 package com.fitgreat.airfacerobot.model;
 
+import java.io.Serializable;
+
 /**
  * 常见问题对象
  */
-public class CommonProblemEntity {
+public class CommonProblemEntity implements Serializable {
     private String F_QId;
     private String F_Question;
     private String F_Answer;

@@ -6,7 +6,6 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
-
 import com.aispeech.dui.dds.DDS;
 import com.aispeech.dui.dds.DDSAuthListener;
 import com.aispeech.dui.dds.DDSConfig;
@@ -19,17 +18,12 @@ import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.model.ActionEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_COMPLETE;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_TYPE_DDS_SUCCESS;
 
 
 public class SpeechManager {
@@ -276,9 +270,9 @@ public class SpeechManager {
     }
 
     /**
-     * 基础参数设置
+     * 启动语音唤醒,打开OneShot模式
      */
-    public static void setParameter() {
+    public static void startOneShotWakeup() {
         try {
             ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
             wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
@@ -286,17 +280,26 @@ public class SpeechManager {
             wakeupEngine.enableWakeup();
             //one shot模式切换
             wakeupEngine.enableOneShot();
-            asrEngine = DDS.getInstance().getAgent().getASREngine();
             addWakeupWordList();
-            //vad后端停顿时间,用户说话停顿超时后,默认本次已说完,发出sys.vad.end消息结束录音
-//            asrEngine.setVadPauseTime(3000);
-            //vad前端静音检测超时时间,默认8000毫秒,vad启动后一直未说话,超时后发出sys.vad.timeout消息结束录音
-//            asrEngine.setVadTimeout(3000);
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
         }
     }
-
+    /**
+     * 关闭语音唤醒,关闭OneShot模式
+     */
+    public static void closeOneShotWakeup() {
+        try {
+            ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+            wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
+            //启动语音唤醒
+            wakeupEngine.disableWakeup();
+            //one shot模式切换
+            wakeupEngine.disableOneShot();
+        } catch (DDSNotInitCompleteException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * 添加更新主唤醒词
      *
@@ -427,8 +430,8 @@ public class SpeechManager {
         // 基础配置项
         config.addConfig(DDSConfig.K_PRODUCT_ID, "279595772");
         config.addConfig(DDSConfig.K_USER_ID, "huangxingke");
-        config.addConfig(DDSConfig.K_ALIAS_KEY, "prod");
-//        config.addConfig(DDSConfig.K_ALIAS_KEY, "test");
+//        config.addConfig(DDSConfig.K_ALIAS_KEY, "prod");
+        config.addConfig(DDSConfig.K_ALIAS_KEY, "test");
         config.addConfig(DDSConfig.K_PRODUCT_KEY, "0213b227ca0f20ac73f2277a1b7de8af");
         config.addConfig(DDSConfig.K_PRODUCT_SECRET, "a5e0f89e47b77ac9e7309aefc454a1ab");
         config.addConfig(DDSConfig.K_API_KEY, "67d2c8d671b467d2c8d671b45f5ae920");
@@ -497,8 +500,6 @@ public class SpeechManager {
                 ddsInitializationTag = true;
                 //更新页面进度显示
                 updateVoiceProgress(100);
-                //通知dds初始化成功
-                EventBus.getDefault().post(new ActionEvent(INIT_TYPE_DDS_SUCCESS, ""));
             }
         }
 

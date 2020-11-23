@@ -37,7 +37,6 @@ import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_SPECIFIC_WORKFLOW;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
@@ -138,9 +137,6 @@ public class OperationUtils {
                                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                                             String actionId = jsonObject.getString("msg");
                                             if (actionId != null) { //活动id存在
-                                                if (workFlowTypeInt == 2) {
-                                                    SpUtils.putString(MyApp.getContext(), GUIDE_WORK_FLOW_ACTION_ID, actionId);
-                                                }
                                                 //改变当前机器人状态为操作中
                                                 saveRobotstatus(3);
                                                 //更新时间戳

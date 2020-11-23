@@ -1,6 +1,8 @@
 package com.fitgreat.airfacerobot.model;
 
-public class LocationEntity {
+import java.io.Serializable;
+
+public class LocationEntity implements Serializable {
 
     String F_Id;
     String F_MapId;

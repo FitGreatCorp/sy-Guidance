@@ -3,8 +3,12 @@ package com.fitgreat.airfacerobot.speech.observer;
 import com.aispeech.dui.dds.DDS;
 import com.aispeech.dui.dsk.duiwidget.CommandObserver;
 import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.model.ActionEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
+import com.fitgreat.airfacerobot.model.CommonProblemEntity;
+import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.google.gson.Gson;
@@ -13,6 +17,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
@@ -37,6 +43,15 @@ public class DuiCommandObserver implements CommandObserver {
             "robot.action.termination", //终止   terminationTag
             "robot.action.charge",//冲电
             "robot.action.ruijin.timeout",//瑞金学术大厅暂停当前任务
+            "common.problem.one",
+            "common.problem.two",
+            "common.problem.three",
+            "common.problem.four",
+            "common.problem.five",
+            "common.problem.six",
+            "common.problem.seven",
+            "single.point.navigation.sy",
+            "single.operation.task.sy",
     };
 
     public DuiCommandObserver() {
@@ -61,30 +76,39 @@ public class DuiCommandObserver implements CommandObserver {
     @Override
     public void onCall(String command, String data) {
         boolean emergencyTag = SpUtils.getBoolean(MyApp.getContext(), CLICK_EMERGENCY_TAG, false);
-        LogUtils.d("CommandTodo", "command: " + command + " data: " + data + "  急停按钮是否被按下  " + emergencyTag);
+        LogUtils.d("CommandTodo", "command:   " + command + "   急停按钮按下状态   " + emergencyTag + "  data: " + data);
         if (emergencyTag) { //急停按钮被按下
-            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "抱歉我的急停按钮已启动，无法执行该任务"));
-        } else { //急停按钮没有被按下
-            emergencyNotClickOn(data);
-        }
-    }
-
-    /**
-     * 急停按钮没有按下时,根据不同的指令下发不同的任务
-     *
-     * @param data
-     */
-    private void emergencyNotClickOn(String data) {
-        try {
-            JSONObject jsonObject = new JSONObject(data);
-            CommandDataEvent commandDataEvent = new CommandDataEvent();
-            if (jsonObject.has("terminationTag")) { //指令停止
-                commandDataEvent.setCommandType(1);
-                LogUtils.d("CommandTodo", "取消指令");
+            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.emergency_click_prompt)));
+        } else {
+            //急停按钮没有被按下
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                CommandDataEvent commandDataEvent = new CommandDataEvent();
+                if (jsonObject.has("address")) { //识别单点导航任务指令
+                    String address = jsonObject.getString("address");
+                    LogUtils.d("CommandTodo", "address:   " + address);
+                    LocationEntity locationEntity = CashUtils.getLocationOne(address);
+                    if (locationEntity == null) { //指令识别地点不在设置地点范围内
+                        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.prompt_no_navigation)));
+                        return;
+                    }
+                    commandDataEvent.setCommandType(SINGLE_POINT_NAVIGATION);
+                    commandDataEvent.setLocationEntity(locationEntity);
+                } else if (jsonObject.has("problem")) { //识别单个常见问题操作指令
+                    String problem = jsonObject.getString("problem");
+                    LogUtils.d("CommandTodo", "problem:   " + problem);
+                    CommonProblemEntity commonProblemEntity = CashUtils.getProblemOne(problem + "?");
+                    if (commonProblemEntity == null) {  //指令识别常见问题不在设置问题范围内
+                        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.prompt_problem_has_no)));
+                        return;
+                    }
+                    commandDataEvent.setCommandType(COMMON_PROBLEM_TAG);
+                    commandDataEvent.setCommonProblemEntity(commonProblemEntity);
+                }
+                EventBus.getDefault().post(commandDataEvent);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            EventBus.getDefault().post(commandDataEvent);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 }

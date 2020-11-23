@@ -92,4 +92,15 @@ public interface Constants {
      */
     String DIALOG_NO = "dialog_no";
 
+
+    /**
+     * 单点导航指令
+     */
+    String SINGLE_POINT_NAVIGATION = "single_point_navigation";
+
+    /**
+     * 常见问题指令
+     */
+    String COMMON_PROBLEM_TAG = "common_problem_tag";
+
 }

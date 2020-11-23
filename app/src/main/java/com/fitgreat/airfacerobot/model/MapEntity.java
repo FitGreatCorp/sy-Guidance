@@ -154,7 +154,7 @@ public class MapEntity {
         this.F_Type = F_Type;
     }
 
-    public Object getF_Floor() {
+    public String getF_Floor() {
         return F_Floor;
     }
 

@@ -18,7 +18,7 @@ import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
-import com.fitgreat.airfacerobot.launcher.utils.LocalCashUtils;
+import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -333,8 +333,8 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         JSONArray instructionList = new JSONArray();
         try {
             if (commandToText != null && commandDoText != null) { //先导航,后执行任务
-                operationOne = LocalCashUtils.getOperationOne(commandDoText);
-                locationOne = LocalCashUtils.getLocationOne(commandToText);
+                operationOne = CashUtils.getOperationOne(commandDoText);
+                locationOne = CashUtils.getLocationOne(commandToText);
                 LogUtils.d("playTask", "开始导航,导航结束开始执行任务:");
                 LogUtils.json("playTask", "导航任务信息:" + JSON.toJSONString(locationOne));
                 LogUtils.json("playTask", "执行任务信息:" + JSON.toJSONString(operationOne));
@@ -356,7 +356,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                 //任务种类  2播放视频  3播放pdf  4 播放txt文本  取消指令时需要用
                 SpUtils.putString(MyApp.getContext(), "operationType", operationOne.getF_Type());
             } else if (commandDoText != null) { //不导航,执行任务
-                operationOne = LocalCashUtils.getOperationOne(commandDoText);
+                operationOne = CashUtils.getOperationOne(commandDoText);
                 LogUtils.d("playTask", "开始执行任务:");
                 LogUtils.json("playTask", "执行任务信息:" + JSON.toJSONString(operationOne));
                 //添加操作任务
@@ -370,7 +370,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                 //任务种类  2播放视频  3播放pdf  4 播放txt文本  取消指令时需要用
                 SpUtils.putString(MyApp.getContext(), "operationType", operationOne.getF_Type());
             } else if (commandToText != null) { //导航,不执行任务
-                locationOne = LocalCashUtils.getLocationOne(commandToText);
+                locationOne = CashUtils.getLocationOne(commandToText);
                 LogUtils.d("playTask", "开始导航:");
                 LogUtils.json("playTask", "导航任务信息:" + JSON.toJSONString(locationOne));
                 //添加导航点

@@ -1,36 +1,48 @@
 package com.fitgreat.airfacerobot.model;
 
 public class CommandDataEvent {
-    public String toData = null;
-    public String doData = null;
+    public String commandData = null;
+
+    public String commandType;
     /**
-     * 0 导航/执行宣教等其他/先导航后执行宣教等其他
-     * 1 取消
-     * 2 冲电
+     * 导航点位置信息
      */
-    public int commandType = 0;
+    public LocationEntity locationEntity = null;
 
-    public String getToData() {
-        return toData;
+    /**
+     * 单个常见问题信息
+     */
+    public CommonProblemEntity commonProblemEntity = null;
+
+    public String getCommandData() {
+        return commandData;
     }
 
-    public void setToData(String toData) {
-        this.toData = toData;
+    public void setCommandData(String commandData) {
+        this.commandData = commandData;
     }
 
-    public String getDoData() {
-        return doData;
-    }
-
-    public void setDoData(String doData) {
-        this.doData = doData;
-    }
-
-    public int getCommandType() {
+    public String getCommandType() {
         return commandType;
     }
 
-    public void setCommandType(int commandType) {
+    public void setCommandType(String commandType) {
         this.commandType = commandType;
+    }
+
+    public LocationEntity getLocationEntity() {
+        return locationEntity;
+    }
+
+    public void setLocationEntity(LocationEntity locationEntity) {
+        this.locationEntity = locationEntity;
+    }
+
+    public CommonProblemEntity getCommonProblemEntity() {
+        return commonProblemEntity;
+    }
+
+    public void setCommonProblemEntity(CommonProblemEntity commonProblemEntity) {
+        this.commonProblemEntity = commonProblemEntity;
     }
 }

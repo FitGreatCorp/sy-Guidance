@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.launcher.utils;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.archmvp.base.util.LogUtils;
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * 导航点  执行任务操作工具类
  */
-public class LocalCashUtils {
+public class CashUtils {
     private static final String TAG = "LocationOperationUtils";
 
     /**
@@ -34,10 +35,12 @@ public class LocalCashUtils {
     public static LocationEntity getLocationOne(String fNameText) {
         LocationEntity locationEntity = null;
         List<LocationEntity> locationList = getLocationList();
-        for (LocationEntity mLocationEntity :
-                locationList) {
-            if (mLocationEntity.getF_Name().equals(fNameText)) {
-                locationEntity = mLocationEntity;
+        if (locationList != null) {
+            for (LocationEntity mLocationEntity : locationList) {
+                String f_name = mLocationEntity.getF_Name();
+                if (f_name.equals(fNameText)) {
+                    locationEntity = mLocationEntity;
+                }
             }
         }
         return locationEntity;
@@ -62,12 +65,44 @@ public class LocalCashUtils {
     public static OperationInfo getOperationOne(String fNameData) {
         OperationInfo operationInfo = null;
         List<OperationInfo> operationList = getOperationList();
-        for (OperationInfo mOperationInfo :
-                operationList) {
-            if (mOperationInfo.getF_Name().equals(fNameData)) {
-                operationInfo = mOperationInfo;
+        if (operationList != null) {
+            for (OperationInfo mOperationInfo : operationList) {
+                if (mOperationInfo.getF_Name().equals(fNameData)) {
+                    operationInfo = mOperationInfo;
+                }
             }
         }
         return operationInfo;
+    }
+
+
+    /**
+     * 获取常见问题信息列表
+     */
+    public static List<CommonProblemEntity> getProblemList() {
+        List<CommonProblemEntity> problemList = null;
+        String stringProblemList = SpUtils.getString(MyApp.getContext(), "problemList", null);
+        if (stringProblemList != null) {
+            problemList = JSON.parseArray(stringProblemList, CommonProblemEntity.class);
+            LogUtils.json(TAG, JSON.toJSONString(problemList));
+        }
+        return problemList;
+    }
+
+    /**
+     * 获取单个常见问题信息
+     */
+    public static CommonProblemEntity getProblemOne(String fNameText) {
+        CommonProblemEntity commonProblemEntity = null;
+        List<CommonProblemEntity> problemList = getProblemList();
+        if (problemList != null) {
+            for (CommonProblemEntity mCommonProblemEntity : problemList) {
+                String F_Question = mCommonProblemEntity.getF_Question();
+                if (F_Question.equals(fNameText)) {
+                    commonProblemEntity = mCommonProblemEntity;
+                }
+            }
+        }
+        return commonProblemEntity;
     }
 }

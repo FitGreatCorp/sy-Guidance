@@ -20,16 +20,14 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true" />
 
-    <!--    <ImageButton-->
-    <!--        android:id="@+id/location_bt_one"-->
-    <!--        android:layout_width="wrap_content"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_marginLeft="@dimen/px360"-->
-    <!--        android:layout_marginTop="@dimen/px205"-->
-    <!--        android:background="@android:color/transparent"-->
-    <!--        android:src="@mipmap/ic_map_location_nor"-->
-    <!--        app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+    <ImageButton
+        android:id="@+id/location_bt_one"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px360"
+        android:layout_marginTop="@dimen/px205"
+        android:background="@android:color/transparent"
+        android:src="@mipmap/ic_home_settings" />
 
     <!--    <ImageButton-->
     <!--        android:id="@+id/location_bt_two"-->

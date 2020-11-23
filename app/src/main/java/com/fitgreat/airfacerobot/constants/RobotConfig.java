@@ -90,13 +90,13 @@ public interface RobotConfig {
      */
     String INIT_TYPE_ROS_SUCCESS = "init_type_ros_success";
     /**
-     * dds初始化成功
+     * dds对话Observer注册
      */
-    String INIT_TYPE_DDS_SUCCESS = "init_type_dds_success";
+    String DDS_OBSERVER_REGISTERED = "dds_Observer_registered";
     /**
-     * dds重置需要重新初始化
+     * dds对话Observer解绑
      */
-    String INIT_TYPE_DDS_RELEASE = "init_type_dds_release";
+    String DDS_OBSERVER_UNTIE = "dds_Observer_untie";
     /**
      * 弹窗提示30秒倒计时回充
      */

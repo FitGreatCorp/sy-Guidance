@@ -81,7 +81,10 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
@@ -253,18 +256,17 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
 
-
     @Override
     protected void onPause() {
         super.onPause();
         //取消启动院内介绍工作流3分钟计时
         if (introductionTimer != null) {
             introductionTimer.cancel();
-            introductionTimer=null;
+            introductionTimer = null;
         }
         if (introductionTimerTask != null) {
             introductionTimerTask.cancel();
-            introductionTimerTask=null;
+            introductionTimerTask = null;
         }
         introductionCountdown = 0;
     }
@@ -344,6 +346,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 break;
         }
     }
+
     private void initResume() {
         //切换当前机器显示语言选择状态
         String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
@@ -368,12 +371,29 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 mRobotName.setText(robotInfoData.getF_Name());
             }
             //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
-//            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
+            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
             mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
             //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
-            startIntroductionCountdown();
+            introductionTimer = new Timer();
+            introductionTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    introductionCountdown++;
+                    if (introductionCountdown == 180) {
+                        introductionCountdown = 0;
+                        introductionTimer.cancel();
+                        introductionTimerTask.cancel();
+                        LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
+                        OperationUtils.startSpecialWorkFlow(3);
+                    }
+                }
+            };
+            introductionTimer.schedule(introductionTimerTask, 0, 1000);
+            //dds对话Observer注册
+            EventBus.getDefault().post(new ActionEvent(DDS_OBSERVER_REGISTERED, ""));
         }
     }
+
     /**
      * 启动院内介绍工作流
      */
@@ -405,7 +425,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             firstClickTime = System.currentTimeMillis();
         } else {
             //两次点击按钮时间相差大于1秒进入设置模块,小于1秒需再次点击,第一次点击时间重新记录
-            if ((System.currentTimeMillis() - firstClickTime) > 500) {
+            if ((System.currentTimeMillis() - firstClickTime) > 100) {
                 RouteUtils.goToActivity(getContext(), SettingActivity.class);
             }
             firstClickTag = false;
@@ -422,27 +442,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         RouteUtils.goHome(MainActivity.this);
         selectButton.setSelected(true);
         normalButton.setSelected(false);
-    }
-
-    /**
-     * 机器人空闲时,启动计时器3分钟后启动院内介绍工作流
-     */
-    public void startIntroductionCountdown() {
-        introductionTimer = new Timer();
-        introductionTimerTask = new TimerTask() {
-            @Override
-            public void run() {
-                introductionCountdown++;
-                if (introductionCountdown == 18000) {
-                    introductionCountdown = 0;
-                    introductionTimer.cancel();
-                    introductionTimerTask.cancel();
-                    LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
-                    OperationUtils.startSpecialWorkFlow(3);
-                }
-            }
-        };
-        introductionTimer.schedule(introductionTimerTask, 0, 1000);
     }
 
     /**
@@ -940,25 +939,37 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
     /**
-     * 识别指令后进行任务操作
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void showBackCommandData(CommandDataEvent commandDataEvent) {
-        LogUtils.json(TAG, "showBackCommandData:" + JSON.toJSONString(commandDataEvent));
-        if (commandDataEvent.commandType == 1) {  //语音取消任务
-            LogUtils.d(TAG, "showBackCommandData:取消任务指令,当前机器人状态  " + RobotInfoUtils.getRobotRunningStatus());
-            if (!RobotInfoUtils.getRobotRunningStatus().equals("1")) {//机器人空闲时不接收取消指令
-                EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "确定取消当前任务吗?"));
-            }
-        }
-    }
-
-    /**
      * 提示信息首页音浪上部显示更新
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(NavigationTip navigationTip) {
         mVoiceMsg.setText(navigationTip.getTip());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMsg(CommandDataEvent commandDataEvent) {
+        Intent intent = null;
+        Bundle bundle = null;
+        switch (commandDataEvent.getCommandType()) {
+            case SINGLE_POINT_NAVIGATION:
+                LogUtils.d("CommandTodo", "----SINGLE_POINT_NAVIGATION---MainActivity-----");
+                intent = new Intent(getContext(), ChoseDestinationActivity.class);
+                bundle = new Bundle();
+                bundle.putSerializable("LocationEntity", commandDataEvent.getLocationEntity());
+                intent.putExtra("bundle", bundle);
+                startActivity(intent);
+                break;
+            case COMMON_PROBLEM_TAG:
+                LogUtils.d("CommandTodo", "----COMMON_PROBLEM_TAG---MainActivity-----");
+                intent = new Intent(getContext(), CommonProblemActivity.class);
+                bundle = new Bundle();
+                bundle.putSerializable("CommonProblemEntity", commandDataEvent.getCommonProblemEntity());
+                intent.putExtra("bundle", bundle);
+                startActivity(intent);
+                break;
+            default:
+                break;
+        }
     }
 
     /**

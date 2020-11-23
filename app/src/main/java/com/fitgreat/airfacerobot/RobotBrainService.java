@@ -97,10 +97,11 @@ import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_TYPE_DDS_SUCCESS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_POWER_LOCK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
@@ -150,11 +151,9 @@ public class RobotBrainService extends Service {
     private final String TAG = this.getClass().getSimpleName();
     private final static int NET_DELAY_INIT = 1008;
     private SignalManager signalManager;
-    private AiuiManager aiuiManager;
     private HeaderActuatorManager headerActuatorManager;
     private ConnectivityManager connectivityManager;
     private PlayTtsTask playTtsTask;
-
     private String instructionId;
     private String instructionType;
     private String instructionName;
@@ -251,7 +250,6 @@ public class RobotBrainService extends Service {
     private void createFunctionManager() {
         signalManager = new SignalManager(this);
         headerActuatorManager = new HeaderActuatorManager();
-        aiuiManager = new AiuiManager(this);
         jRos = JRos.getInstance();
         speechManager = SpeechManager.instance(this);
         //注册网络监听器
@@ -290,7 +288,7 @@ public class RobotBrainService extends Service {
         String actionIdValue = SpUtils.getString(MyApp.getContext(), GUIDE_WORK_FLOW_ACTION_ID, null);
         LogUtils.d(TAG, "语音指令终止当前任务:actionIdValue===>" + actionIdValue);
         if (actionIdValue != null) {
-            BusinessRequest.stopOperateTask(actionIdValue, "3", stopTaskCallback);
+//            BusinessRequest.stopOperateTask(actionIdValue, "3", stopTaskCallback);
         }
     }
 
@@ -491,12 +489,10 @@ public class RobotBrainService extends Service {
                             BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                         });
                     } else {
-                        speechManager.textTtsPlay("当前任务出现异常,我将回原点了", "0");
-                        //取消引导流程任务
-                        String actionIdValue = SpUtils.getString(MyApp.getContext(), GUIDE_WORK_FLOW_ACTION_ID, null);
-                        if (actionIdValue != null) {
-                            BusinessRequest.stopOperateTask(actionIdValue, "3", stopTaskCallback);
-                        }
+                        //单点导航连续三次失败回原点充电
+                        navigationTimes = 0;
+                        speechManager.textTtsPlay("当前任务出现异常,我将回原点充电了", "0");
+                        OperationUtils.startSpecialWorkFlow(1);
                     }
                     break;
                 case "navigation_arrived":  //导航成功  TODO
@@ -616,18 +612,25 @@ public class RobotBrainService extends Service {
     public void onMsg(ActionEvent actionEvent) {
         switch (actionEvent.getmActionKind()) {
             case VOICE_TERMINATION_TASK: //语音指令终止当前任务
-                voiceTerminationTask();
+//                voiceTerminationTask();
                 break;
             case PLAY_TASK_PROMPT_INFO:
                 LogUtils.d("CommandTodo", actionEvent.getmActionContent());
                 speechManager.textTtsPlay(actionEvent.getmActionContent(), "0");
                 break;
-            case INIT_TYPE_DDS_SUCCESS://dds初始化成功
-                LogUtils.d("CommandTodo", "dds初始化成功");
-//                SpeechManager.setParameter();
+            case DDS_OBSERVER_REGISTERED://dds初始化成功 Observer注册
+                LogUtils.d("CommandTodo", "Observer注册");
+                SpeechManager.startOneShotWakeup();
                 mCommandObserver.regist();
                 mMessageObserver.regist();
                 mUpdateObserver.regist();
+                break;
+            case DDS_OBSERVER_UNTIE://Observer解绑
+                LogUtils.d("CommandTodo", "Observer解绑");
+                SpeechManager.closeOneShotWakeup();
+                mCommandObserver.unregist();
+                mMessageObserver.unregist();
+                mUpdateObserver.unregist();
                 break;
         }
     }

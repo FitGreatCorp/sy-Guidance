@@ -54,7 +54,7 @@
     <string name="title_note">note</string>
     <string name="auto_recharge">Automatic recharge</string>
     <string name="auto_mission">Autonomous mission</string>
-    <string name="prompt_no_navigation">I don’t know the location, please tell me the location I know</string>
+    <string name="prompt_no_navigation">The location is not in the location I set. I can tell you a location I know and take you there.</string>
     <string name="prompt_no_task">I can’t do this task, please contact the administrator to configure it for me</string>
     <string name="wear_equipment">Wearable device</string>
     <string name="bluetooth_connection_device">Bluetooth connection device</string>
@@ -72,4 +72,6 @@
     <string name="restroom_title">Restroom</string>
     <string name="home_prompt_text">Hello, I am Xiaobai, I am very happy to serve you. I can show you the way if you don’t understand, you can also ask me.</string>
     <string name="common_problem_title">Common Problem</string>
+    <string name="emergency_click_prompt">Sorry, my emergency stop button is activated and the task cannot be performed.</string>
+    <string name="prompt_problem_has_no">I don\'t know the question, can I change the question。</string>
 </resources>
