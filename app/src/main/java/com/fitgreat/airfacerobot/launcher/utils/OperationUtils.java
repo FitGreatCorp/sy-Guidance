@@ -8,7 +8,7 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.MapEntity;
 import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.model.WorkflowEntity;
@@ -229,7 +229,7 @@ public class OperationUtils {
      * 播放并首页展示对应文案
      */
     public static void playShowText(String content) {
-        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, content));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, content));
         EventBus.getDefault().post(new NavigationTip(content));
     }
 

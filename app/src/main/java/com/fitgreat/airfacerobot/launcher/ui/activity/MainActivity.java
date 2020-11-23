@@ -22,7 +22,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
-import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -36,7 +35,7 @@ import com.fitgreat.airfacerobot.floatball.FloatWindow;
 import com.fitgreat.airfacerobot.floatball.FloatWindowOption;
 import com.fitgreat.airfacerobot.floatball.FloatWindowViewStateCallback;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
@@ -83,8 +82,10 @@ import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
@@ -92,6 +93,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_ON;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.TYPE_CHECK_STATE_DONE;
 
@@ -252,7 +254,52 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     protected void onResume() {
         super.onResume();
         isResume = true;
-        initResume();
+        //切换当前机器显示语言选择状态
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        if (currentLanguage.equals("en")) {
+            mLanguageEnglish.setSelected(true);
+            mLanguageChinese.setSelected(false);
+        } else if (currentLanguage.equals("zh")) {
+            mLanguageChinese.setSelected(true);
+            mLanguageEnglish.setSelected(false);
+        }
+        //jRos初始化状态
+        boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
+        if (rosInitTagState) {
+            if (mPresenter != null) {
+                mPresenter.getNetSignalLevel(this);
+            }
+            //更新本地导航位置,执行任务信息
+            mPresenter.getLocationInfo();
+            //机器人名字显示
+            RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
+            if (robotInfoData != null) {
+                mRobotName.setText(robotInfoData.getF_Name());
+            }
+            //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
+            mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
+            //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
+            introductionTimer = new Timer();
+            introductionTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    introductionCountdown++;
+                    if (introductionCountdown == 180) {
+                        introductionCountdown = 0;
+                        introductionTimer.cancel();
+                        introductionTimerTask.cancel();
+                        LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
+                        OperationUtils.startSpecialWorkFlow(3);
+                    }
+                }
+            };
+            introductionTimer.schedule(introductionTimerTask, 0, 1000);
+            //dds对话Observer注册
+            EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
+            //启动语音唤醒,打开one shot模式
+            EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
+        }
     }
 
 
@@ -269,6 +316,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             introductionTimerTask = null;
         }
         introductionCountdown = 0;
+        //关闭语音唤醒,关闭one shot模式
+        EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
     }
 
     @Override
@@ -347,53 +396,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    private void initResume() {
-        //切换当前机器显示语言选择状态
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-        if (currentLanguage.equals("en")) {
-            mLanguageEnglish.setSelected(true);
-            mLanguageChinese.setSelected(false);
-        } else if (currentLanguage.equals("zh")) {
-            mLanguageChinese.setSelected(true);
-            mLanguageEnglish.setSelected(false);
-        }
-        //jRos初始化状态
-        boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
-        if (rosInitTagState) {
-            if (mPresenter != null) {
-                mPresenter.getNetSignalLevel(this);
-            }
-            //更新本地导航位置,执行任务信息
-            mPresenter.getLocationInfo();
-            //机器人名字显示
-            RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
-            if (robotInfoData != null) {
-                mRobotName.setText(robotInfoData.getF_Name());
-            }
-            //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
-            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
-            mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
-            //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
-            introductionTimer = new Timer();
-            introductionTimerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    introductionCountdown++;
-                    if (introductionCountdown == 180) {
-                        introductionCountdown = 0;
-                        introductionTimer.cancel();
-                        introductionTimerTask.cancel();
-                        LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
-                        OperationUtils.startSpecialWorkFlow(3);
-                    }
-                }
-            };
-            introductionTimer.schedule(introductionTimerTask, 0, 1000);
-            //dds对话Observer注册
-            EventBus.getDefault().post(new ActionEvent(DDS_OBSERVER_REGISTERED, ""));
-        }
-    }
-
     /**
      * 启动院内介绍工作流
      */
@@ -411,7 +413,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 播放并首页展示对应文案
      */
     public void playShowText(String content) {
-        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, content));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, content));
         EventBus.getDefault().post(new NavigationTip(content));
     }
 

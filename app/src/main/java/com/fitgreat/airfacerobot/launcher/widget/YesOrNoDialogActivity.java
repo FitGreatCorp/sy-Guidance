@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fitgreat.airfacerobot.R;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 
@@ -113,7 +113,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
      * 播放并首页展示对应文案
      */
     public void playShowText(String content) {
-        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, content));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, content));
         EventBus.getDefault().post(new NavigationTip(content));
     }
 

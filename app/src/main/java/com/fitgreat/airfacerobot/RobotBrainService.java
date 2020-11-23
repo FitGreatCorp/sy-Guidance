@@ -24,12 +24,11 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.alibaba.fastjson.JSON;
-import com.fitgreat.airfacerobot.aiui.AiuiManager;
 import com.fitgreat.airfacerobot.aiui.PlayTtsTask;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.headeractuator.HeaderActuatorManager;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
@@ -97,6 +96,7 @@ import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
@@ -126,10 +126,10 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_I
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ROBOT_STOP_MOVE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_MSG_ROBOT_POSITION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.TASK_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.UPDATE_ROBOT_STATUS_TO_SERVER;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.VOICE_TERMINATION_TASK;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_CLOSE_ANDROID_SHARE;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_FILE_CAN_NOT_PLAY;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_RECEIVER_TASK_SUCCESS;
@@ -606,32 +606,33 @@ public class RobotBrainService extends Service {
     }
 
     /**
-     * @param actionEvent
+     * dds操作汇总
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMsg(ActionEvent actionEvent) {
-        switch (actionEvent.getmActionKind()) {
-            case VOICE_TERMINATION_TASK: //语音指令终止当前任务
-//                voiceTerminationTask();
+    public void onMsg(ActionDdsEvent actionDdsEvent) {
+        switch (actionDdsEvent.getmActionKind()) {
+            case START_DDS_WAKE_TAG: //启动唤醒,打开one shot模式
+                SpeechManager.startOneShotWakeup();
+                break;
+            case CLOSE_DDS_WAKE_TAG: //关闭唤醒,关闭one shot模式
+                SpeechManager.closeOneShotWakeup();
                 break;
             case PLAY_TASK_PROMPT_INFO:
-                LogUtils.d("CommandTodo", actionEvent.getmActionContent());
-                speechManager.textTtsPlay(actionEvent.getmActionContent(), "0");
+                LogUtils.d("CommandTodo", actionDdsEvent.getmActionContent());
+                speechManager.textTtsPlay(actionDdsEvent.getmActionContent(), "0");
                 break;
             case DDS_OBSERVER_REGISTERED://dds初始化成功 Observer注册
                 LogUtils.d("CommandTodo", "Observer注册");
-                SpeechManager.startOneShotWakeup();
                 mCommandObserver.regist();
                 mMessageObserver.regist();
                 mUpdateObserver.regist();
                 break;
-            case DDS_OBSERVER_UNTIE://Observer解绑
-                LogUtils.d("CommandTodo", "Observer解绑");
-                SpeechManager.closeOneShotWakeup();
-                mCommandObserver.unregist();
-                mMessageObserver.unregist();
-                mUpdateObserver.unregist();
-                break;
+//            case DDS_OBSERVER_UNTIE://Observer解绑
+//                LogUtils.d("CommandTodo", "Observer解绑");
+//                mCommandObserver.unregist();
+//                mMessageObserver.unregist();
+//                mUpdateObserver.unregist();
+//                break;
         }
     }
 

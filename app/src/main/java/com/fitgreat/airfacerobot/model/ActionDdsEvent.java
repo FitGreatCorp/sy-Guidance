@@ -2,16 +2,16 @@ package com.fitgreat.airfacerobot.model;
 
 import com.fitgreat.archmvp.base.event.BaseEvent;
 
-public class ActionEvent extends BaseEvent {
+public class ActionDdsEvent extends BaseEvent {
     public String mActionKind;
     public String mActionContent;
 
-    public ActionEvent(String actionKind, String actionContent) {
+    public ActionDdsEvent(String actionKind, String actionContent) {
         this.mActionKind = actionKind;
         this.mActionContent = actionContent;
     }
 
-    public ActionEvent() {
+    public ActionDdsEvent() {
     }
 
     public String getmActionKind() {

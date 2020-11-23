@@ -98,9 +98,13 @@ public interface RobotConfig {
      */
     String DDS_OBSERVER_UNTIE = "dds_Observer_untie";
     /**
-     * 弹窗提示30秒倒计时回充
+     * 关闭dds唤醒
      */
-    String PROMPT_ROBOT_RECHARGE = "prompt_robot_recharge";
+    String CLOSE_DDS_WAKE_TAG = "close_dds_wake_tag";
+    /**
+     *打开dds唤醒
+     */
+    String START_DDS_WAKE_TAG = "start_dds_wake_tag";
     /**
      * 控制端有远程任务加入
      */
@@ -109,10 +113,7 @@ public interface RobotConfig {
      * 院内介绍工作流开启标志
      */
     String START_INTRODUCTION_WORK_FLOW_TAG = "start_introduction_work_flow_tag";
-    /**
-     * 通过语音终止当前任务
-     */
-    String VOICE_TERMINATION_TASK = "voice_termination_task";
+
     /**
      * 自助宣教页面,选中列表条目宣教任务编号
      */

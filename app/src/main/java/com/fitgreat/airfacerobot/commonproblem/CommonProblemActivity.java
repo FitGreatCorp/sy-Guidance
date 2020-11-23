@@ -17,10 +17,9 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.commonproblem.adapter.CommonProblemAdapter;
 import com.fitgreat.airfacerobot.commonproblem.presenter.CommonProblemPresenter;
 import com.fitgreat.airfacerobot.commonproblem.view.CommonProblemView;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
-import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 
@@ -34,11 +33,9 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
-import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 
 /**
  * 常见问题展示选择页面
@@ -72,9 +69,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             CommonProblemEntity commonProblemEntity = (CommonProblemEntity) bundle.getSerializable("CommonProblemEntity");
             playProblem(commonProblemEntity);
         }
-
-        //dds对话Observer注册
-//        EventBus.getDefault().post(new ActionEvent(DDS_OBSERVER_REGISTERED, ""));
+        //启动语音唤醒,打开one shot模式
+        EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
     }
 
     @Override
@@ -82,8 +78,6 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         super.onDestroy();
         //mvp模式销毁当前页面时置空presenter持有view引用
         mPresenter.detachView();
-        //dds对话Observer解绑
-//        EventBus.getDefault().post(new ActionEvent(DDS_OBSERVER_UNTIE, ""));
     }
 
     @OnClick({R.id.close_bt,R.id.common_problem_container})
@@ -110,8 +104,6 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void showQuestionList(List<CommonProblemEntity> commonProblemEntities) {
-        //常见问题指令识别,跳转常见问题展示页面
-
         runOnUiThread(() -> {
             commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities);
             commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
@@ -128,7 +120,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     }
 
     private void playProblem(CommonProblemEntity commonProblemEntity) {
-        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_Answer()));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_Answer()));
         //页面答案显示
         mCommonProblemAnswer.setText(commonProblemEntity.getF_Answer());
     }
@@ -138,8 +130,9 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         switch (commandDataEvent.getCommandType()) {
             case COMMON_PROBLEM_TAG:
                 LogUtils.d("CommandTodo", "----SINGLE_POINT_NAVIGATION---ChoseDestinationActivity-----");
-                LocationEntity locationEntity = commandDataEvent.getLocationEntity();
-                LogUtils.json("CommandTodo", JSON.toJSONString(locationEntity));
+                CommonProblemEntity commonProblemEntity = commandDataEvent.getCommonProblemEntity();
+                playProblem(commonProblemEntity);
+                LogUtils.json("CommandTodo", JSON.toJSONString(commonProblemEntity));
                 break;
             default:
                 break;

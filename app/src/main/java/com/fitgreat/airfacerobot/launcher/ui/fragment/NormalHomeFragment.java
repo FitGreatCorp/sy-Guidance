@@ -23,7 +23,7 @@ import com.fitgreat.airfacerobot.automission.AutoMissionActivity;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.contractview.NormalHomeView;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.IflytekAnswerData;
 import com.fitgreat.airfacerobot.model.NavigationTip;
@@ -33,7 +33,6 @@ import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.model.VolumeBrightEvent;
 import com.fitgreat.airfacerobot.launcher.presenter.NormalHomePresenter;
 import com.fitgreat.airfacerobot.launcher.ui.adapter.RecordAdapter;
-import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.launcher.widget.ValidationOrPromptDialog;
@@ -564,7 +563,7 @@ public class NormalHomeFragment extends MvpBaseFragment<NormalHomeView, NormalHo
     private void wakeWordDialogToDo() {
         //机器人移动中被唤醒后,语音提示 "不好意思，小白在执行任务哦"
         if (RobotInfoUtils.getRobotRunningStatus() == "2") {
-            EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, "不好意思，小白在执行任务哦"));
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, "不好意思，小白在执行任务哦"));
             //显示播报信息到首页记录
             EventBus.getDefault().post(new NavigationTip("不好意思，小白在执行任务哦"));
         } else {

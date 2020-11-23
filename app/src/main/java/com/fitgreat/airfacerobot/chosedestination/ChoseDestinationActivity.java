@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.fitgreat.airfacerobot.MyApp;
@@ -13,30 +12,28 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.chosedestination.presenter.ChoseDestinationPresenter;
 import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.model.ActionEvent;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.launcher.widget.YesOrNoDialogFragment;
 import com.fitgreat.airfacerobot.model.MapEntity;
-import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.List;
 import butterknife.BindView;
-
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 
 /**
  * 选择我要去目的地页面
@@ -50,8 +47,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
     @BindView(R.id.chose_destination_container)
     RelativeLayout mChoseDestinationContainer;
-    @BindView(R.id.location_position)
-    TextView mLocationPosition;
     @BindView(R.id.chose_destination_map_back)
     ImageView mChoseDestinationMapBack;
 
@@ -71,6 +66,8 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
         EventBus.getDefault().post(initUiEvent);
+        //启动语音唤醒,打开one shot模式
+        EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
         //首页识别单点导航指令跳转到当前页面
         if (getIntent().hasExtra("bundle")){
             LogUtils.d("CommandTodo", "----ChoseDestinationActivity---getIntent().hasExtra(\"bundle\")-----");
@@ -121,7 +118,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             EventBus.getDefault().post(moveMode);
         }
         //语音播报提示
-        EventBus.getDefault().post(new ActionEvent(PLAY_TASK_PROMPT_INFO, dialogContent));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, dialogContent));
         //单点导航任务弹窗提示确认
         YesOrNoDialogFragment yesOrNoDialogFragment = YesOrNoDialogFragment.newInstance("提示", dialogContent, yesBtText, noBtText);
         yesOrNoDialogFragment.show(getSupportFragmentManager(), "navigation");
