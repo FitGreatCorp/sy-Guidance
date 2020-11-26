@@ -74,4 +74,6 @@
     <string name="common_problem_title">Common Problem</string>
     <string name="emergency_click_prompt">Sorry, my emergency stop button is activated and the task cannot be performed.</string>
     <string name="prompt_problem_has_no">I don\'t know the question, can I change the question。</string>
+    <string name="prompt_task_exception">The current task is abnormal, I will return to the original point to charge。</string>
+    <string name="ask_for_help_text">Nurse sister, please help me。</string>
 </resources>

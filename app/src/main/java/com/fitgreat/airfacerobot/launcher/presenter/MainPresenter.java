@@ -2,10 +2,13 @@ package com.fitgreat.airfacerobot.launcher.presenter;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Environment;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+
 import androidx.annotation.RequiresApi;
+
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -16,12 +19,14 @@ import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
+import com.fitgreat.airfacerobot.model.MapEntity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
+import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.VersionInfo;
 import com.fitgreat.airfacerobot.versionupdate.VersionUtils;
 import com.fitgreat.archmvp.base.okhttp.BaseResponse;
@@ -30,6 +35,7 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
@@ -37,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +72,14 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     //当前执行任务信息
     private OperationInfo operationOne;
     //当前导航点信息
+
     private LocationEntity locationOne;
+    String basePath = Environment.getExternalStorageDirectory().getPath() + "/ExternalResource/";
+    //中文地图本地存储路径
+    String currentChineseMapPath = basePath + "currentChineseMap.png";
+    //英文地图本地存储路径
+    String currentEnglishMapPath = basePath + "currentEnglishMap.png";
+
 
     /**
      * 检查hardware版本更新
@@ -189,7 +203,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                                 handNavigationPointCash(msgObj);
                                 //获取执行任务数据
                                 getOperationList(robotInfo.getF_HospitalId());
-                                LogUtils.json(TAG, "获取导航地点信息locationList->" + JSON.toJSONString(locationList));
                             }
                         } else {
                             mView.getLocationFailure(msg);
@@ -319,10 +332,54 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         }
         //地图信息缓存
         String mapString = msgObj.getString("map");
-        LogUtils.json(TAG, mapString);
+//        LogUtils.json(TAG, mapString);
         SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, mapString);
+        MapEntity mapEntity = JSON.parseObject(mapString, MapEntity.class);
+        //下载地图文件到本地
+        File parentFile = new File(basePath);
+        if (!parentFile.exists()) {
+            parentFile.mkdir();
+        }
+        //下载中文地图
+        File currentChineseMapFile = new File(currentChineseMapPath);
+        if (currentChineseMapFile.exists()) {
+            currentChineseMapFile.delete();
+        }
+        LogUtils.d(TAG, "中文地图下载路径:" + mapEntity.getF_MapFileUrl());
+        downloadMap(mapEntity.getF_MapFileUrl(), currentChineseMapPath);
+        //下载英文地图
+        File currentEnglishMapFile = new File(currentEnglishMapPath);
+        if (currentEnglishMapFile.exists()) {
+            currentEnglishMapFile.delete();
+        }
+        LogUtils.d(TAG, "英文地图下载路径:" + mapEntity.getF_EMapUrl());
+        downloadMap(mapEntity.getF_EMapUrl(), currentEnglishMapPath);
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
+    }
+
+    /**
+     * 下载地图到本地
+     *
+     * @param downloadMapUrl 下载地图url
+     * @param saveMapPath    本地保存地图文件路径
+     */
+    private void downloadMap(String downloadMapUrl, String saveMapPath) {
+        DownloadUtils.download(downloadMapUrl, saveMapPath, false, new DownloadUtils.OnDownloadListener() {
+            @Override
+            public void onDownloadSuccess(String filePath) {
+                LogUtils.d(TAG, "地图下载成功:" + filePath);
+            }
+
+            @Override
+            public void onDownloading(int progress) {
+            }
+
+            @Override
+            public void onDownloadFailed(Exception e) {
+                LogUtils.e(TAG, "地图下载失败:" + e.getMessage());
+            }
+        });
     }
 
     /**

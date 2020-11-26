@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
+import com.bumptech.glide.Glide;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -178,6 +179,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         animationDrawable.start();
         //医院介绍工作流启动标志
         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+
     }
 
     /**
@@ -276,9 +278,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             if (robotInfoData != null) {
                 mRobotName.setText(robotInfoData.getF_Name());
             }
-            //进入首页语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
-            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
-            mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
+            //院内介绍流程没启动时进入首页,语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
+            boolean startIntroductionWorkFlowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+            if (!startIntroductionWorkFlowTag) {
+                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
+                mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
+            }
             //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
             introductionTimer = new Timer();
             introductionTimerTask = new TimerTask() {
@@ -300,8 +305,16 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             //启动语音唤醒,打开one shot模式
             EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
         }
+        //清空glide图片缓存
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                Glide.get(MainActivity.this).clearDiskCache();
+                Glide.get(MainActivity.this).clearMemory();
+            }
+        }.start();
     }
-
 
     @Override
     protected void onPause() {

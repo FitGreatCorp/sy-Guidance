@@ -14,7 +14,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 
 public class LanguageUtil {
     /**
-     * 修改语言
+     * 修改设备语言
      *
      * @param context 上下文
      * @return

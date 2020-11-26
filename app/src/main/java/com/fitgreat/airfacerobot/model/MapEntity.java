@@ -30,6 +30,7 @@ public class MapEntity {
      * Hosptial : null
      * Department : null
      * F_Container : map48963a3a-063d-49db-966b-70bff99eb3a8
+     * F_EMapUrl:null
      */
 
     private String F_Id;
@@ -57,6 +58,7 @@ public class MapEntity {
     private String Hosptial;
     private String Department;
     private String F_Container;
+    private String F_EMapUrl;
 
     public String getF_Id() {
         return F_Id;
@@ -256,5 +258,13 @@ public class MapEntity {
 
     public void setF_Container(String F_Container) {
         this.F_Container = F_Container;
+    }
+
+    public String getF_EMapUrl() {
+        return F_EMapUrl;
+    }
+
+    public void setF_EMapUrl(String f_EMapUrl) {
+        F_EMapUrl = f_EMapUrl;
     }
 }

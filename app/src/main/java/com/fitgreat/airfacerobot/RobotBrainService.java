@@ -491,8 +491,20 @@ public class RobotBrainService extends Service {
                     } else {
                         //单点导航连续三次失败回原点充电
                         navigationTimes = 0;
-                        speechManager.textTtsPlay("当前任务出现异常,我将回原点充电了", "0");
-                        OperationUtils.startSpecialWorkFlow(1);
+                        //当前机器人自动回充工作流启动状态
+                        boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                        if (startRechargeTag) { //自动回充时
+                            instruction_status = "-1";
+                            BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                            //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我"
+                            speechManager.textTtsPlay(getString(R.string.ask_for_help_text), "0");
+                            new Handler().postDelayed(() -> {
+                                speechManager.textTtsPlay(getString(R.string.ask_for_help_text), "0");
+                            }, 5 * 1000);
+                        } else {
+                            speechManager.textTtsPlay(getString(R.string.prompt_task_exception), "0");
+                            OperationUtils.startSpecialWorkFlow(1);
+                        }
                     }
                     break;
                 case "navigation_arrived":  //导航成功  TODO
@@ -1456,9 +1468,9 @@ public class RobotBrainService extends Service {
                                 BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                             }
                         } else if (instructionType.equals("End")) {   //引导流程结束
-                            boolean startGuideWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-                            LogUtils.d("startSpecialWorkFlow", "院内介绍工作流结束重启该工作流  " + startGuideWorkflowTag);
-                            if (startGuideWorkflowTag) {
+                            boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+                            LogUtils.d("startSpecialWorkFlow", "院内介绍工作流结束重启该工作流  " + startIntroductionWorkflowTag);
+                            if (startIntroductionWorkflowTag) {
                                 //重启院内介绍工作流程
                                 OperationUtils.startSpecialWorkFlow(3);
                             }
@@ -1496,12 +1508,7 @@ public class RobotBrainService extends Service {
             if (baseResponse != null) {
                 String type = baseResponse.getType();
                 if (type.equals("success")) {
-                    ExecutorManager.getInstance().executeTask(new Runnable() {
-                        @Override
-                        public void run() {
-                            jRos.op_setAutoMove((byte) 0, 0, 0, 0);
-                        }
-                    });
+                    ExecutorManager.getInstance().executeTask(() -> jRos.op_setAutoMove((byte) 0, 0, 0, 0));
                     try {
                         LogUtils.d(TAG, "operationType = " + operationType);
                         JSONObject jsonObject = new JSONObject();
@@ -1530,11 +1537,18 @@ public class RobotBrainService extends Service {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    //院内介绍引导工作流结束
+                    //院内介绍工作流取消
                     boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
                     if (startIntroductionWorkflowTag) {
                         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
                         LogUtils.d("startSpecialWorkFlow", "院内介绍工作流取消---启动计时器3分钟后再次启动院内介绍工作流----stopTaskCallback-------");
+                    }
+
+                    //自动回充工作流取消
+                    boolean startAutomaticRechargeTag = SpUtils.getBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                    if (startAutomaticRechargeTag) {
+                        SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                        LogUtils.d("startSpecialWorkFlow", "自动回充工作流取消----stopTaskCallback-------");
                     }
                 }
             }

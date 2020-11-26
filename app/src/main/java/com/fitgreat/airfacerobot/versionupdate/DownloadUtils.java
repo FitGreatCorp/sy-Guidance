@@ -51,7 +51,7 @@ public class DownloadUtils {
      * @param filePath 储存下载文件的SDCard目录
      * @param listener 下载监听
      */
-    private static void download(final String url, final String filePath, boolean needHeader, final OnDownloadListener listener) {
+    public static void download(final String url, final String filePath, boolean needHeader, final OnDownloadListener listener) {
         RequestManager.createDownload(url, needHeader, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

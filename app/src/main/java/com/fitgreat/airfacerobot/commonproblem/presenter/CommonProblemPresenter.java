@@ -14,9 +14,11 @@ import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -57,7 +59,7 @@ public class CommonProblemPresenter extends BasePresenterImpl<CommonProblemView>
                             List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
                             LogUtils.json(TAG, JSON.toJSONString(commonProblemEntities));
                             //保存常见问题到本地
-                            SpUtils.putString(MyApp.getContext(),"",JSON.toJSONString(commonProblemEntities));
+                            SpUtils.putString(MyApp.getContext(), "", JSON.toJSONString(commonProblemEntities));
                             mView.showQuestionList(commonProblemEntities);
                         }
                     }

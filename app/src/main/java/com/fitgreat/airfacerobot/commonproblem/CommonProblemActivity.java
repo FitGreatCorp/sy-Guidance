@@ -34,6 +34,7 @@ import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 
@@ -120,9 +121,18 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     }
 
     private void playProblem(CommonProblemEntity commonProblemEntity) {
-        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_Answer()));
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+        if (currentLanguage!=null&&currentLanguage.equals("zh")){
+            broadCastProblem(commonProblemEntity.getF_Answer());
+        }else {
+            broadCastProblem(commonProblemEntity.getF_EAnswer());
+        }
+    }
+
+    private void broadCastProblem(String broadCastAnswer) {
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, broadCastAnswer));
         //页面答案显示
-        mCommonProblemAnswer.setText(commonProblemEntity.getF_Answer());
+        mCommonProblemAnswer.setText(broadCastAnswer);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

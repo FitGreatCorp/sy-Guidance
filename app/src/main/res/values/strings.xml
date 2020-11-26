@@ -74,4 +74,6 @@
     <string name="prompt_no_navigation">该地点不在我设定位置里,可以说个我知道的地点带你去哦。</string>
     <string name="emergency_click_prompt">抱歉我的急停按钮已启动，无法执行该任务。</string>
     <string name="prompt_problem_has_no">该问题我不知道呢,可以换个问题吗。</string>
+    <string name="prompt_task_exception">当前任务出现异常,我将回原点充电了。</string>
+    <string name="ask_for_help_text">护士姐姐，请帮帮我。</string>
 </resources>

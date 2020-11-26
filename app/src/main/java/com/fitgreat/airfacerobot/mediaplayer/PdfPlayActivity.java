@@ -5,6 +5,7 @@ import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
@@ -18,12 +19,17 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.github.barteksc.pdfviewer.PDFView;
+
 import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
+
 import butterknife.OnClick;
+
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;
+
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 
 public class PdfPlayActivity extends MvpBaseActivity {
@@ -90,7 +96,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
                 .onPageScroll((page, positionOffset) -> {
                     if ((page == (totalpage - 1)) || (page == (totalpage - 2))) {
                         playEndTipTime++;
-                        if (playEndTipTime==1){
+                        if (playEndTipTime == 1) {
                             finishInstruction("2");
                         }
                     }
@@ -199,10 +205,10 @@ public class PdfPlayActivity extends MvpBaseActivity {
         EventBus.getDefault().post(initUiEvent);
     }
 
-    @OnClick({R.id.pdf_view})
+    @OnClick({R.id.main_view})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.pdf_view:  //返回首页,终止当前工作流执行
+            case R.id.main_view:  //返回首页,终止当前工作流执行
                 SignalDataEvent instruct = new SignalDataEvent();
                 instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
                 instruct.setInstructionId(instructionId);
