@@ -328,6 +328,10 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             if (locationObj.has("S_Y")) {
                 locationEntity.setS_Y(locationObj.getString("S_Y"));
             }
+            //导航点位置英文名字
+            if (locationObj.has("F_EName")) {
+                locationEntity.setF_EName(locationObj.getString("F_EName"));
+            }
             locationList.add(locationEntity);
         }
         //地图信息缓存

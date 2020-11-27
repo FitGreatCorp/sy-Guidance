@@ -1,32 +1,20 @@
 package com.fitgreat.airfacerobot.base;
 
-import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.ui.BaseView;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.gyf.barlibrary.ImmersionBar;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-
 
 /**
  * MVPPlugin
@@ -41,7 +29,7 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
     public T mPresenter;
     protected ImmersionBar mImmersionBar;
     private Unbinder unbinder;
-    private NetWorkChangeBroadcastReceiver myReceiver;
+    private BaseChangeBroadcastReceiver myReceiver;
     public String NETWORK_CONNECTION_CHECK_SUCCESS = "network.connection.check_success";
     public String NETWORK_CONNECTION_CHECK_FAILURE = "network.connection.check_failure";
     public String ROS_CONNECTION_CHECK_FAILURE = "ros.connection.check_failure";
@@ -64,7 +52,7 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         }
         initData();
         //注册监听广播
-        myReceiver = new NetWorkChangeBroadcastReceiver();
+        myReceiver = new BaseChangeBroadcastReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(NETWORK_CONNECTION_CHECK_SUCCESS);
         filter.addAction(NETWORK_CONNECTION_CHECK_FAILURE);
@@ -152,7 +140,7 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
      */
     public abstract void disconnectRos();
 
-    private class NetWorkChangeBroadcastReceiver extends BroadcastReceiver {
+    private class BaseChangeBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             LogUtils.d(TAG, "NetWorkChangeBroadcastReceiver");

@@ -1,6 +1,7 @@
 package com.fitgreat.airfacerobot.chosedestination.presenter;
 
 import com.alibaba.fastjson.JSON;
+import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
@@ -17,10 +18,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
 import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
+import com.fitgreat.archmvp.base.util.SpUtils;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinationView> {
@@ -80,6 +84,8 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                 @Override
                 public void onFailure(Call call, IOException e) {
                     LogUtils.e("startSpecialWorkFlow", ":发起活动流程失败:onFailure=>" + e.toString());
+                    //单点导航任务结束
+                    SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                 }
 
                 @Override
@@ -99,6 +105,9 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                             BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
                             //获取流程中的下一步操作
                             getNextStepInfo(actionId);
+                        }else {
+                            //单点导航任务结束
+                            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -120,6 +129,8 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             @Override
             public void onFailure(Call call, IOException e) {
                 LogUtils.e(TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
+                //单点导航任务结束
+                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
 
             @Override
@@ -146,12 +157,16 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                                 autoMoveEvent.setX(nextOperationData.getF_X());
                                 autoMoveEvent.setY(nextOperationData.getF_Y());
                                 autoMoveEvent.setE(nextOperationData.getF_Z());
+                                autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
                                 LogUtils.d("startSpecialWorkFlow", "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
                                 autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                 EventBus.getDefault().post(autoMoveEvent);
 
                             }
                         }
+                    }else {
+                        //单点导航任务结束
+                        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

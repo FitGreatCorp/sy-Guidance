@@ -33,6 +33,8 @@ public class NextOperationData {
     private String F_Status;
     private String operationType;
     private String F_Container;
+    private String F_InstructionEnName;
+
 
     public String getF_RobotOperationId() {
         return F_RobotOperationId;
@@ -120,5 +122,13 @@ public class NextOperationData {
 
     public void setF_Container(String F_Container) {
         this.F_Container = F_Container;
+    }
+
+    public String getF_InstructionEnName() {
+        return F_InstructionEnName;
+    }
+
+    public void setF_InstructionEnName(String f_InstructionEnName) {
+        F_InstructionEnName = f_InstructionEnName;
     }
 }

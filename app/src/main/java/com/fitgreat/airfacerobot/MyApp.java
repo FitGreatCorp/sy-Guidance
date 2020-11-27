@@ -3,22 +3,12 @@ package com.fitgreat.airfacerobot;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.DisplayMetrics;
-
 import com.fitgreat.airfacerobot.launcher.utils.CrashHandler;
-import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
-import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
-
-import java.util.Locale;
-
 
 /**
  * app启动入口<p>
@@ -50,13 +40,11 @@ public class MyApp extends Application {
                 //重启应用
                 RouteUtils.goHome(this);
             }
-        }, 5 * 1000);
-        LanguageUtil.changeAppLanguage(this);
+        }, 10 * 1000);
         LogUtils.d(TAG, "-----------START_APP_TAG------");
         MyCrashHandler handler = new MyCrashHandler();
         Thread.setDefaultUncaughtExceptionHandler(handler);
     }
-
     private void registerLifecycle() {
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override

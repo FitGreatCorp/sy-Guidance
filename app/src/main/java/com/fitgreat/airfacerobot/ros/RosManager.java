@@ -4,14 +4,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.fitgreat.airfacerobot.constants.RobotConfig;
-import com.fitgreat.airfacerobot.model.InitEvent;
+import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.RobotInfoUtils;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
+import com.fitgreat.airfacerobot.ros.moudel.RosInfo;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.ros.address.InetAddressFactory;
+import org.ros.exception.RemoteException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
@@ -29,6 +33,8 @@ import org.ros.node.topic.Subscriber;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import airface_control_msgs.CommandFileRequest;
 import airface_control_msgs.CommandFileResponse;
@@ -58,6 +64,7 @@ import sensor_msgs.BatteryState;
 import std_msgs.Byte;
 
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
 /**
  * ros工控制主机管理者<p>
@@ -84,6 +91,10 @@ public class RosManager {
     private Publisher<Byte> ctrlPublisher = null;
     private Publisher<Twist> velPublisher = null;
     private Subscriber<BatteryState> batteryStateSubscriber;
+
+
+    //是否在墙内订阅
+    private Subscriber<Byte> whetherInsideWallSubscriber;
 
     /**
      * long power_supply_status;//是否充电，
@@ -154,15 +165,18 @@ public class RosManager {
     /**
      * 获取附近有没有人
      */
-    private ServiceClient<SetMapRequest, SetMapResponse> clientHasPerson = null;
+//    private ServiceClient<autoparkRequest, autoparkResponse> clientHasPerson = null;
+    private ServiceClient<autoparkRequest, autoparkResponse> clientHasPerson = null;
 
     private Twist twist = null;
-    private geometry_msgs.Vector3 angular = null;
-    private geometry_msgs.Vector3 linear = null;
+    private Vector3 angular = null;
+    private Vector3 linear = null;
 
     private Twist stopTwist = null;
-    private geometry_msgs.Vector3 stopAngular = null;
+    private Vector3 stopAngular = null;
     private Vector3 stopLinear = null;
+    private Timer rosManagerInitTimer = null;
+    private TimerTask rosManagerInitTimerTask = null;
 
     private Handler myHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -190,38 +204,50 @@ public class RosManager {
     }
 
     /**
+     * 人靠近设备播放语音提示次数
+     */
+    private int playTipTime = 0;
+
+    /**
      * 判断附近是否有人接口
      *
      * @param type
      */
     public void judgmentHasPerson(byte type) {
         try {
-            if (!isConnect()) {
-                LogUtils.e(TAG, "-------connect node is null or not init--------");
-                return;
-            }
             LogUtils.d(TAG, "judgmentHasPerson");
-            if (null == clientAutoTracking) {
+            if (null == clientHasPerson) {
                 try {
-                    clientAutoTracking = mConnectedNode.newServiceClient("checkStatus", autopark._TYPE);
+                    clientHasPerson = mConnectedNode.newServiceClient(RosInfo.JUDGMENT_HAS_PERSON, autopark._TYPE);
                 } catch (ServiceNotFoundException e) {
+                    LogUtils.e(TAG, "ServiceNotFoundException: " + e.getMessage());
                     e.printStackTrace();
                 }
-                if (null == clientAutoTracking) {
+                if (null == clientHasPerson) {
                     return;
                 }
             }
-            autoparkRequest msg = clientAutoTracking.newMessage();
+            autoparkRequest msg = clientHasPerson.newMessage();
             msg.setEid("10");
             msg.setType(type);
-            clientAutoTracking.call(msg, new ServiceResponseListener<autoparkResponse>() {
+            clientHasPerson.call(msg, new ServiceResponseListener<autoparkResponse>() {
                 @Override
-                public void onSuccess(autoparkResponse setmodeResponse) {
-                    LogUtils.d(TAG, "judgmentHasPerson success ");
+                public void onSuccess(autoparkResponse setmodeResponse) {    //  getResult  为 false  机器附近有物体  true   没有物体
+                    LogUtils.d(TAG, "judgmentHasPerson success    getMsg   " + setmodeResponse.getMsg() + "   getResult      " + setmodeResponse.getResult() + "  机器人状态  " + RobotInfoUtils.getRobotRunningStatus() + "  播放次数 " + playTipTime);
+                    if (!setmodeResponse.getResult() && RobotInfoUtils.getRobotRunningStatus().equals("1")) {
+                        LogUtils.d(TAG, "机器人当前空闲,机器人附近有障碍物");
+                        playTipTime++;
+                        if (playTipTime == 1) {  //人靠近提示只播放一次
+//                            playShowText("你好，我是小白，很高兴为您服务如需登记可以点击来访登记，如需要大厅参观，点击引导讲解，小白会为您带路并讲解相关知识呢。");
+                        }
+                    } else {
+                        LogUtils.d(TAG, "机器人当前不空闲,机器人附近没有障碍物");
+                        playTipTime = 0;
+                    }
                 }
 
                 @Override
-                public void onFailure(org.ros.exception.RemoteException e) {
+                public void onFailure(RemoteException e) {
                     LogUtils.d(TAG, "judgmentHasPerson Failure");
                 }
             });
@@ -230,47 +256,9 @@ public class RosManager {
         }
     }
 
-    /**
-     *@param
-     */
-//    public void judgmentHasPerson(byte mode) {
-//        try {
-//            if (!isConnect()) {
-//                LogUtils.e(TAG, "-------connect node is null or not init--------");
-//                return;
-//            }
-//            if (null == clientPowerLock) {
-//                LogUtils.e(TAG, "clientPowerLock is null");
-//                try {
-//                    clientHasPerson = mConnectedNode.newServiceClient(SET_PWOER_LOCK_, setmode._TYPE);
-//                } catch (ServiceNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//                if (null == clientPowerLock) {
-//                    return;
-//                }
-//            }
-//            setmodeRequest msg = clientPowerLock.newMessage();
-//            msg.setMode(mode);
-//            clientPowerLock.call(msg, new ServiceResponseListener<setmodeResponse>() {
-//                @Override
-//                public void onSuccess(setmodeResponse setmodeResponse) {
-//                    LogUtils.d(TAG, "sendPowerLock success");
-//                }
-//
-//                @Override
-//                public void onFailure(org.ros.exception.RemoteException e) {
-//                    LogUtils.d(TAG, "sendPowerLock Failure");
-//                }
-//            });
-//        } catch (Exception e) {
-//            LogUtils.e(TAG, "sendPowerLock error:" + e.getMessage());
-//        }
-//    }
+
     public synchronized void initNode() {
-//        if(!EventBus.getDefault().isRegistered(this)){
-//            EventBus.getDefault().register(this);
-//        }
+        nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
         LogUtils.d(TAG, "-----------------init ros node----------------");
         mConnect = false;
         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
@@ -285,7 +273,6 @@ public class RosManager {
                     return;
                 }
                 LogUtils.d(TAG, "---connectedNode:" + connectedNode.getName() + " current time:" + connectedNode.getCurrentTime());
-//                updateRosProgress(40);
                 mConnectedNode = connectedNode;
                 firstMsg = false;
                 startCreatePublish();
@@ -298,6 +285,15 @@ public class RosManager {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
+
+//                rosManagerInitTimer = new Timer();
+//                rosManagerInitTimerTask = new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        judgmentHasPerson((byte) 3);
+//                    }
+//                };
+//                rosManagerInitTimer.schedule(rosManagerInitTimerTask, 0, 5 * 1000);
             }
 
             @Override
@@ -345,16 +341,28 @@ public class RosManager {
 
             Subscriber<AutoMoveInfo> moveStateSubscriber = mConnectedNode.newSubscriber("/move_state", AutoMoveInfo._TYPE);
             moveStateSubscriber.addMessageListener(moveStateMessageListener);
-
             LogUtils.d(TAG, "startSubscriberListen");
-            //create and listen /ip_battery_state
-            batteryStateSubscriber = mConnectedNode.newSubscriber("/ip_battery_state", BatteryState._TYPE);
-
-            batteryStateSubscriber.addMessageListener(batteryStateMessageListener);
+            //机器人是否在墙体内   footprint_state_       /move_base/rotate_recovery/footprint_state_
+            whetherInsideWallSubscriber = mConnectedNode.newSubscriber("/move_base/rotate_recovery/footprint_state_", Byte._TYPE);
+            whetherInsideWallSubscriber.addMessageListener(whetherInsideWallMessageListener);
         } catch (Exception e) {
             LogUtils.e(TAG, "startSubscriberListen error:" + e.getMessage());
         }
     }
+
+    /**
+     * 是否在墙内消息返回
+     */
+    private MessageListener<Byte> whetherInsideWallMessageListener = new MessageListener<Byte>() {
+
+        @Override
+        public void onNewMessage(Byte aByte) {
+            LogUtils.d(TAG, "whetherInsideWallMessageListener : " + aByte.getData());
+            if ((int) aByte.getData() == 1) { //机器人在墙内 需要帮忙移动出来
+                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.ask_for_help_text)));
+            }
+        }
+    };
 
     /**
      * 是否急停状态
@@ -968,7 +976,6 @@ public class RosManager {
 //            LogUtils.d(TAG, "-----------onNewMessage  batteryState:" + firstMsg);
             change = false;
             if (!firstMsg) {
-                updateRosProgress(100);
                 getRosVersion();
                 firstMsg = true;
             }
@@ -1142,11 +1149,4 @@ public class RosManager {
 //                break;
 //        }
 //    }
-
-    /**
-     * 更新UI ros初始化进度
-     */
-    private void updateRosProgress(int progress) {
-        EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_ROS_PROGRESS, String.valueOf(progress)));
-    }
 }

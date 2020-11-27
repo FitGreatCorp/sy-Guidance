@@ -1,5 +1,9 @@
 package com.fitgreat.airfacerobot.chosedestination;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -35,12 +39,15 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.blankj.utilcode.util.StringUtils.getString;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIGATION_PAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 
@@ -63,6 +70,8 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     RelativeLayout mChoseDestinationContainer;
     @BindView(R.id.chose_destination_map_back)
     ImageView mChoseDestinationMapBack;
+    private String currentLanguage;
+    private CloseBroadcastReceiver closeBroadcastReceiver;
 
     @Override
     public ChoseDestinationPresenter createPresenter() {
@@ -100,10 +109,20 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         //启动语音唤醒,打开one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
         //首页识别单点导航指令跳转到当前页面
-        if (getIntent().hasExtra("bundle")) {
+        if (getIntent().hasExtra("bundle")) { //通过指令进入当前页面发起导航任务
             Bundle bundle = getIntent().getBundleExtra("bundle");
             LocationEntity locationEntity = (LocationEntity) bundle.getSerializable("LocationEntity");
-            showDialogNavigation(true, "你现在要去\t" + locationEntity.getF_Name() + "\t吗?\t点击\"是\"我会带你过去哦", "是", "否", locationEntity);
+            //拼接单点导航提示弹窗内容
+            StringBuilder tipContent = new StringBuilder();
+            tipContent.append(getString(R.string.start_chose_destination_tip_one));
+            if (currentLanguage != null && currentLanguage.equals("zh")) {
+                tipContent.append(locationEntity.getF_Name());
+            } else {
+                tipContent.append(locationEntity.getF_EName());
+            }
+            tipContent.append(getString(R.string.start_chose_destination_tip_two));
+            //单点导航提示弹窗
+            showDialogNavigation(true, tipContent.toString(), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
         }
         //导航点信息汇总
         locationList = CashUtils.getLocationList();
@@ -113,8 +132,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         LogUtils.json(TAG, mapInfoString);
         mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
         //根据当前语言加载展示地图
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
-
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
         if (currentLanguage != null && currentLanguage.equals("zh")) {
             //加载展示中文地图
             Glide.with(this).load(currentChineseMapPath).into(mChoseDestinationMapBack);
@@ -130,15 +148,52 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             imageButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_map_location_nor));
             //单点位置按钮添加点击事件
             imageButton.setOnClickListener(v -> {
-                showDialogNavigation(true, "你现在要去\t" + locationEntity.getF_Name() + "\t吗?\t点击\"是\"我会带你过去哦", "是", "否", locationEntity);
-                //自动回充工作流结束
-                SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                //单点导航任务启动标志
+                boolean navigationStartTag = SpUtils.getBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                if (!navigationStartTag) { //当前没有单点导航任务启动时,可以再次启动单点导航任务
+                    //单点导航任务点击位置按钮后默认为启动
+                    SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, true);
+                    StringBuilder tipContent = new StringBuilder();
+                    tipContent.append(getString(R.string.start_chose_destination_tip_one));
+                    if (currentLanguage != null && currentLanguage.equals("zh")) {
+                        tipContent.append(locationEntity.getF_Name());
+                    } else {
+                        tipContent.append(locationEntity.getF_EName());
+                    }
+                    tipContent.append(getString(R.string.start_chose_destination_tip_two));
+                    showDialogNavigation(true, tipContent.toString(), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
+                    //自动回充工作流结束
+                    SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                }else { //机器人忙碌中,已经发起单点导航任务
+                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getString(R.string.prompt_while_busy)));
+                }
             });
             //设置导航点按钮位置
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             layoutParams.topMargin = Integer.parseInt(locationEntity.getS_Y()) - 85;
             layoutParams.leftMargin = Integer.parseInt(locationEntity.getS_X()) - 30;
             mChoseDestinationContainer.addView(imageButton, layoutParams);
+        }
+        //注册监听关闭选择导航页面广播
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(CLOSE_SELECT_NAVIGATION_PAGE);
+        closeBroadcastReceiver = new CloseBroadcastReceiver();
+        registerReceiver(closeBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    public Context getContext() {
+        return null;
+    }
+
+    private class CloseBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LogUtils.d(TAG, "CloseBroadcastReceiver");
+            if (intent.getAction().equals(CLOSE_SELECT_NAVIGATION_PAGE)) {
+                LogUtils.d(TAG, "关闭选择导航页面");
+                finish();
+            }
         }
     }
 
@@ -158,7 +213,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         //语音播报提示
         EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, dialogContent));
         //单点导航任务弹窗提示确认
-        YesOrNoDialogFragment yesOrNoDialogFragment = YesOrNoDialogFragment.newInstance("提示", dialogContent, yesBtText, noBtText);
+        YesOrNoDialogFragment yesOrNoDialogFragment = YesOrNoDialogFragment.newInstance(getString(R.string.start_chose_destination_dialog_title), dialogContent, yesBtText, noBtText);
         yesOrNoDialogFragment.show(getSupportFragmentManager(), "navigation");
         yesOrNoDialogFragment.setSelectYesNoListener(new YesOrNoDialogFragment.SelectYesNoListener() {
             @Override

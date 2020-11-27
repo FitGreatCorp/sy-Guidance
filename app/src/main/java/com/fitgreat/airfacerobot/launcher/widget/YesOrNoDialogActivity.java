@@ -13,20 +13,21 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
-
+import com.fitgreat.archmvp.base.util.SpUtils;
 import org.greenrobot.eventbus.EventBus;
-
 import java.util.Timer;
 import java.util.TimerTask;
-
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIGATION_PAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
 /**
@@ -64,8 +65,10 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         String dialogContent = intent.getStringExtra(DIALOG_CONTENT);
         String yesBtContent = intent.getStringExtra(DIALOG_YES);
         String noBtContent = intent.getStringExtra(DIALOG_NO);
-        //当前导航地点
+        //当前导航地点中文
         String instructionName = intent.getStringExtra("instructionName");
+        //当前导航地点英文
+        String instructionEnName = intent.getStringExtra("instructionEnName");
 
         dialogTitleView.setText(dialogTitle);
         dialogContentView.setText(dialogContent);
@@ -81,8 +84,17 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
                     break;
             }
         });
-        //导航到达终点后语音提示
-        playShowText("已到" + instructionName + "啦，是否还需要其他服务呢，如不需要请点击\"不需要\"让我回去吧。");
+        //导航到达终点后弹窗同时,语音提示根据中英文设置拼接提示内容
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+        StringBuilder promptContent = new StringBuilder();
+        promptContent.append(getString(R.string.arrive_destination_prompt_one));
+        if (currentLanguage != null && currentLanguage.equals("zh")) {
+            promptContent.append(instructionName);
+        } else {
+            promptContent.append(instructionEnName);
+        }
+        promptContent.append(getString(R.string.arrive_destination_prompt_two));
+        playShowText(promptContent.toString());
         //1分钟计时器计时
         timer = new Timer();
         timerTask = new TimerTask() {
@@ -118,7 +130,9 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
     }
 
     private void choseNoBt() {
-        playShowText("我要回去了");
+        //关闭选择导航页面
+        sendBroadcast( new Intent(CLOSE_SELECT_NAVIGATION_PAGE));
+        playShowText(getString(R.string.go_back_tip));
         //返回原点充电
         OperationUtils.startSpecialWorkFlow(1);
         timerTask.cancel();

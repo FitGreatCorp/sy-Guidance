@@ -107,9 +107,8 @@ public class RobotInitActivity extends MvpBaseActivity {
     public void initData() {
         LogUtils.d(TAG, "-------RobotInitActivity  create--------");
         EventBus.getDefault().register(this);
-        LanguageUtil.changeAppLanguage(this);
-//        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
-//        LanguageUtil.changeAppLanguage(this, currentLanguage, RobotInitActivity.class);
+        //设置机器人最新的语言
+        LanguageUtil.changeAppLanguage(RobotInitActivity.this);
 
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(true);
@@ -118,7 +117,6 @@ public class RobotInitActivity extends MvpBaseActivity {
         commonTipDialog = new CommonTipDialog(this);
         rxPermissions = new RxPermissions(this);
         startCheckSelf();
-
         LogUtils.d("LanguageSettings", "---RobotInitActivity--------" + Locale.getDefault().getLanguage());
     }
 

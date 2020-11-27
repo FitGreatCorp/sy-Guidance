@@ -201,9 +201,9 @@ public interface RobotConfig {
     String INIT_ROS_KEY_TAG = "init_ros_key_tag";
 
     /**
-     * 单点导航任务成功提示
+     * 单点导航任务发起标志
      */
-    String NAVIGATION_SUCCESS_TIP_TAG = "navigation_success_tip_tag";
+    String NAVIGATION_START_TAG = "navigation_start_tag";
 
     /**
      * 是否继续进行下一个导航任务
@@ -235,4 +235,9 @@ public interface RobotConfig {
      * 机器人是否为控制模式
      */
     String IS_CONTROL_MODEL = "is_control_model";
+
+    /**
+     * 关闭选择导航页面
+     */
+    String CLOSE_SELECT_NAVIGATION_PAGE = "close_select_navigation_page";
 }

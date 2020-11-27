@@ -7,6 +7,8 @@ public class LocationEntity implements Serializable {
     String F_Id;
     String F_MapId;
     String F_Name;
+    //位置英文名字
+    String F_EName;
     String F_X;
     String F_Y;
     String F_Z;
@@ -86,5 +88,13 @@ public class LocationEntity implements Serializable {
 
     public void setS_Y(String s_Y) {
         S_Y = s_Y;
+    }
+
+    public String getF_EName() {
+        return F_EName;
+    }
+
+    public void setF_EName(String f_EName) {
+        F_EName = f_EName;
     }
 }

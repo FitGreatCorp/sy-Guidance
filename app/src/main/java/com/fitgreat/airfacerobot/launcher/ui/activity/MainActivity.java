@@ -67,6 +67,7 @@ import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.ShellCmdUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.fitgreat.archmvp.base.util.UIUtils;
+import com.fitgreat.ros.message.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -81,6 +82,7 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.blankj.utilcode.util.StringUtils.getString;
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
@@ -306,7 +308,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
         }
         //清空glide图片缓存
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 super.run();
@@ -409,6 +411,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
+    @Override
+    public void recreate() {
+        super.recreate();
+        LogUtils.d("recreate","   recreate   MainActivity    ");
+    }
+
     /**
      * 启动院内介绍工作流
      */
@@ -416,7 +424,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //启动院内介绍工作流程次数限制
         boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
         if (startIntroductionWorkflowTag) {
-            playShowText("抱歉，机器人当前正在忙碌中，请稍后。。。");
+            playShowText(getString(R.string.prompt_while_busy));
             return;
         }
         OperationUtils.startSpecialWorkFlow(3);
@@ -452,11 +460,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      */
     public void setLanguage(String language, Button selectButton, Button normalButton) {
         SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, language);
-        LanguageUtil.changeAppLanguage(MainActivity.this);
-        finish();
-        RouteUtils.goHome(MainActivity.this);
         selectButton.setSelected(true);
         normalButton.setSelected(false);
+        LanguageUtil.changeAppLanguage(MainActivity.this);
+        clearActivity();
+        //重启app
+        RouteUtils.goHome(MainActivity.this);
+//        RouteUtils.goHome(MainActivity.this);
     }
 
     /**

@@ -53,7 +53,7 @@ public class YesOrNoDialogFragment extends DialogFragment {
         Point sizePoint = new Point();
         defaultDisplay.getSize(sizePoint);
         attributes.width = (int) ((sizePoint.x) * 0.5);
-        attributes.height = (int) ((sizePoint.y) * 0.35);
+        attributes.height = (int) ((sizePoint.y) * 0.4);
         getDialog().getWindow().setAttributes(attributes);
         //点空白处不能关闭弹窗
         getDialog().setCanceledOnTouchOutside(false);

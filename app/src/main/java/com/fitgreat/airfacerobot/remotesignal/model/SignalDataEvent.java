@@ -15,6 +15,27 @@ public class SignalDataEvent extends BaseEvent {
     private String x;
     private String y;
     private String F_InstructionName;
+    private String F_InstructionEnName;
+    private String instructionId;
+    private String instructionType;
+    private String container;
+    private String operationType;
+    private String produceId;
+    private String connectionId;
+    private double position_X;
+    private double position_Y;
+    private double position_Z;
+    private String rosMoveStatusCode;
+    private boolean move;
+    private String step_id;
+    private String ros_step;
+    private boolean isLocation;
+    private String targetUser;
+    private int powerlock;
+    private String fileUrl;
+    private String direction;
+    private int light_status;
+    private String vertical;
 
     public String getRos_step() {
         return ros_step;
@@ -24,8 +45,6 @@ public class SignalDataEvent extends BaseEvent {
         this.ros_step = ros_step;
     }
 
-    private String ros_step;
-
     public String getStep_id() {
         return step_id;
     }
@@ -33,9 +52,6 @@ public class SignalDataEvent extends BaseEvent {
     public void setStep_id(String step_id) {
         this.step_id = step_id;
     }
-
-    private String step_id;
-
 
     public String getF_InstructionName() {
         return F_InstructionName;
@@ -69,10 +85,6 @@ public class SignalDataEvent extends BaseEvent {
         this.position_Z = position_Z;
     }
 
-    private double position_X;
-    private double position_Y;
-    private double position_Z;
-
     public String getRosMoveStatusCode() {
         return rosMoveStatusCode;
     }
@@ -80,11 +92,6 @@ public class SignalDataEvent extends BaseEvent {
     public void setRosMoveStatusCode(String rosMoveStatusCode) {
         this.rosMoveStatusCode = rosMoveStatusCode;
     }
-
-    private String rosMoveStatusCode;
-
-
-    private boolean move;
 
     public boolean isLocation() {
         return isLocation;
@@ -94,8 +101,6 @@ public class SignalDataEvent extends BaseEvent {
         isLocation = location;
     }
 
-    private boolean isLocation;
-
     public int getPowerlock() {
         return powerlock;
     }
@@ -103,8 +108,6 @@ public class SignalDataEvent extends BaseEvent {
     public void setPowerlock(int powerlock) {
         this.powerlock = powerlock;
     }
-
-    private int powerlock;
 
     public String getTargetUser() {
         return targetUser;
@@ -114,8 +117,6 @@ public class SignalDataEvent extends BaseEvent {
         this.targetUser = targetUser;
     }
 
-    private String targetUser;
-
     public boolean isMove() {
         return move;
     }
@@ -123,13 +124,6 @@ public class SignalDataEvent extends BaseEvent {
     public void setMove(boolean move) {
         this.move = move;
     }
-
-    private String instructionId;
-    private String instructionType;
-    private String container;
-    private String operationType;
-    private String produceId;
-    private String connectionId;
 
     public String getConnectionId() {
         return connectionId;
@@ -163,8 +157,6 @@ public class SignalDataEvent extends BaseEvent {
         this.container = container;
     }
 
-    private String fileUrl;
-
     public String getFileUrl() {
         return fileUrl;
     }
@@ -197,8 +189,6 @@ public class SignalDataEvent extends BaseEvent {
 
     }
 
-    private String direction;
-
     public String getVertical() {
         return vertical;
     }
@@ -207,7 +197,6 @@ public class SignalDataEvent extends BaseEvent {
         this.vertical = vertical;
     }
 
-    private String vertical;
 
     public String getDirection() {
         return direction;
@@ -241,13 +230,19 @@ public class SignalDataEvent extends BaseEvent {
         this.y = y;
     }
 
-    private int light_status;
-
     public int getLight_status() {
         return light_status;
     }
 
     public void setLight_status(int light_status) {
         this.light_status = light_status;
+    }
+
+    public String getF_InstructionEnName() {
+        return F_InstructionEnName;
+    }
+
+    public void setF_InstructionEnName(String f_InstructionEnName) {
+        F_InstructionEnName = f_InstructionEnName;
     }
 }

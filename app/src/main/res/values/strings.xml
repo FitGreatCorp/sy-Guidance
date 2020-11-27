@@ -76,4 +76,23 @@
     <string name="prompt_problem_has_no">该问题我不知道呢,可以换个问题吗。</string>
     <string name="prompt_task_exception">当前任务出现异常,我将回原点充电了。</string>
     <string name="ask_for_help_text">护士姐姐，请帮帮我。</string>
+    <string name="start_chose_destination_tip_one">你现在要去\t</string>
+    <string name="start_chose_destination_tip_two">\t吗?\t点击"是"我会带你过去哦</string>
+    <string name="navigation_success_tip_one">已到达\t</string>
+    <string name="navigation_success_tip_two">\t是否还需要其他服务?</string>
+    <string name="start_chose_destination_dialog_title">提示</string>
+    <string name="task_terminated_title">任务已终止</string>
+    <string name="need_yes_title">需要</string>
+    <string name="need_no_title">不需要</string>
+    <string name="arrive_destination_prompt_one">已到</string>
+    <string name="arrive_destination_prompt_two">啦，是否还需要其他服务呢，如不需要请点击"不需要"让我回去吧。</string>
+    <string name="start_navigation_tip_one">我要去</string>
+    <string name="start_navigation_tip_two">啦</string>
+    <string name="charge_success_tip">充电成功</string>
+    <string name="charge_failed_tip">充电失败，未扫描到充电桩!</string>
+    <string name="navigation_failed_tip_one">抱歉，我无法到达</string>
+    <string name="navigation_failed_tip_two">!</string>
+    <string name="go_back_tip">我要回去了</string>
+    <string name="charging_prompt">我正在自动回充中!</string>
+    <string name="prompt_while_busy">抱歉，机器人当前正在忙碌中，请稍后。。。</string>
 </resources>
