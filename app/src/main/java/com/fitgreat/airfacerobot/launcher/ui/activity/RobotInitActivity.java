@@ -27,6 +27,7 @@ import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.PhoneInfoUtils;
+import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import org.greenrobot.eventbus.EventBus;
@@ -107,8 +108,7 @@ public class RobotInitActivity extends MvpBaseActivity {
     public void initData() {
         LogUtils.d(TAG, "-------RobotInitActivity  create--------");
         EventBus.getDefault().register(this);
-        //设置机器人最新的语言
-        LanguageUtil.changeAppLanguage(RobotInitActivity.this);
+
 
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(true);
@@ -123,17 +123,17 @@ public class RobotInitActivity extends MvpBaseActivity {
     @Override
     public void disconnectNetWork() {
         LogUtils.d("LanguageSettings", "---RobotInitActivity---断网-----");
-//        finish();
-//        RouteUtils.goToActivity(RobotInitActivity.this, RobotInitActivity.class);
+        finish();
+        RouteUtils.goToActivity(RobotInitActivity.this, RobotInitActivity.class);
     }
 
     @Override
     public void disconnectRos() {
         LogUtils.d("LanguageSettings", "---RobotInitActivity---jros断开-----");
         //ros连接失败,重新了解ros机器人
-//        ros_initaled = false;
-//        updateCheckProgress(RobotConfig.INIT_TYPE_ROS_PROGRESS, "0");
-//        initRos();
+        ros_initaled = false;
+        updateCheckProgress(RobotConfig.INIT_TYPE_ROS_PROGRESS, "0");
+        initRos();
     }
 
     @OnClick({R.id.btn_retry})

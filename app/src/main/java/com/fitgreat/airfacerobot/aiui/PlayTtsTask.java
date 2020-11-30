@@ -9,6 +9,7 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.model.NavigationTip;
+import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SpeakEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
@@ -21,6 +22,7 @@ import java.io.File;
 
 import okhttp3.Callback;
 
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_TASK_END;
 
 /**
@@ -118,7 +120,6 @@ public class PlayTtsTask {
         LogUtils.d(TAG, "playContent.lengt() ========= " + playContent.length() + " , time =====" + (playContent.length() >= 150 ? playContent.length() * 245 / 1000 : playContent.length() * 230 / 1000));
         if (!TextUtils.isEmpty(playContent) && mSpeechManager != null) {
             LogUtils.d(TAG, "length:" + playContent.trim().length() + "\ncontent:" + playContent.trim());
-//            aiuiManager.onPlayLineTTS(playContent.trim());
             //语音播报监控标号
             int broadcastCount = 0;
             if (playContent.length() <= 1224) {
@@ -161,9 +162,12 @@ public class PlayTtsTask {
                         }
                         setRunning(false);
                         LogUtils.d(TAG, "--------tts play end-------");
-                        SpeakEvent event = new SpeakEvent();
-                        event.setType(MSG_TTS_TASK_END);
-                        EventBus.getDefault().post(event);
+                        //文本播放结束,更新任务执行状态获取下一步操作任务
+                        SignalDataEvent instruct = new SignalDataEvent();
+                        instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+                        instruct.setInstructionId(instructionId);
+                        instruct.setAction("2");
+                        EventBus.getDefault().post(instruct);
                     }
                 }
             });

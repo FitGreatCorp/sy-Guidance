@@ -83,10 +83,12 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         return R.layout.activity_chose_destination;
     }
 
+
     @Override
-    protected void onPause() {
-        super.onPause();
-        Glide.get(this).clearMemory();
+    protected void onDestroy() {
+        super.onDestroy();
+        //单点导航任务结束
+        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
     }
 
     @OnClick({R.id.chose_destination_container})
@@ -102,6 +104,8 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
     @Override
     public void initData() {
+        //单点导航任务结束
+        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         //显示悬浮窗
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
@@ -225,6 +229,8 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
             @Override
             public void selectNo() {
+                //单点导航任务结束
+                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
         });
 

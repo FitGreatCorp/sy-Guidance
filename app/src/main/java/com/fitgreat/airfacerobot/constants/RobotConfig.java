@@ -240,4 +240,9 @@ public interface RobotConfig {
      * 关闭选择导航页面
      */
     String CLOSE_SELECT_NAVIGATION_PAGE = "close_select_navigation_page";
+
+    /**
+     * 关闭首页点击启动院内工作流提示弹窗
+     */
+    String CLOSE_START_INTRODUCTION_DIALOG = "close_start_introduction_dialog";
 }

@@ -20,16 +20,17 @@
         android:id="@+id/dialog_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/px25"
-        android:layout_marginRight="@dimen/px25"
+        android:maxLength="200"
         android:layout_marginTop="@dimen/px20"
-        android:gravity="center|left"
+        android:gravity="left|center"
         android:maxLines="2"
         android:ellipsize="end"
         android:lineSpacingExtra="@dimen/px10"
         android:textColor="@android:color/black"
         android:textSize="@dimen/textSize15"
         app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="@dimen/px15"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dialog_title" />
 
     <RadioGroup

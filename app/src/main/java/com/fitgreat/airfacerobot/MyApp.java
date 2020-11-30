@@ -6,7 +6,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+
+import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.CrashHandler;
+import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 
@@ -33,14 +36,14 @@ public class MyApp extends Application {
         crashHandler.init(getApplicationContext());
         mContext = this;
         registerLifecycle();
-        //app进程唤醒5秒后如果主页没启动，则启动主页
+        //app进程唤醒15秒后如果主页没启动，则启动主页
         handler.postDelayed(() -> {
-            LogUtils.d("startSpecialWorkFlow", "  isMainActivityRunning  ,  " + !isMainActivityRunning);
+            LogUtils.d(TAG, "  isMainActivityRunning  ,  " + !isMainActivityRunning);
             if (!isMainActivityRunning) {
                 //重启应用
                 RouteUtils.goHome(this);
             }
-        }, 10 * 1000);
+        }, 5 * 1000);
         LogUtils.d(TAG, "-----------START_APP_TAG------");
         MyCrashHandler handler = new MyCrashHandler();
         Thread.setDefaultUncaughtExceptionHandler(handler);

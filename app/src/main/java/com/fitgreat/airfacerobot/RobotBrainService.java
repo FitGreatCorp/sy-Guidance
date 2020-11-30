@@ -100,6 +100,7 @@ import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
@@ -1464,12 +1465,20 @@ public class RobotBrainService extends Service {
                                         handler.postDelayed(() -> startActivity(pdfintent), 2000);
                                         LogUtils.d("startSpecialWorkFlow", "开始播放pdf资料任务\t\t");
                                     } else if (operationType.equals("4")) {
-                                        speakTipsFuture = ExecutorManager.getInstance().executeScheduledTask(speakTipsRunnable, 2, SpUtils.getInt(RobotBrainService.this, "de_time", 10), TimeUnit.SECONDS);
-                                        taskVideoCall = false;
-                                        LogUtils.d("update_instruction", "txt url:" + fileUrl);
-                                        DaemonEvent event = new DaemonEvent(TASK_DIALOG, "4");
-                                        event.extra = instructionName;
-                                        EventBus.getDefault().post(event);
+                                        //发送关闭院内介绍工作流提示弹窗
+                                        sendBroadcast(new Intent(CLOSE_START_INTRODUCTION_DIALOG));
+                                        handler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                if (playTtsTask != null) {
+                                                    playTtsTask.setOnPlayDoneListener((String resultCode) -> {
+                                                        instruction_status = resultCode;
+                                                    });
+                                                    playTtsTask.exePlayTtsTask(container, fileUrl, instructionId, updateInstructionCallback);
+                                                }
+                                            }
+                                        }, 2000);
+                                        LogUtils.d("startSpecialWorkFlow", "开始播放text文本任务\t\t");
                                     } else if (operationType.equals("5")) {
                                         taskVideoCall = false;
                                         jRos.op_runParking((byte) 1);

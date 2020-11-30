@@ -18,8 +18,8 @@ public class LanguageUtil {
      * @return
      */
     public static void changeAppLanguage(Context context) {
-        Resources resources = context.getApplicationContext().getResources();
-        DisplayMetrics dm = resources.getDisplayMetrics();
+        Resources resources = context.getResources();
+        DisplayMetrics displayMetrics = resources.getDisplayMetrics();
         Configuration configuration = resources.getConfiguration();
         //根据设置语言获取Locale
         Locale locale = null;
@@ -32,7 +32,7 @@ public class LanguageUtil {
                 locale = Locale.CHINESE;
                 break;
             case "en":
-                locale = Locale.US;
+                locale = Locale.ENGLISH;
                 break;
         }
         //设置系统语言 Locale
@@ -43,6 +43,6 @@ public class LanguageUtil {
         }
         LogUtils.d("changeAppLanguage", "当前语言：" + currentLanguage);
         //更新系统设置
-        resources.updateConfiguration(configuration, dm);
+        resources.updateConfiguration(configuration, displayMetrics);
     }
 }

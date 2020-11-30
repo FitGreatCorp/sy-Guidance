@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.ui.BaseView;
 import com.fitgreat.archmvp.base.util.LogUtils;
@@ -44,6 +46,8 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         if (isImmersionBarEnabled()) {
             initImmersionBar(false);
         }
+        //设置机器人最新的语言
+        LanguageUtil.changeAppLanguage(this);
         setContentView(getLayoutResource());
         unbinder = ButterKnife.bind(this);
         mPresenter = createPresenter();
@@ -145,12 +149,12 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         public void onReceive(Context context, Intent intent) {
             LogUtils.d(TAG, "NetWorkChangeBroadcastReceiver");
             if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_FAILURE)) {
-                LogUtils.d(TAG, "网路连接断开");
+                LogUtils.d("startSpecialWorkFlow", "网路连接断开");
                 disconnectNetWork();
             } else if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_SUCCESS)) {
-                LogUtils.d(TAG, "网路连接可用");
+                LogUtils.d("startSpecialWorkFlow", "网路连接可用");
             } else if (intent.getAction().equals(ROS_CONNECTION_CHECK_FAILURE)) {
-                LogUtils.d(TAG, "ros连接断开");
+                LogUtils.d("startSpecialWorkFlow", "ros连接断开");
                 disconnectRos();
             }
         }

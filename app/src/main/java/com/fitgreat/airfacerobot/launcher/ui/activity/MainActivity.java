@@ -1,8 +1,12 @@
 package com.fitgreat.airfacerobot.launcher.ui.activity;
 
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Point;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -12,7 +16,12 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -85,11 +94,15 @@ import butterknife.OnClick;
 import static com.blankj.utilcode.util.StringUtils.getString;
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIGATION_PAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
@@ -158,6 +171,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private Timer introductionTimer;
     private TimerTask introductionTimerTask;
     private int introductionCountdown;
+    //院内介绍提示加载框
+    private AlertDialog startIntroductionAlertDialog;
 
     @Override
     public int getLayoutResource() {
@@ -181,7 +196,24 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         animationDrawable.start();
         //医院介绍工作流启动标志
         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+        //启动监听播放text文本时是否关闭提示弹窗
+        IntentFilter intentFilter = new IntentFilter(CLOSE_START_INTRODUCTION_DIALOG);
+        CloseDialogBroadcastReceiver closeDialogBroadcastReceiver = new CloseDialogBroadcastReceiver();
+        registerReceiver(closeDialogBroadcastReceiver, intentFilter);
+    }
 
+    private class CloseDialogBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LogUtils.d(TAG, "CloseDialogBroadcastReceiver");
+            if (intent.getAction().equals(CLOSE_START_INTRODUCTION_DIALOG)) {
+                LogUtils.d(TAG, "关闭启动院内介绍工作流提示弹窗");
+                if (startIntroductionAlertDialog != null && startIntroductionAlertDialog.isShowing()) {
+                    startIntroductionAlertDialog.dismiss();
+                    startIntroductionAlertDialog = null;
+                }
+            }
+        }
     }
 
     /**
@@ -307,15 +339,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             //启动语音唤醒,打开one shot模式
             EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
         }
-        //清空glide图片缓存
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                Glide.get(MainActivity.this).clearDiskCache();
-                Glide.get(MainActivity.this).clearMemory();
-            }
-        }.start();
     }
 
     @Override
@@ -333,6 +356,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         introductionCountdown = 0;
         //关闭语音唤醒,关闭one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
+        //关闭启动院内介绍工作流提示弹窗
+        if (startIntroductionAlertDialog != null && startIntroductionAlertDialog.isShowing()) {
+            startIntroductionAlertDialog.dismiss();
+            startIntroductionAlertDialog = null;
+        }
     }
 
     @Override
@@ -385,19 +413,19 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @OnClick({R.id.bt_home_setting, R.id.me_want_go_image, R.id.common_problem_image, R.id.hospital_introduction_image, R.id.language_chinese, R.id.language_english})
+    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
                 jumpSetModule();
                 break;
-            case R.id.me_want_go_image: //我要去
+            case R.id.constraintLayout_me_want_go: //我要去
                 RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
                 break;
-            case R.id.common_problem_image: //常见问题
+            case R.id.constraintLayout_common_problem: //常见问题
                 RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
                 break;
-            case R.id.hospital_introduction_image: //院内介绍
+            case R.id.constraintLayout_hospital_introduction: //院内介绍
                 startIntroductionWorkFlow();
                 break;
             case R.id.language_chinese: //应用语言显示中文
@@ -414,19 +442,35 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @Override
     public void recreate() {
         super.recreate();
-        LogUtils.d("recreate","   recreate   MainActivity    ");
+        LogUtils.d("recreate", "   recreate   MainActivity    ");
     }
 
     /**
      * 启动院内介绍工作流
      */
     private void startIntroductionWorkFlow() {
-        //启动院内介绍工作流程次数限制
         boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-        if (startIntroductionWorkflowTag) {
-            playShowText(getString(R.string.prompt_while_busy));
+        if (startIntroductionWorkflowTag) { //拦截多次点击
             return;
         }
+        //启动院内介绍工作流提示弹窗
+        startIntroductionAlertDialog = new AlertDialog.Builder(this).create();
+        startIntroductionAlertDialog.setCanceledOnTouchOutside(false);
+        startIntroductionAlertDialog.show();
+        //设置布局
+        Window dialogWindow = startIntroductionAlertDialog.getWindow();
+        dialogWindow.setContentView(R.layout.start_introduction_tip);
+        //获取屏幕宽高
+        Display defaultDisplay = getWindow().getWindowManager().getDefaultDisplay();
+        Point screenSizePoint = new Point();
+        defaultDisplay.getSize(screenSizePoint);
+        //设置弹窗宽高 位置
+        WindowManager.LayoutParams attributes = dialogWindow.getAttributes();
+        attributes.gravity = Gravity.CENTER;
+        attributes.width = (int) ((screenSizePoint.x) * (0.5));
+        attributes.height = (int) ((screenSizePoint.y) * (0.5));
+        dialogWindow.setAttributes(attributes);
+        //启动院内介绍工作流任务
         OperationUtils.startSpecialWorkFlow(3);
     }
 
@@ -464,9 +508,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         normalButton.setSelected(false);
         LanguageUtil.changeAppLanguage(MainActivity.this);
         clearActivity();
+        //杀掉以前进程
+//        android.os.Process.killProcess(android.os.Process.myPid());
         //重启app
         RouteUtils.goHome(MainActivity.this);
-//        RouteUtils.goHome(MainActivity.this);
     }
 
     /**

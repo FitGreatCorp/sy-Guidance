@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -170,8 +171,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler{
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
-                FileOutputStream fos = new FileOutputStream(path + fileName);
-                fos.write(sb.toString().getBytes());
+                FileWriter fos = new FileWriter(path + fileName);
+                fos.write(sb.toString());
                 fos.close();
             }
             return fileName;
