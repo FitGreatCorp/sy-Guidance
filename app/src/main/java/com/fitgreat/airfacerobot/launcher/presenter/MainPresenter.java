@@ -6,26 +6,21 @@ import android.os.Environment;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
-
 import androidx.annotation.RequiresApi;
-
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
-import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
+import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.model.MapEntity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
-import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
-import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
-import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.VersionInfo;
 import com.fitgreat.airfacerobot.versionupdate.VersionUtils;
@@ -35,31 +30,24 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.concurrent.ConcurrentHashMap;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
-import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TASK_END;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_OPERATION_INFO;
-import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 
 /**
@@ -69,11 +57,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     private List<LocationEntity> locationList = new ArrayList<>();
     private List<OperationInfo> operationInfosList = new ArrayList<>();
     private static final String TAG = "MainPresenter";
-    //当前执行任务信息
-    private OperationInfo operationOne;
-    //当前导航点信息
-
-    private LocationEntity locationOne;
     String basePath = Environment.getExternalStorageDirectory().getPath() + "/ExternalResource/";
     //中文地图本地存储路径
     String currentChineseMapPath = basePath + "currentChineseMap.png";
@@ -334,10 +317,11 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             }
             locationList.add(locationEntity);
         }
-        //地图信息缓存
+        //获取地图信息
         String mapString = msgObj.getString("map");
-//        LogUtils.json(TAG, mapString);
+        //缓存地图信息到本地
         SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, mapString);
+        //解析获取地图信息
         MapEntity mapEntity = JSON.parseObject(mapString, MapEntity.class);
         //下载地图文件到本地
         File parentFile = new File(basePath);
@@ -360,6 +344,37 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         downloadMap(mapEntity.getF_EMapUrl(), currentEnglishMapPath);
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
+        //获取常见问题列表问题
+        ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
+        info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
+        info.put("floor", mapEntity.getF_Floor());
+        LogUtils.d(TAG, "拼接参数:info=>" + JSON.toJSONString(info));
+        BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                LogUtils.e(TAG, "获取常见问题失败:onFailure=>" + e.toString());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String stringResponse = response.body().string();
+                LogUtils.d(TAG, "获取常见问题成功:onResponse=>" + stringResponse);
+                try {
+                    JSONObject jsonObject = new JSONObject(stringResponse);
+                    if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
+                        String msg = jsonObject.getString("msg");
+                        if (msg != null && !msg.equals("null")) {
+                            List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
+                            LogUtils.json(TAG, JSON.toJSONString(commonProblemEntities));
+                            //保存常见问题到本地
+                            SpUtils.putString(MyApp.getContext(), "problemList", msg);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
@@ -382,205 +397,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             @Override
             public void onDownloadFailed(Exception e) {
                 LogUtils.e(TAG, "地图下载失败:" + e.getMessage());
-            }
-        });
-    }
-
-    /**
-     * 导航  执行任务
-     */
-    public void playTask(String commandToText, String commandDoText) {
-        JSONArray operationList = new JSONArray();
-        JSONArray instructionList = new JSONArray();
-        try {
-            if (commandToText != null && commandDoText != null) { //先导航,后执行任务
-                operationOne = CashUtils.getOperationOne(commandDoText);
-                locationOne = CashUtils.getLocationOne(commandToText);
-                LogUtils.d("playTask", "开始导航,导航结束开始执行任务:");
-                LogUtils.json("playTask", "导航任务信息:" + JSON.toJSONString(locationOne));
-                LogUtils.json("playTask", "执行任务信息:" + JSON.toJSONString(operationOne));
-                //添加导航点
-                JSONObject locationObj = new JSONObject();
-                locationObj.put("Type", "Location");
-                locationObj.put("InstructionId", locationOne.getF_Id());
-                locationObj.put("InstructionName", locationOne.getF_Name());
-                locationObj.put("Sort", "1");
-                instructionList.put(locationObj);
-                //添加操作任务
-                JSONObject operation = new JSONObject();
-                operation.put("Type", "Operation");
-                operation.put("InstructionId", operationOne.getF_id());
-                operation.put("InstructionName", operationOne.getF_Name());
-                operation.put("Sort", "2");
-                instructionList.put(operation);
-                initParamToDo(operationList, instructionList);
-                //任务种类  2播放视频  3播放pdf  4 播放txt文本  取消指令时需要用
-                SpUtils.putString(MyApp.getContext(), "operationType", operationOne.getF_Type());
-            } else if (commandDoText != null) { //不导航,执行任务
-                operationOne = CashUtils.getOperationOne(commandDoText);
-                LogUtils.d("playTask", "开始执行任务:");
-                LogUtils.json("playTask", "执行任务信息:" + JSON.toJSONString(operationOne));
-                //添加操作任务
-                JSONObject operation = new JSONObject();
-                operation.put("Type", "Operation");
-                operation.put("InstructionId", operationOne.getF_id());
-                operation.put("InstructionName", operationOne.getF_Name());
-                operation.put("Sort", "1");
-                instructionList.put(operation);
-                initParamToDo(operationList, instructionList);
-                //任务种类  2播放视频  3播放pdf  4 播放txt文本  取消指令时需要用
-                SpUtils.putString(MyApp.getContext(), "operationType", operationOne.getF_Type());
-            } else if (commandToText != null) { //导航,不执行任务
-                locationOne = CashUtils.getLocationOne(commandToText);
-                LogUtils.d("playTask", "开始导航:");
-                LogUtils.json("playTask", "导航任务信息:" + JSON.toJSONString(locationOne));
-                //添加导航点
-                JSONObject locationObj = new JSONObject();
-                locationObj.put("Type", "Location");
-                locationObj.put("InstructionId", locationOne.getF_Id());
-                locationObj.put("InstructionName", locationOne.getF_Name());
-                locationObj.put("Sort", "1");
-                instructionList.put(locationObj);
-                initParamToDo(operationList, instructionList);
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 初始化参数,发起活动流程
-     */
-    private void initParamToDo(JSONArray operationList, JSONArray instructionList) throws JSONException {
-        //最后添加
-        JSONObject operationObj = new JSONObject();
-        operationObj.put("InstructionList", instructionList);
-        operationObj.put("Sort", "1");
-        operationList.put(operationObj);
-        LogUtils.d("playTask", "发起活动前拼接参数==>" + operationList.toString());
-        //获取机器人信息
-        RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
-        //添加新的活动流程
-        CreateAction(robotInfo.getF_Id(), robotInfo.getF_HardwareId(), robotInfo.getF_Id(), robotInfo.getF_Hospital(), robotInfo.getF_Department(), operationList.toString());
-    }
-
-    /**
-     * 根据指令包含的任务,导航地点 发起活动流程
-     *
-     * @param processInitiatorId 流程发起人id,控制端就是机器人id
-     * @param hardwareId         机器人设备序列号
-     * @param robotAccountId     机器人id
-     * @param hospital           医院名字
-     * @param department         医院部门
-     * @param operationList      导航,操作任务的拼接数据
-     */
-    private void CreateAction(String processInitiatorId, String hardwareId, String robotAccountId, String hospital, String department, String operationList) {
-        try {
-            //设置参数
-            JSONObject info = new JSONObject();
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("HardwareId", hardwareId);
-            jsonObject.put("RobotAccountId", robotAccountId);
-            jsonObject.put("Hospital", hospital);
-            jsonObject.put("Department", department);
-            jsonObject.put("OperationProcedureId", "");
-            jsonObject.put("F_Promoter", processInitiatorId);
-            jsonObject.put("OperationList", operationList);
-            info.put("Info", jsonObject.toString());
-            LogUtils.d("playTask", "拼接参数:info=>" + info.toString());
-            BusinessRequest.postStringRequest(info.toString(), ApiRequestUrl.CREATE_ACTION, new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    LogUtils.e("playTask", ":发起活动流程失败:onFailure=>" + e.toString());
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String stringResponse = response.body().string();
-                    LogUtils.d("playTask", "发起活动流程成功:onResponse=>" + stringResponse);
-                    try {
-                        JSONObject jsonObject = new JSONObject(stringResponse);
-                        if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
-                            String actionId = jsonObject.getString("msg");
-                            //控制端当前活动id本地缓存
-                            SpUtils.putString(MyApp.getContext(), GUIDE_WORK_FLOW_ACTION_ID, actionId);
-                            //改变当前机器人状态为操作中
-                            RobotInfoUtils.setRobotRunningStatus(String.valueOf(3));
-                            //更新时间戳
-                            BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
-                            LogUtils.d("playTask", "发起活动流程成功:开始获取下一步操作=>");
-                            //获取流程中的下一步操作
-                            getNextStepInfo(actionId);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 根据流程id,获取流程中的下一步操作
-     *
-     * @param actionId 流程id
-     */
-    private void getNextStepInfo(String actionId) {
-        BusinessRequest.getNextStep(actionId, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                LogUtils.e("playTask", "MSG_TYPE_TASK:onFailure=>" + e.toString());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String result = response.body().string();
-                LogUtils.d("playTask", "获取下一步操作成功==>" + result);
-                try {
-                    JSONObject baseResObj = new JSONObject(result);
-                    if (baseResObj.has("type")) {
-                        String type = baseResObj.getString("type");
-                        if (type.equals("success")) {
-                            String msg = baseResObj.getString("msg");
-                            LogUtils.json("playTask", JSON.toJSONString(msg));
-                            NextOperationData nextOperationData = JsonUtils.decode(msg, NextOperationData.class);
-                            LogUtils.d("playTask", "nextOperationData=>" + JsonUtils.encode(nextOperationData));
-                            if (nextOperationData != null) {
-                                if (nextOperationData.getOperationType() == null || !nextOperationData.getOperationType().equals("End")) {
-                                    SignalDataEvent autoMoveEvent = new SignalDataEvent();
-                                    autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
-                                    autoMoveEvent.setInstructionType(nextOperationData.getF_Type());
-                                    autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
-                                    autoMoveEvent.setContainer(nextOperationData.getF_Container());
-                                    autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
-                                    autoMoveEvent.setProduceId(actionId);
-                                    autoMoveEvent.setOperationType(nextOperationData.getOperationType());
-                                    autoMoveEvent.setX(nextOperationData.getF_X());
-                                    autoMoveEvent.setY(nextOperationData.getF_Y());
-                                    autoMoveEvent.setE(nextOperationData.getF_Z());
-                                    LogUtils.d("startSpecialWorkFlow", "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
-                                    if (nextOperationData.getF_Type().equals("Location")) {
-                                        LogUtils.d("playTask", "开始导航=OPERATION_TYPE_AUTO_MOVE==>");
-                                        autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
-                                    } else {
-                                        LogUtils.d("playTask", "开始执行任务=MSG_UPDATE_INSTARUCTION_STATUS==>");
-                                        autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
-                                    }
-                                    EventBus.getDefault().post(autoMoveEvent);
-                                } else {
-                                    SignalDataEvent taskendEvent = new SignalDataEvent();
-                                    taskendEvent.setType(MSG_TASK_END);
-                                    EventBus.getDefault().post(taskendEvent);
-                                }
-                            }
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
             }
         });
     }

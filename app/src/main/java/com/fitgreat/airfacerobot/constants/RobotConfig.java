@@ -98,11 +98,15 @@ public interface RobotConfig {
      */
     String DDS_OBSERVER_UNTIE = "dds_Observer_untie";
     /**
+     * dds语音播报取消
+     */
+    String DDS_VOICE_TEXT_CANCEL = "dds_voice_text_cancel";
+    /**
      * 关闭dds唤醒
      */
     String CLOSE_DDS_WAKE_TAG = "close_dds_wake_tag";
     /**
-     *打开dds唤醒
+     * 打开dds唤醒
      */
     String START_DDS_WAKE_TAG = "start_dds_wake_tag";
     /**
@@ -110,7 +114,7 @@ public interface RobotConfig {
      */
     String REMOTE_TASK_JOIN_SUCCESS = "remote_task_join_success";
     /**
-     * 院内介绍工作流开启标志
+     * 院内介绍工作流开启标志(中英文版)
      */
     String START_INTRODUCTION_WORK_FLOW_TAG = "start_introduction_work_flow_tag";
 
@@ -130,10 +134,6 @@ public interface RobotConfig {
      * 特定工作流自动回充信息(需要服务端配置)
      */
     String RECHARGE_SPECIFIC_WORKFLOW = "recharge_specific_workflow";
-    /**
-     * 特定工作流引导工作流信息(需要服务端配置)
-     */
-    String GUIDE_SPECIFIC_WORKFLOW = "guide_specific_workflow";
     /**
      * 地图信息本地缓存
      */
@@ -228,9 +228,9 @@ public interface RobotConfig {
 
 
     /**
-     * 取消工作流
+     * 进入常见问题汇总页面
      */
-    String CANCEL_WORKFLOW_TAG = "cancel_workflow_tag";
+    String JUMP_COMMON_PROBLEM_PAGE = "jump_common_problem_page";
     /**
      * 机器人是否为控制模式
      */
@@ -245,4 +245,12 @@ public interface RobotConfig {
      * 关闭首页点击启动院内工作流提示弹窗
      */
     String CLOSE_START_INTRODUCTION_DIALOG = "close_start_introduction_dialog";
+    /**
+     * 当前网络连接可用
+     */
+    String NETWORK_CONNECTION_CHECK_SUCCESS = "network.connection.check_success";
+    /**
+     * 当前网络连接不可用
+     */
+    String NETWORK_CONNECTION_CHECK_FAILURE = "network.connection.check_failure";
 }

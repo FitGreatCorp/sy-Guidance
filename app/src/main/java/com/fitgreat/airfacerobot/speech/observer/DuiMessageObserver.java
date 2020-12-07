@@ -3,18 +3,25 @@ package com.fitgreat.airfacerobot.speech.observer;
 import com.aispeech.dui.dds.DDS;
 import com.aispeech.dui.dds.agent.MessageObserver;
 import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
+import com.alibaba.fastjson.JSON;
+import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.model.DialogStateEvent;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.speech.model.MessageBean;
+import com.fitgreat.airfacerobot.speech.model.ShowContent;
+import com.fitgreat.airfacerobot.speech.model.ShowContentMain;
 import com.fitgreat.airfacerobot.speech.model.WeatherBean;
 import com.fitgreat.archmvp.base.util.LogUtils;
+import com.fitgreat.archmvp.base.util.SpUtils;
 import com.google.gson.Gson;
 
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
 
 /**
  * 客户端MessageObserver, 用于处理客户端动作的消息响应.
@@ -63,6 +70,7 @@ public class DuiMessageObserver implements MessageObserver {
             e.printStackTrace();
         }
         LogUtils.json("CommandTodo", data);
+        boolean startCommonProblemModelTag = SpUtils.getBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, false);
         MessageBean bean = null;
         switch (message) {
             case "context.output.text":
@@ -81,6 +89,7 @@ public class DuiMessageObserver implements MessageObserver {
                 break;
             case "context.input.text":
                 bean = new MessageBean();
+                ShowContent showContent = new ShowContent();
                 try {
                     JSONObject jo = new JSONObject(data);
                     if (jo.has("var")) {
@@ -89,9 +98,11 @@ public class DuiMessageObserver implements MessageObserver {
                             mIsFirstVar = false;
                             mHasvar = true;
                             bean.setText(var);
+                            showContent.setContent1(var);
                             bean.setType(MessageBean.TYPE_INPUT);
                         } else {
                             bean.setText(var);
+                            showContent.setContent1(var);
                             bean.setType(MessageBean.TYPE_INPUT);
                         }
                     }
@@ -103,12 +114,16 @@ public class DuiMessageObserver implements MessageObserver {
                         String text = jo.optString("text", "");
                         bean.setText(text);
                         bean.setType(MessageBean.TYPE_INPUT);
+                        showContent.setContent1(text);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                LogUtils.d("CommandTodo", "context.input.text = " + bean.getText());
-                if (bean.getText().length() >= 3) {
+                LogUtils.d("CommandTodo", "context.input.text = " + bean.getText()+"  startCommonProblemModelTag:  "+startCommonProblemModelTag);
+                if (startCommonProblemModelTag) {
+                    LogUtils.json("CommandTodo", JSON.toJSONString(showContent));
+                    EventBus.getDefault().post(showContent);
+                } else {
                     EventBus.getDefault().post(bean);
                 }
                 break;

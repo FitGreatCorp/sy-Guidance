@@ -70,31 +70,29 @@
     <string name="nurse_desk_title">Nurse desk</string>
     <string name="pharmacy_title">Pharmacy</string>
     <string name="restroom_title">Restroom</string>
-    <string name="home_prompt_text">Hello, I am Xiaobai, I am very happy to serve you. I can show you the way if you don’t understand, you can also ask me.</string>
+    <string name="home_prompt_text">Hello, I\'m Xiaobai. Glad to serve you. I can show you the way. If you don\'t understand, you can ask me.</string>
     <string name="common_problem_title">Common Problem</string>
     <string name="emergency_click_prompt">Sorry, my emergency stop button is activated and the task cannot be performed.</string>
-    <string name="prompt_problem_has_no">I don\'t know the question, can I change the question。</string>
+    <string name="prompt_problem_has_no">sorry，I don\'t know the question,can you change the question？</string>
     <string name="prompt_task_exception">The current task is abnormal, I will return to the original point to charge。</string>
     <string name="ask_for_help_text">Nurse sister, please help me。</string>
-    <string name="start_chose_destination_tip_one">You are going now\t</string>
+    <string name="start_chose_destination_tip_one">Are you going to \t</string>
     <string name="start_chose_destination_tip_two">\t?\tClick "Yes" and I will take you there</string>
     <string name="start_chose_destination_dialog_title">Prompt</string>
     <string name="task_terminated_title">Task terminated</string>
-    <string name="navigation_success_tip_one">Arrived\t</string>
+    <string name="navigation_success_tip_one">I have arrived\t</string>
     <string name="navigation_success_tip_two">\tDo you need other services?</string>
     <string name="need_yes_title">Need</string>
     <string name="need_no_title">Not needed</string>
     <string name="arrive_destination_prompt_one">Arrived</string>
     <string name="arrive_destination_prompt_two">Yes, do you need other services? If you don’t need it, please click "not needed" and let me go back。</string>
-    <string name="start_navigation_tip_one">I\'m going</string>
-    <string name="start_navigation_tip_two">La</string>
+    <string name="start_navigation_tip_one">I\'m going\t</string>
+    <string name="start_navigation_tip_two">\t</string>
     <string name="charge_success_tip">Successfully charged</string>
-    <string name="charge_failed_tip">Charging failed</string>
+    <string name="charge_failed_tip">Charging failed, the charging pile was not scanned!</string>
     <string name="navigation_failed_tip_one">Sorry i can\'t reach</string>
     <string name="navigation_failed_tip_two">!</string>
     <string name="go_back_tip">I want to go back</string>
     <string name="charging_prompt">I am automatically recharging!</string>
-
     <string name="prompt_while_busy">Sorry, the robot is currently busy, please wait. . .</string>
-
 </resources>

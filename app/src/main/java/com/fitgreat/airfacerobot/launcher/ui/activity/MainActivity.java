@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
+import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
@@ -50,6 +51,7 @@ import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.NavigationTip;
+import com.fitgreat.airfacerobot.model.RecordInfo;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.launcher.presenter.MainPresenter;
 import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
@@ -65,6 +67,7 @@ import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.settings.SettingActivity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
+import com.fitgreat.airfacerobot.speech.model.MessageBean;
 import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
 import com.fitgreat.airfacerobot.versionupdate.VersionInfo;
@@ -92,6 +95,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.blankj.utilcode.util.StringUtils.getString;
+import static com.fitgreat.airfacerobot.MyApp.getContext;
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
@@ -101,6 +105,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTROD
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
@@ -182,7 +187,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void initData() {
-        LogUtils.d(TAG, "-------MainActivity create-----------");
+        //第一次安装语言默认为中文
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        if (currentLanguage.equals("null")){
+            SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+        }
+        //注册EventBus
         EventBus.getDefault().register(this);
         SpUtils.putBoolean(getContext(), "isLock", true);
         commonTipDialog = new CommonTipDialog(this);
@@ -191,11 +201,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         requestSettingPermission();
         warnningDialog = new WarnningDialog(this);
         //启动机器人说话动画
-        mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
-        AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getDrawable();
-        animationDrawable.start();
-        //医院介绍工作流启动标志
+//        mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
+//        AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getDrawable();
+//        animationDrawable.start();
+        //院内介绍工作流启动标志默认为false
         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+        //自动回充工作流启动标志默认为false
+        SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
         //启动监听播放text文本时是否关闭提示弹窗
         IntentFilter intentFilter = new IntentFilter(CLOSE_START_INTRODUCTION_DIALOG);
         CloseDialogBroadcastReceiver closeDialogBroadcastReceiver = new CloseDialogBroadcastReceiver();
@@ -314,7 +326,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             }
             //院内介绍流程没启动时进入首页,语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
             boolean startIntroductionWorkFlowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-            if (!startIntroductionWorkFlowTag) {
+            //自动回充工作流启动标志
+            boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+            if (!startIntroductionWorkFlowTag && !startRechargeTag) {
                 EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
                 mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
             }
@@ -325,11 +339,19 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 public void run() {
                     introductionCountdown++;
                     if (introductionCountdown == 180) {
+                        LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
                         introductionCountdown = 0;
                         introductionTimer.cancel();
                         introductionTimerTask.cancel();
-                        LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
-                        OperationUtils.startSpecialWorkFlow(3);
+                        //当前机器人语言设置
+                        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+                        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
+                            //重启院内介绍工作流程中文版
+                            OperationUtils.startSpecialWorkFlow(3);
+                        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
+                            //重启院内介绍工作流程英文版
+                            OperationUtils.startSpecialWorkFlow(2);
+                        }
                     }
                 }
             };
@@ -344,6 +366,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @Override
     protected void onPause() {
         super.onPause();
+        isResume = false;
         //取消启动院内介绍工作流3分钟计时
         if (introductionTimer != null) {
             introductionTimer.cancel();
@@ -356,11 +379,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         introductionCountdown = 0;
         //关闭语音唤醒,关闭one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
         //关闭启动院内介绍工作流提示弹窗
         if (startIntroductionAlertDialog != null && startIntroductionAlertDialog.isShowing()) {
             startIntroductionAlertDialog.dismiss();
             startIntroductionAlertDialog = null;
         }
+        SpeechManager.closeOneShotWakeup();
     }
 
     @Override
@@ -470,18 +496,16 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         attributes.width = (int) ((screenSizePoint.x) * (0.5));
         attributes.height = (int) ((screenSizePoint.y) * (0.5));
         dialogWindow.setAttributes(attributes);
-        //启动院内介绍工作流任务
-        OperationUtils.startSpecialWorkFlow(3);
+        //当前机器人语言设置
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
+            //启动院内介绍工作流中文版
+            OperationUtils.startSpecialWorkFlow(3);
+        } else if (!(currentLanguage.equals("null") )&& currentLanguage.equals("en")) {
+            //启动院内介绍工作流英文版
+            OperationUtils.startSpecialWorkFlow(2);
+        }
     }
-
-    /**
-     * 播放并首页展示对应文案
-     */
-    public void playShowText(String content) {
-        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, content));
-        EventBus.getDefault().post(new NavigationTip(content));
-    }
-
     /**
      * 连续两次点击时间间隔大于0.5秒,跳转进入设置模块
      */
@@ -508,8 +532,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         normalButton.setSelected(false);
         LanguageUtil.changeAppLanguage(MainActivity.this);
         clearActivity();
-        //杀掉以前进程
-//        android.os.Process.killProcess(android.os.Process.myPid());
         //重启app
         RouteUtils.goHome(MainActivity.this);
     }
@@ -1030,6 +1052,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 startActivity(intent);
                 break;
             case COMMON_PROBLEM_TAG:
+                isResume = false;
                 LogUtils.d("CommandTodo", "----COMMON_PROBLEM_TAG---MainActivity-----");
                 intent = new Intent(getContext(), CommonProblemActivity.class);
                 bundle = new Bundle();
@@ -1039,6 +1062,15 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 break;
             default:
                 break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMsg(MessageBean messageBean) {
+        String voiceMessageText = messageBean.getText().trim();
+        LogUtils.d("CommandTodo", "MessageBean:MainActivity----->" + voiceMessageText);
+        if ((messageBean.getType() == MessageBean.TYPE_INPUT) && isResume) {
+            mVoiceMsg.setText(voiceMessageText);
         }
     }
 

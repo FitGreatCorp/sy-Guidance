@@ -50,6 +50,8 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             operationList.put(operationObj);
         } catch (JSONException e) {
             e.printStackTrace();
+            //单点导航任务结束
+            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         }
         //获取机器人信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
@@ -83,7 +85,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             BusinessRequest.postStringRequest(info.toString(), ApiRequestUrl.CREATE_ACTION, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    LogUtils.e("startSpecialWorkFlow", ":发起活动流程失败:onFailure=>" + e.toString());
+                    LogUtils.e("startSpecialWorkFlow", "选择导航,发起活动流程失败:onFailure=>" + e.toString());
                     //单点导航任务结束
                     SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                 }
@@ -91,13 +93,11 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d("startSpecialWorkFlow", "发起活动流程成功:onResponse=>" + stringResponse);
+                    LogUtils.d("startSpecialWorkFlow", "选择导航,发起活动流程成功:onResponse=>" + stringResponse);
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                             String actionId = jsonObject.getString("msg");
-                            //控制端当前活动id本地缓存
-//                            SpUtils.putString(MyApp.getContext(), CURRENT_ACTION_ID, actionId);
                             LogUtils.d("startSpecialWorkFlow", "当前活动id , " + actionId);
                             //改变当前机器人状态为操作中
                             RobotInfoUtils.setRobotRunningStatus(String.valueOf(3));
@@ -111,11 +111,15 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        //单点导航任务结束
+                        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                     }
                 }
             });
         } catch (JSONException e) {
             e.printStackTrace();
+            //单点导航任务结束
+            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         }
     }
 
@@ -136,7 +140,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String result = response.body().string();
-                LogUtils.d("startSpecialWorkFlow", "获取下一步操作成功==>" + result);
+                LogUtils.d("startSpecialWorkFlow", "选择导航,获取下一步操作成功==>" + result);
                 try {
                     JSONObject baseResObj = new JSONObject(result);
                     if (baseResObj.has("type") && baseResObj.getString("type").equals("success")) {
@@ -161,8 +165,13 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                                 LogUtils.d("startSpecialWorkFlow", "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
                                 autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                 EventBus.getDefault().post(autoMoveEvent);
-
+                            }else {
+                                //单点导航任务结束
+                                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                             }
+                        }else {
+                            //单点导航任务结束
+                            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                         }
                     }else {
                         //单点导航任务结束

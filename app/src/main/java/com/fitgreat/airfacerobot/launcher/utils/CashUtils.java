@@ -95,6 +95,7 @@ public class CashUtils {
     public static CommonProblemEntity getProblemOne(String fNameText) {
         CommonProblemEntity commonProblemEntity = null;
         List<CommonProblemEntity> problemList = getProblemList();
+        LogUtils.json("CommandTodo", "problemList:::" + JSON.toJSONString(problemList));
         if (problemList != null) {
             for (CommonProblemEntity mCommonProblemEntity : problemList) {
                 String F_Question = mCommonProblemEntity.getF_Question();
@@ -104,5 +105,23 @@ public class CashUtils {
             }
         }
         return commonProblemEntity;
+    }
+
+    /**
+     * 获取单个常见问题编号在数据集合中
+     */
+    public static int getProblemPosition(String F_QId) {
+        int problemPosition = 0;
+        List<CommonProblemEntity> problemList = getProblemList();
+        if (problemList != null) {
+            for (int i = 0; i < problemList.size(); i++) {
+                String mF_QID = problemList.get(i).getF_QId();
+                if (mF_QID.equals(F_QId)) {
+                    problemPosition = i;
+                    break;
+                }
+            }
+        }
+        return problemPosition;
     }
 }

@@ -97,7 +97,7 @@ public class DuiCommandObserver implements CommandObserver {
                 } else if (jsonObject.has("problem")) { //识别单个常见问题操作指令
                     String problem = jsonObject.getString("problem");
                     LogUtils.d("CommandTodo", "problem:   " + problem);
-                    CommonProblemEntity commonProblemEntity = CashUtils.getProblemOne(problem + "?");
+                    CommonProblemEntity commonProblemEntity = CashUtils.getProblemOne(problem);
                     if (commonProblemEntity == null) {  //指令识别常见问题不在设置问题范围内
                         EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.prompt_problem_has_no)));
                         return;

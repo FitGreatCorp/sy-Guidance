@@ -7,6 +7,7 @@ import android.os.Message;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.ros.moudel.RosInfo;
@@ -62,7 +63,6 @@ import move_base_msgs.RunValidStateRequest;
 import move_base_msgs.RunValidStateResponse;
 import sensor_msgs.BatteryState;
 import std_msgs.Byte;
-
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
@@ -357,9 +357,9 @@ public class RosManager {
 
         @Override
         public void onNewMessage(Byte aByte) {
-            LogUtils.d(TAG, "whetherInsideWallMessageListener : " + aByte.getData());
+            LogUtils.d("startSpecialWorkFlow", "whetherInsideWallMessageListener : " + aByte.getData());
             if ((int) aByte.getData() == 1) { //机器人在墙内 需要帮忙移动出来
-                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.ask_for_help_text)));
+                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text)));
             }
         }
     };

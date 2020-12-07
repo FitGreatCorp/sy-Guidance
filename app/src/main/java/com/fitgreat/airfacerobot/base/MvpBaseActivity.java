@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,10 +14,16 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.ui.BaseView;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.gyf.barlibrary.ImmersionBar;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+
+import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_FAILURE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_SUCCESS;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_CONNECTION_CHECK_FAILURE;
 
 /**
  * MVPPlugin
@@ -32,11 +39,9 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
     protected ImmersionBar mImmersionBar;
     private Unbinder unbinder;
     private BaseChangeBroadcastReceiver myReceiver;
-    public String NETWORK_CONNECTION_CHECK_SUCCESS = "network.connection.check_success";
-    public String NETWORK_CONNECTION_CHECK_FAILURE = "network.connection.check_failure";
-    public String ROS_CONNECTION_CHECK_FAILURE = "ros.connection.check_failure";
     //页面集合
     private List<AppCompatActivity> activityList = new ArrayList<AppCompatActivity>();
+    private static Context activityContext;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,6 +69,11 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         registerReceiver(myReceiver, filter);
         //添加当前页面
         activityList.add(this);
+        activityContext = this;
+    }
+
+    public static Context getActivityContext() {
+        return activityContext;
     }
 
     @Override

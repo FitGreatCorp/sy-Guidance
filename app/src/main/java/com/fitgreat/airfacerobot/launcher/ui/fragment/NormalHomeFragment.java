@@ -3,18 +3,15 @@ package com.fitgreat.airfacerobot.launcher.ui.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
@@ -53,19 +50,15 @@ import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.PhoneInfoUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.OnClick;
-
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BRIGHTNESS_KEY_DISPLAY;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BRIGHTNESS_KEY_HIDDEN;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CANCEL_PLAY_TASK;

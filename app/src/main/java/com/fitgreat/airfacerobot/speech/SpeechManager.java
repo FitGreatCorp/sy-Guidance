@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
+
 import com.aispeech.dui.dds.DDS;
 import com.aispeech.dui.dds.DDSAuthListener;
 import com.aispeech.dui.dds.DDSConfig;
@@ -15,14 +16,18 @@ import com.aispeech.dui.dds.agent.tts.TTSEngine;
 import com.aispeech.dui.dds.agent.wakeup.WakeupEngine;
 import com.aispeech.dui.dds.agent.wakeup.word.WakeupWord;
 import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
+import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
+
 import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_COMPLETE;
 
 
@@ -35,7 +40,7 @@ public class SpeechManager {
     /**
      * DDS是否初始化成功
      */
-    private static boolean ddsInitializationTag = false;
+    private static volatile boolean ddsInitializationTag = false;
     private static ASREngine asrEngine = null;
     private static SpeechManager speechManager = null;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -143,12 +148,14 @@ public class SpeechManager {
      * 取消文字语音播放
      */
     public void cancelTtsPlay() {
-        ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
-        try {
-            ttsEngine.shutup("");
-        } catch (DDSNotInitCompleteException e) {
-            e.printStackTrace();
-            LogUtils.e("MSG_STOP_TASK", "textTtsPlay:" + e.getMessage());
+        if (isDdsInitialization()){
+            ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+            try {
+                ttsEngine.shutup("");
+            } catch (DDSNotInitCompleteException e) {
+                e.printStackTrace();
+                LogUtils.e("MSG_STOP_TASK", "textTtsPlay:" + e.getMessage());
+            }
         }
     }
 
@@ -285,21 +292,25 @@ public class SpeechManager {
             e.printStackTrace();
         }
     }
+
     /**
      * 关闭语音唤醒,关闭OneShot模式
      */
     public static void closeOneShotWakeup() {
-        try {
-            ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
-            wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
-            //启动语音唤醒
-            wakeupEngine.disableWakeup();
-            //one shot模式切换
-            wakeupEngine.disableOneShot();
-        } catch (DDSNotInitCompleteException e) {
-            e.printStackTrace();
+        if (isDdsInitialization()){
+            try {
+                ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+                wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
+                //启动语音唤醒
+                wakeupEngine.disableWakeup();
+                //one shot模式切换
+                wakeupEngine.disableOneShot();
+            } catch (DDSNotInitCompleteException e) {
+                e.printStackTrace();
+            }
         }
     }
+
     /**
      * 添加更新主唤醒词
      *
@@ -345,23 +356,30 @@ public class SpeechManager {
                 .setWord("小白")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
+        WakeupWord mainWord5 = new WakeupWord()
+                .setPinyin("small white")
+                .setWord("small white")
+                .addGreeting("I am here, can I help you?")
+                .setThreshold("0.15");
         mainWordLisrt.add(mainWord1);
         mainWordLisrt.add(mainWord2);
         mainWordLisrt.add(mainWord3);
         mainWordLisrt.add(mainWord4);
+//        mainWordLisrt.add(mainWord5);
         try {
-            if (DDS.getInstance().getAgent().getWakeupEngine().getMainWakeupWords().size() > 0) {
-                DDS.getInstance().getAgent().getWakeupEngine().updateMainWakeupWords(mainWordLisrt);
-            } else {
-                DDS.getInstance().getAgent().getWakeupEngine().addMainWakeupWords(mainWordLisrt);
-            }
+            //清空唤醒词
+            DDS.getInstance().getAgent().getWakeupEngine().clearMainWakeupWord();
+            //添加默认唤醒词
+            DDS.getInstance().getAgent().getWakeupEngine().addMainWakeupWords(mainWordLisrt);
+            //打印唤醒词
             List<WakeupWord> mainWakeupWords = DDS.getInstance().getAgent().getWakeupEngine().getMainWakeupWords();
             for (WakeupWord wakeupWord :
                     mainWakeupWords) {
-//                LogUtils.json("CommandTodo", JSON.toJSONString(wakeupWord));
+                LogUtils.json("CommandTodo", JSON.toJSONString(wakeupWord));
             }
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
+            LogUtils.e("CommandTodo", "添加唤醒词报错::"+e.getMessage());
         }
     }
 
@@ -450,7 +468,7 @@ public class SpeechManager {
         config.addConfig(DDSConfig.K_CUSTOM_TIPS, "{\"71304\":\"请讲话\",\"71305\":\"不知道你在说什么\",\"71308\":\"咱俩还是聊聊天吧\"}"); // 指定对话错误码的TTS播报。若未指定，则使用产品配置。
         //唤醒配置项
         config.addConfig(DDSConfig.K_WAKEUP_ROUTER, "dialog"); //唤醒路由：partner（将唤醒结果传递给partner，不会主动进入对话）、dialog（将唤醒结果传递给dui，会主动进入对话）
-        config.addConfig(DDSConfig.K_ONESHOT_MIDTIME, "1000");// OneShot配置：
+        config.addConfig(DDSConfig.K_ONESHOT_MIDTIME, "3000");// OneShot配置：
         config.addConfig(DDSConfig.K_ONESHOT_ENDTIME, "8000");// OneShot配置：
         //就近唤醒
 //        config.addConfig(DDSConfig. K_USE_NEAR_WAKEUP,"true");
@@ -499,7 +517,7 @@ public class SpeechManager {
                 mContext.sendBroadcast(new Intent(DDS_INIT_COMPLETE));
                 ddsInitializationTag = true;
                 //更新页面进度显示
-                updateVoiceProgress(100);
+//                updateVoiceProgress(100);
             }
         }
 

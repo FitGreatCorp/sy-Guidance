@@ -13,11 +13,13 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
+import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import org.greenrobot.eventbus.EventBus;
 import java.util.Timer;
@@ -57,7 +59,6 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         choseRadioGroupView = findViewById(R.id.chose_radioGroup);
         choseNoBtView = findViewById(R.id.chose_no_bt);
         choseYesBtView = findViewById(R.id.chose_yes_bt);
-
 
         //设置弹窗标题  内容  按钮文字
         Intent intent = getIntent();
@@ -102,8 +103,10 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
             public void run() {
                 countDown++;
                 if (countDown == 30) { //导航到达终点30秒后语音提示
+                    LogUtils.d("startSpecialWorkFlow", "导航到达目的地30秒后");
                     playShowText("是否还需要其他服务呢");
-                } else if (countDown == 60) {
+                } else if (countDown == 32) {
+                    LogUtils.d("startSpecialWorkFlow", "导航到达目的地一分钟后,回到首页启动自动回充");
                     choseNoBt();
                 }
             }

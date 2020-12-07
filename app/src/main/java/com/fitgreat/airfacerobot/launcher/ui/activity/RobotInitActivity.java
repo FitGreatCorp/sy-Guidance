@@ -224,7 +224,7 @@ public class RobotInitActivity extends MvpBaseActivity {
     private void initVoice() {
         //初始化DDS
         EventBus.getDefault().post(new InitUiEvent(RobotConfig.INIT_TYPE_VOICE, "start"));
-//        EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_VOICE_PROGRESS, "100"));
+        EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_VOICE_PROGRESS, "100"));
     }
 
     private void gotohome() {

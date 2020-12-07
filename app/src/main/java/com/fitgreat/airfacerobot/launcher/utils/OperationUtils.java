@@ -29,18 +29,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_SPECIFIC_WORKFLOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
@@ -50,7 +47,7 @@ public class OperationUtils {
 
     /**
      * 发起特殊工作流程
-     * workFlowType   1 自动回充 charge   2 引导讲解流程 guide   3 三亚院内介绍流程  introduction-sy
+     * workFlowType   1 自动回充 charge   2 三亚院内介绍流程英文版 introduction-syEN   3 三亚院内介绍流程  introduction-sy
      */
     public static void startSpecialWorkFlow(int workFlowType) {
         //获取机器人信息
@@ -61,6 +58,12 @@ public class OperationUtils {
             SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, true);
             //更新自动回充工作流信息
             automaticRechargeWorkflow("charge", robotInfo, workFlowType);
+        } else if (workFlowType == 2) {
+            LogUtils.d("startSpecialWorkFlow", "--启动院内介绍英文版工作流程--");
+            //医院介绍工作流英文版启动标志
+            SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, true);
+            //更新引导工作流信息
+            automaticRechargeWorkflow("introduction-syEN", robotInfo, workFlowType);
         } else if (workFlowType == 3) {
             LogUtils.d("startSpecialWorkFlow", "--启动院内介绍工作流程--");
             //医院介绍工作流启动标志
@@ -71,8 +74,7 @@ public class OperationUtils {
     }
 
     /**
-     * 获取自动回充工作流信息    charge 自动回充
-     * guide    引导流程类型
+     * 获取自动回充工作流信息
      */
     public static void automaticRechargeWorkflow(String workflowType, RobotInfoData robotInfo, int workFlowTypeInt) {
         //医院地图信息
@@ -100,13 +102,6 @@ public class OperationUtils {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                             String msgString = jsonObject.getString("msg");
-                            if (workflowType.equals("charge")) {
-                                //缓存自动回充工作流信息到本地
-                                SpUtils.putString(MyApp.getContext(), RECHARGE_SPECIFIC_WORKFLOW, msgString);
-                            } else {
-                                //缓存引导工作流信息到本地
-                                SpUtils.putString(MyApp.getContext(), GUIDE_SPECIFIC_WORKFLOW, msgString);
-                            }
                             //根据工作流id发起任务
                             WorkflowEntity workflowEntity = JSON.parseObject(msgString, WorkflowEntity.class);
                             //发起活动流程自动回充
@@ -177,7 +172,7 @@ public class OperationUtils {
                                                                             LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
                                                                             if (nextOperationData.getF_Type().equals("Operation")) { //执行操作任务
                                                                                 autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
-                                                                            }else { //导航移动到某地
+                                                                            } else { //导航移动到某地
                                                                                 autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                                                             }
                                                                             EventBus.getDefault().post(autoMoveEvent);
@@ -197,12 +192,12 @@ public class OperationUtils {
                                                 new Handler(Looper.getMainLooper()).post(() -> {
                                                     ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                                                 });
-                                            }else {
+                                            } else {
                                                 playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
                                                 new Handler(Looper.getMainLooper()).post(() -> {
                                                     ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
                                                 });
-                                                //当前机器人工作流程状态标志初始化,可再次发起引导工作流
+                                                //自动回充工作流后台没有配置,可再次启动自动回充工作流
                                                 SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                                             }
                                         }
@@ -211,7 +206,7 @@ public class OperationUtils {
                                     }
                                 }
                             });
-                        }else {  //后台没有配置医院介绍工作流
+                        } else {  //后台没有配置医院介绍工作流
                             playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                             new Handler(Looper.getMainLooper()).post(() -> {
                                 ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
