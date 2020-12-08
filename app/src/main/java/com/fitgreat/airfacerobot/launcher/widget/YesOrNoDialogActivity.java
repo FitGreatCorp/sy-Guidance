@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
@@ -88,13 +89,13 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         //导航到达终点后弹窗同时,语音提示根据中英文设置拼接提示内容
         String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
         StringBuilder promptContent = new StringBuilder();
-        promptContent.append(getString(R.string.arrive_destination_prompt_one));
+        promptContent.append(MvpBaseActivity.getActivityContext().getString(R.string.arrive_destination_prompt_one));
         if (currentLanguage != null && currentLanguage.equals("zh")) {
             promptContent.append(instructionName);
         } else {
             promptContent.append(instructionEnName);
         }
-        promptContent.append(getString(R.string.arrive_destination_prompt_two));
+        promptContent.append(MvpBaseActivity.getActivityContext().getString(R.string.arrive_destination_prompt_two));
         playShowText(promptContent.toString());
         //1分钟计时器计时
         timer = new Timer();
@@ -104,7 +105,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
                 countDown++;
                 if (countDown == 30) { //导航到达终点30秒后语音提示
                     LogUtils.d("startSpecialWorkFlow", "导航到达目的地30秒后");
-                    playShowText("是否还需要其他服务呢");
+                    playShowText(MvpBaseActivity.getActivityContext().getString(R.string.arrive_destination_prompt_three));
                 } else if (countDown == 32) {
                     LogUtils.d("startSpecialWorkFlow", "导航到达目的地一分钟后,回到首页启动自动回充");
                     choseNoBt();
@@ -120,7 +121,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         Point point = new Point();
         defaultDisplay.getSize(point);
         attributes.width = (int) ((point.x) * 0.4);
-        attributes.height = (int) ((point.y) * 0.35);
+        attributes.height = (int) ((point.y) * 0.45);
         window.setAttributes(attributes);
     }
 

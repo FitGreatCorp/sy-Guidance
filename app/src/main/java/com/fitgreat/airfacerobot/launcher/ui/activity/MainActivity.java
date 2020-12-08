@@ -170,9 +170,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private int countDownTime = 30;
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
-    //进入设置页面第一次点击标志
-    private boolean firstClickTag = false;
-    private long firstClickTime;
     private Timer introductionTimer;
     private TimerTask introductionTimerTask;
     private int introductionCountdown;
@@ -189,7 +186,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     public void initData() {
         //第一次安装语言默认为中文
         String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-        if (currentLanguage.equals("null")){
+        if (currentLanguage.equals("null")) {
             SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         }
         //注册EventBus
@@ -339,10 +336,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 public void run() {
                     introductionCountdown++;
                     if (introductionCountdown == 180) {
-                        LogUtils.d("startSpecialWorkFlow", "空闲3分钟后再次启动院内介绍工作流----------");
-                        introductionCountdown = 0;
-                        introductionTimer.cancel();
-                        introductionTimerTask.cancel();
+                        stopIntroductionTimer();
                         //当前机器人语言设置
                         String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
                         if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
@@ -356,6 +350,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 }
             };
             introductionTimer.schedule(introductionTimerTask, 0, 1000);
+            LogUtils.d("startSpecialWorkFlow", "空闲3分钟后启动院内介绍工作流:  " + introductionCountdown);
             //dds对话Observer注册
             EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
             //启动语音唤醒,打开one shot模式
@@ -367,16 +362,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     protected void onPause() {
         super.onPause();
         isResume = false;
-        //取消启动院内介绍工作流3分钟计时
-        if (introductionTimer != null) {
-            introductionTimer.cancel();
-            introductionTimer = null;
-        }
-        if (introductionTimerTask != null) {
-            introductionTimerTask.cancel();
-            introductionTimerTask = null;
-        }
-        introductionCountdown = 0;
+        stopIntroductionTimer();
         //关闭语音唤醒,关闭one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
         //关闭dds语音播报
@@ -388,6 +374,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
         SpeechManager.closeOneShotWakeup();
     }
+
 
     @Override
     protected void onStop() {
@@ -441,9 +428,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
 
     @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english})
     public void onclick(View view) {
+        stopIntroductionTimer();
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
-                jumpSetModule();
+                RouteUtils.goToActivity(getContext(), SettingActivity.class);
                 break;
             case R.id.constraintLayout_me_want_go: //我要去
                 RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
@@ -469,6 +457,19 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     public void recreate() {
         super.recreate();
         LogUtils.d("recreate", "   recreate   MainActivity    ");
+    }
+
+    /**
+     * 取消循环院内介绍计时器
+     */
+    private void stopIntroductionTimer() {
+        introductionCountdown = 0;
+        if (introductionTimer != null) {
+            LogUtils.d("startSpecialWorkFlow", "3分钟启动院内介绍工作流计时器取消: " + introductionCountdown);
+            //取消启动院内介绍工作流3分钟计时
+            introductionTimer.cancel();
+            introductionTimer = null;
+        }
     }
 
     /**
@@ -501,28 +502,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
             //启动院内介绍工作流中文版
             OperationUtils.startSpecialWorkFlow(3);
-        } else if (!(currentLanguage.equals("null") )&& currentLanguage.equals("en")) {
+        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
             //启动院内介绍工作流英文版
             OperationUtils.startSpecialWorkFlow(2);
         }
     }
-    /**
-     * 连续两次点击时间间隔大于0.5秒,跳转进入设置模块
-     */
-    private void jumpSetModule() {
-        if (!firstClickTag) {
-            firstClickTag = true;
-            //记录第一次点击按钮时间单位为秒
-            firstClickTime = System.currentTimeMillis();
-        } else {
-            //两次点击按钮时间相差大于1秒进入设置模块,小于1秒需再次点击,第一次点击时间重新记录
-            if ((System.currentTimeMillis() - firstClickTime) > 100) {
-                RouteUtils.goToActivity(getContext(), SettingActivity.class);
-            }
-            firstClickTag = false;
-        }
-    }
-
     /**
      * 切换机器人显示语言
      */

@@ -95,4 +95,5 @@
     <string name="go_back_tip">I want to go back</string>
     <string name="charging_prompt">I am automatically recharging!</string>
     <string name="prompt_while_busy">Sorry, the robot is currently busy, please wait. . .</string>
+    <string name="arrive_destination_prompt_three">Do you need other services?</string>
 </resources>

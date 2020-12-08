@@ -492,13 +492,13 @@ public class RobotBrainService extends Service {
                 case "navigation_stopped":      //导航失败  TODO
                     LogUtils.d("startSpecialWorkFlow", "isTerminal = " + isTerminal + " 本次导航失败导航任务信息--" + currentNavigationDestination + "---" + currentNavigationX + "---" + currentNavigationY + "---" + currentNavigationZ);
                     if (!isTerminal) {
-                        playShowContent(appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_one), getString(R.string.navigation_failed_tip_two)));
+                        playShowContent(appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_two)));
                     }
                     //本次导航任务失败,重试三次如果还是不成功最后回到原点冲电
                     if (navigationTimes < 3) {
                         navigationTimes++;
                         handler.postDelayed(() -> {
-                            playShowContent(appendStartNavigationPrompt(getString(R.string.start_navigation_tip_one), getString(R.string.start_navigation_tip_two)));
+                            playShowContent(appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_two)));
                         }, 500);
                         ExecutorManager.getInstance().executeTask(() -> {
                             jRos.op_setAutoMove((byte) 1, Double.valueOf(currentNavigationX), Double.valueOf(currentNavigationY), Double.valueOf(currentNavigationZ));
@@ -557,17 +557,17 @@ public class RobotBrainService extends Service {
                     //自动回充工作流没有启动时,导航成功到达目的地时弹窗提示
                     if (!startRechargeTag) {
                         Intent intent = new Intent(MyApp.getContext(), YesOrNoDialogActivity.class);
-                        intent.putExtra(DIALOG_TITLE, getString(R.string.start_chose_destination_dialog_title));
-                        intent.putExtra(DIALOG_CONTENT, appendStartNavigationPrompt(getString(R.string.navigation_success_tip_one), getString(R.string.navigation_success_tip_two)));
-                        intent.putExtra(DIALOG_YES, getString(R.string.need_yes_title));
-                        intent.putExtra(DIALOG_NO, getString(R.string.need_no_title));
+                        intent.putExtra(DIALOG_TITLE, MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
+                        intent.putExtra(DIALOG_CONTENT, appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_two)));
+                        intent.putExtra(DIALOG_YES, MvpBaseActivity.getActivityContext().getString(R.string.need_yes_title));
+                        intent.putExtra(DIALOG_NO, MvpBaseActivity.getActivityContext().getString(R.string.need_no_title));
                         intent.putExtra("instructionName", instructionName);
                         intent.putExtra("instructionEnName", instructionEnName);
                         startActivity(intent);
                     }
                     break;
                 case "parking_success":   //充电成功
-                    playShowContent(getString(R.string.charge_success_tip));
+                    playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.charge_success_tip));
                     saveRobotstatus(5);
                     LogUtils.d("task_robot_status", "冲电成功:为冲电状态" + "robot status = " + RobotInfoUtils.getRobotRunningStatus());
                     BusinessRequest.updateRobotState(getBattery(), RobotInfoUtils.getRobotRunningStatus(), new HttpCallback() {
@@ -583,7 +583,7 @@ public class RobotBrainService extends Service {
                     break;
                 case "parking_timeout": //充电失败
                     LogUtils.d(TAG, "parking_success !!!!!!!!!!!!!!!!!!");
-                    playShowContent(getString(R.string.charge_failed_tip));
+                    playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.charge_failed_tip));
                     instruction_status = "-1";
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                     //自动回充工作流结束
@@ -1473,7 +1473,7 @@ public class RobotBrainService extends Service {
                                         handler.postDelayed(new Runnable() {
                                             @Override
                                             public void run() {
-                                                playShowContent(getString(R.string.charging_prompt));
+                                                playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.charging_prompt));
                                             }
                                         }, 2000);
                                     } else if (operationType.equals("6")) {
@@ -1554,10 +1554,12 @@ public class RobotBrainService extends Service {
                         } else if (instructionType.equals("End")) {
                             //根据当前机器人语言,再次发起院内介绍工作流
                             String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-                            if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
+                            //院内介绍工作流启动标志
+                            boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+                            if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")&&startIntroductionWorkflowTag) { //当前机器人语言为中文
                                 //重启院内介绍工作流程中文版
                                 OperationUtils.startSpecialWorkFlow(3);
-                            } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
+                            } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")&&startIntroductionWorkflowTag) {
                                 //重启院内介绍工作流程英文版
                                 OperationUtils.startSpecialWorkFlow(2);
                             }

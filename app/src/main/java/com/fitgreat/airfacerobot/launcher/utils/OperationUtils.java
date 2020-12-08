@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.launcher.utils;
 
 import android.os.Handler;
 import android.os.Looper;
+
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -18,9 +19,11 @@ import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -29,9 +32,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
 import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
@@ -168,6 +173,7 @@ public class OperationUtils {
                                                                             autoMoveEvent.setX(nextOperationData.getF_X());
                                                                             autoMoveEvent.setY(nextOperationData.getF_Y());
                                                                             autoMoveEvent.setE(nextOperationData.getF_Z());
+                                                                            autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
                                                                             LogUtils.d("startSpecialWorkFlow", "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
                                                                             LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
                                                                             if (nextOperationData.getF_Type().equals("Operation")) { //执行操作任务
@@ -187,18 +193,18 @@ public class OperationUtils {
                                                 });
                                             }
                                         } else {
-                                            if (workFlowTypeInt == 3) {  //后台没有配置自动引导流程,需要语音提示
-                                                playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                                                new Handler(Looper.getMainLooper()).post(() -> {
-                                                    ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                                                });
-                                            } else {
+                                            if (workFlowTypeInt == 1) {
                                                 playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
                                                 new Handler(Looper.getMainLooper()).post(() -> {
                                                     ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
                                                 });
                                                 //自动回充工作流后台没有配置,可再次启动自动回充工作流
                                                 SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                                            } else {
+                                                playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
+                                                new Handler(Looper.getMainLooper()).post(() -> {
+                                                    ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
+                                                });
                                             }
                                         }
                                     } catch (JSONException e) {
@@ -206,11 +212,20 @@ public class OperationUtils {
                                     }
                                 }
                             });
-                        } else {  //后台没有配置医院介绍工作流
-                            playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                            new Handler(Looper.getMainLooper()).post(() -> {
-                                ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                            });
+                        } else {
+                            if (workFlowTypeInt == 1) {
+                                playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                                new Handler(Looper.getMainLooper()).post(() -> {
+                                    ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                                });
+                                //自动回充工作流后台没有配置,可再次启动自动回充工作流
+                                SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                            } else {
+                                playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
+                                new Handler(Looper.getMainLooper()).post(() -> {
+                                    ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
+                                });
+                            }
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
