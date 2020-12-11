@@ -103,4 +103,9 @@ public interface Constants {
      */
     String COMMON_PROBLEM_TAG = "common_problem_tag";
 
+    /**
+     * 常见问题指令
+     */
+    String DEFAULT_LOG_TAG = "guidance_sy_hxk";
+
 }

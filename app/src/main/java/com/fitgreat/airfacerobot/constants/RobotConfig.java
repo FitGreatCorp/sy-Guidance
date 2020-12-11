@@ -226,7 +226,6 @@ public interface RobotConfig {
      */
     String CHOOSE_COMMON_PROBLEM_POSITION = "choose_common_problem_position";
 
-
     /**
      * 进入常见问题汇总页面
      */
@@ -253,4 +252,19 @@ public interface RobotConfig {
      * 当前网络连接不可用
      */
     String NETWORK_CONNECTION_CHECK_FAILURE = "network.connection.check_failure";
+
+    /**
+     * 安卓系统重启
+     */
+    String ANDROID_SYSTEM_REBOOT_TAG = "android.intent.action.REBOOT";
+
+    /**
+     * 安卓系统开机
+     */
+    String ANDROID_SYSTEM_BOOT_UP_TAG = "android.intent.action.BOOT_COMPLETED";
+
+    /**
+     *初始化页面调用网络接口是否延时标志
+     */
+    String DELAY_CONNECT_INTERFACE_TAG = "delay_connect_interface_tag";
 }

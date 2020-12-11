@@ -6,7 +6,9 @@ import android.os.Environment;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+
 import androidx.annotation.RequiresApi;
+
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -30,21 +32,26 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_OPERATION_INFO;
@@ -213,15 +220,16 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String stringResponse = response.body().string();
-                LogUtils.json(TAG, "获取执行任务列表信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
+//                LogUtils.json(DEFAULT_LOG_TAG, "获取执行任务列表信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
                 try {
                     JSONObject msbObj = new JSONObject(stringResponse);
                     String type = msbObj.getString("type");
-                    String msg = msbObj.getString("msg");
+                    String msgString = msbObj.getString("msg");
+//                    LogUtils.json(DEFAULT_LOG_TAG, msgString);
                     if (type.equals("success")) {
-                        handOperationCash(msg);
+                        handOperationCash(msgString);
                     } else {
-                        mView.getOperationListFailure(msg);
+                        mView.getOperationListFailure(msgString);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

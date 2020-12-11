@@ -1,4 +1,4 @@
-package com.fitgreat.airfacerobot.aiui;
+package com.fitgreat.airfacerobot.speech;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -6,6 +6,7 @@ import android.os.Message;
 import android.text.TextUtils;
 
 import com.fitgreat.airfacerobot.RobotInfoUtils;
+import com.fitgreat.airfacerobot.aiui.AiuiManager;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.model.NavigationTip;
@@ -22,8 +23,10 @@ import java.io.File;
 
 import okhttp3.Callback;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_TASK_END;
+import static com.fitgreat.airfacerobot.speech.SpeechManager.*;
 
 /**
  * 播放文字任务<p>
@@ -39,11 +42,7 @@ public class PlayTtsTask {
     private Callback updateInstructionCallback;
     private OnPlayDoneListener onPlayDoneListener;
     private boolean isRunning;
-    private SpeechManager mSpeechManager;
-
-    public PlayTtsTask(AiuiManager aiuiManager) {
-        this.aiuiManager = aiuiManager;
-    }
+    public SpeechManager mSpeechManager;
 
     public PlayTtsTask(SpeechManager speechManager) {
         this.mSpeechManager = speechManager;
@@ -91,7 +90,7 @@ public class PlayTtsTask {
         File file = new File(localTxtPath);
         if (!file.exists()) {
             String url = ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + filePath;
-            DownloadUtils.downloadApp(handler, "", url, localTxtPath, true,null);
+            DownloadUtils.downloadApp(handler, "", url, localTxtPath, true, null);
         } else {
             playTts(instructionId, updateInstructionCallback);
         }
@@ -123,7 +122,16 @@ public class PlayTtsTask {
             //语音播报监控标号
             int broadcastCount = 0;
             if (playContent.length() <= 1224) {
-                mSpeechManager.textTtsPlay(playContent, "0");
+                SpeechManager.textTtsPlay(playContent, String.valueOf(playContent.length()), new SpeechManager.TtsBroadcastListener() {
+                    @Override
+                    public void ttsBroadcastBegin() {
+                    }
+
+                    @Override
+                    public void ttsBroadcastEnd(String ttsId) {
+                        voicePlayEnd(ttsId, playContent.length());
+                    }
+                });
             } else { //文本长度超过一定限制,分段语音播报
                 broadcastCount = playContent.length() / 1224;
                 LogUtils.d(TAG, "broadcastCount:  " + broadcastCount);
@@ -137,47 +145,45 @@ public class PlayTtsTask {
                         endPosition = 1223 + j * 1223;
                     }
                     String broadcastContent = playContent.substring(startPosition, endPosition);
-                    LogUtils.d(TAG, "broadcastContent:  " + broadcastContent + " length:  " + broadcastContent.length() + " startPosition: " + startPosition + "  endPosition:   " + endPosition);
-                    mSpeechManager.textTtsPlay(broadcastContent, Integer.toString(j));
+                    LogUtils.d(DEFAULT_LOG_TAG, "broadcastContent:  " + broadcastContent + " length:  " + broadcastContent.length() + " startPosition: " + startPosition + "  endPosition:   " + endPosition);
+                    int finalBroadcastCount = broadcastCount;
+                    SpeechManager.textTtsPlay(broadcastContent, Integer.toString(j), new SpeechManager.TtsBroadcastListener() {
+                        @Override
+                        public void ttsBroadcastBegin() {
+
+                        }
+
+                        @Override
+                        public void ttsBroadcastEnd(String ttsId) {
+                            voicePlayEnd(ttsId, finalBroadcastCount);
+                        }
+                    });
                 }
             }
             //更新提示信息到首页对话记录
             EventBus.getDefault().post(new NavigationTip(playContent));
-            int finalBroadcastCount = broadcastCount;
-            mSpeechManager.setTtsBroadcastListener(new SpeechManager.TtsBroadcastListener() {
-                @Override
-                public void ttsBroadcastBegin() {
-
-                }
-
-                @Override
-                public void ttsBroadcastEnd(String ttsId) {
-                    LogUtils.d(TAG, "isRunning ==========tts播报结束, " + isRunning + " ttsId, " + ttsId + "  finalBroadcastCount, " + finalBroadcastCount);
-                    if (ttsId.equals(Integer.toString(finalBroadcastCount))) {
-                        if (!isRunning) {
-                            return;
-                        }
-                        if (onPlayDoneListener != null) {
-                            onPlayDoneListener.onPlayDone("2");
-                        }
-                        setRunning(false);
-                        LogUtils.d(TAG, "--------tts play end-------");
-                        //文本播放结束,更新任务执行状态获取下一步操作任务
-                        SignalDataEvent instruct = new SignalDataEvent();
-                        instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
-                        instruct.setInstructionId(instructionId);
-                        instruct.setAction("2");
-                        EventBus.getDefault().post(instruct);
-                    }
-                }
-            });
-
         } else {
             if (onPlayDoneListener != null) {
                 onPlayDoneListener.onPlayDone("-1");
             }
             setRunning(false);
             BusinessRequest.UpdateInstructionStatue(instructionId, "-1", updateInstructionCallback);
+        }
+    }
+
+    private void voicePlayEnd(String ttsId, int targetId) {
+        if (ttsId.equals(String.valueOf(targetId))) {
+            LogUtils.d(DEFAULT_LOG_TAG, "isRunning 文字播报结束播报结束, " + isRunning + " ttsId, " + ttsId);
+            if (onPlayDoneListener != null) {
+                onPlayDoneListener.onPlayDone("2");
+            }
+            setRunning(false);
+            LogUtils.d(TAG, "--------tts play end-------");
+            if (!RobotInfoUtils.getRobotRunningStatus().equals("1")) {  //控制端没有接收到取消播放文字任务指令
+                SpeakEvent event = new SpeakEvent();
+                event.setType(MSG_TTS_TASK_END);
+                EventBus.getDefault().post(event);
+            }
         }
     }
 

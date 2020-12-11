@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
 
 /**
@@ -119,7 +120,7 @@ public class DuiMessageObserver implements MessageObserver {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                LogUtils.d("CommandTodo", "context.input.text = " + bean.getText()+"  startCommonProblemModelTag:  "+startCommonProblemModelTag);
+                LogUtils.d(DEFAULT_LOG_TAG, "context.input.text = " + bean.getText());
                 if (startCommonProblemModelTag) {
                     LogUtils.json("CommandTodo", JSON.toJSONString(showContent));
                     EventBus.getDefault().post(showContent);

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:topTitle="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/text_introduction_constraintLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".mediaplayer.PdfPlayActivity"
+    tools:ignore="MissingConstraints">
+
+    <com.fitgreat.airfacerobot.launcher.widget.TopTitleView
+        android:id="@+id/text_introduction_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        topTitle:titleName="新园区介绍" />
+
+    <TextView
+        android:id="@+id/text_introduction_content"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px0"
+        android:layout_weight="1"
+        android:padding="@dimen/px15" />
+</LinearLayout>

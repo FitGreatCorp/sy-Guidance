@@ -28,6 +28,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_COMPLETE;
 
 
@@ -82,10 +83,24 @@ public class SpeechManager {
     }
 
     /**
+     * tts播报监听回调
+     */
+    public interface TtsBroadcastListener {
+        /**
+         * tts播报开始
+         */
+        void ttsBroadcastBegin();
+
+        /**
+         * tts播报结束
+         */
+        void ttsBroadcastEnd(String ttsId);
+    }
+
+    /**
      * 文字语音播报
      */
-    public void textTtsPlay(String textContent, String ttsId) {
-        LogUtils.d("MSG_STOP_TASK", "textTtsPlay   " + ddsInitializationTag);
+    public static void textTtsPlay(String textContent, String ttsId,TtsBroadcastListener ttsBroadcastListener) {
         if (ddsInitializationTag) {
             ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
             try {
@@ -93,8 +108,8 @@ public class SpeechManager {
                 ttsEngine.setListener(new TTSEngine.Callback() {
                     @Override
                     public void beginning(String s) {
-                        if (mTtsBroadcastListener != null) {
-                            mTtsBroadcastListener.ttsBroadcastBegin();
+                        if (ttsBroadcastListener != null) {
+                            ttsBroadcastListener.ttsBroadcastBegin();
                         }
                     }
 
@@ -104,8 +119,8 @@ public class SpeechManager {
 
                     @Override
                     public void end(String s, int i) {
-                        if (mTtsBroadcastListener != null) {
-                            mTtsBroadcastListener.ttsBroadcastEnd(s);
+                        if (ttsBroadcastListener != null) {
+                            ttsBroadcastListener.ttsBroadcastEnd(s);
                         }
                     }
 
@@ -121,34 +136,10 @@ public class SpeechManager {
     }
 
     /**
-     * tts播报监听回调
-     */
-    public interface TtsBroadcastListener {
-        /**
-         * tts播报开始
-         */
-        void ttsBroadcastBegin();
-
-        /**
-         * tts播报结束
-         */
-        void ttsBroadcastEnd(String ttsId);
-    }
-
-    public TtsBroadcastListener mTtsBroadcastListener = null;
-
-    /**
-     * 设置语音播报监听回调
-     */
-    public void setTtsBroadcastListener(TtsBroadcastListener ttsBroadcastListener) {
-        this.mTtsBroadcastListener = ttsBroadcastListener;
-    }
-
-    /**
      * 取消文字语音播放
      */
     public void cancelTtsPlay() {
-        if (isDdsInitialization()){
+        if (isDdsInitialization()) {
             ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
             try {
                 ttsEngine.shutup("");
@@ -208,55 +199,6 @@ public class SpeechManager {
             e.printStackTrace();
         }
     }
-
-    /**
-     * 开启识别
-     */
-    public static void startAsrVoice(AsrVoiceListener asrVoiceListener) {
-        try {
-            DDS.getInstance().getAgent().getASREngine().startListening(new ASREngine.Callback() {
-                @Override
-                public void beginningOfSpeech() {
-                    LogUtils.d(TAG, "检测到用户开始说话");
-                }
-
-                @Override
-                public void endOfSpeech() {
-                    LogUtils.d(TAG, "检测到用户结束说话");
-                }
-
-                @Override
-                public void bufferReceived(byte[] bytes) {
-                    LogUtils.d(TAG, "用户说话的音频数据");
-                    asrVoiceListener.asrBufferReceived(bytes);
-                }
-
-                @Override
-                public void partialResults(String s) {
-                    LogUtils.d(TAG, "用户说话中实时识别结果反馈");
-                }
-
-                @Override
-                public void finalResults(String s) {
-                    LogUtils.d(TAG, "用户说话中最终识别结果反馈");
-                    asrVoiceListener.asrFinalResults(s);
-                }
-
-                @Override
-                public void error(String s) {
-                    LogUtils.d(TAG, "识别过程中发生的错误");
-                }
-
-                @Override
-                public void rmsChanged(float v) {
-                    LogUtils.d(TAG, "用户说话的音量分贝");
-                }
-            });
-        } catch (DDSNotInitCompleteException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * 说话过程中asr监听回调
      */
@@ -275,6 +217,55 @@ public class SpeechManager {
          */
         void asrFinalResults(String s);
     }
+
+    /**
+     * 开启识别
+     */
+    public static void startAsrVoice(AsrVoiceListener asrVoiceListener) {
+        try {
+            DDS.getInstance().getAgent().getASREngine().startListening(new ASREngine.Callback() {
+                @Override
+                public void beginningOfSpeech() {
+                    LogUtils.d(DEFAULT_LOG_TAG, "检测到用户开始说话");
+                }
+
+                @Override
+                public void endOfSpeech() {
+                    LogUtils.d(DEFAULT_LOG_TAG, "检测到用户结束说话");
+                }
+
+                @Override
+                public void bufferReceived(byte[] bytes) {
+//                    LogUtils.d(DEFAULT_LOG_TAG, "用户说话的音频数据");
+                    asrVoiceListener.asrBufferReceived(bytes);
+                }
+
+                @Override
+                public void partialResults(String s) {
+                    LogUtils.d(TAG, "用户说话中实时识别结果反馈 "+s);
+                }
+
+                @Override
+                public void finalResults(String s) {
+                    LogUtils.d(DEFAULT_LOG_TAG, "用户说话中最终识别结果反馈 "+s);
+                    asrVoiceListener.asrFinalResults(s);
+                }
+
+                @Override
+                public void error(String s) {
+                    LogUtils.d(DEFAULT_LOG_TAG, "识别过程中发生的错误 "+s);
+                }
+
+                @Override
+                public void rmsChanged(float v) {
+//                    LogUtils.d(DEFAULT_LOG_TAG, "用户说话的音量分贝");
+                }
+            });
+        } catch (DDSNotInitCompleteException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * 启动语音唤醒,打开OneShot模式
@@ -297,7 +288,7 @@ public class SpeechManager {
      * 关闭语音唤醒,关闭OneShot模式
      */
     public static void closeOneShotWakeup() {
-        if (isDdsInitialization()){
+        if (isDdsInitialization()) {
             try {
                 ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
                 wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
@@ -372,14 +363,14 @@ public class SpeechManager {
             //添加默认唤醒词
             DDS.getInstance().getAgent().getWakeupEngine().addMainWakeupWords(mainWordLisrt);
             //打印唤醒词
-            List<WakeupWord> mainWakeupWords = DDS.getInstance().getAgent().getWakeupEngine().getMainWakeupWords();
-            for (WakeupWord wakeupWord :
-                    mainWakeupWords) {
-                LogUtils.json("CommandTodo", JSON.toJSONString(wakeupWord));
-            }
+//            List<WakeupWord> mainWakeupWords = DDS.getInstance().getAgent().getWakeupEngine().getMainWakeupWords();
+//            for (WakeupWord wakeupWord :
+//                    mainWakeupWords) {
+//                LogUtils.json("CommandTodo", JSON.toJSONString(wakeupWord));
+//            }
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
-            LogUtils.e("CommandTodo", "添加唤醒词报错::"+e.getMessage());
+            LogUtils.e("CommandTodo", "添加唤醒词报错::" + e.getMessage());
         }
     }
 

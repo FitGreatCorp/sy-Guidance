@@ -318,7 +318,6 @@ public class RobotInitActivity extends MvpBaseActivity {
                 handler.removeMessages(MSG_SERVER_TIME_OUT);
                 handler.sendEmptyMessageDelayed(MSG_SERVER_TIME_OUT, 60 * 1 * 1000);
                 voiceState.setText(R.string.voice_starting);
-
                 break;
             default:
                 break;

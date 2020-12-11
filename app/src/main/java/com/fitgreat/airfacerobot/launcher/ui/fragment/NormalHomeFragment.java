@@ -328,28 +328,28 @@ public class NormalHomeFragment extends MvpBaseFragment<NormalHomeView, NormalHo
      * 首页按钮自动化回充
      */
     private void rechargeToDo() {
-        myDialog = new MyDialog(getContext());
-        myDialog.setMessage("请确认是否要进行自动回充?");
-        myDialog.setNegativeOnclicListener("取消", () -> {
-            myDialog.dismiss();
-        });
-        myDialog.setPositiveOnclicListener("确定", () -> {
-            myDialog.dismiss();
-            //自动回充
-//            OperationUtils.robotRecharge();
-            btStateSwitch(autoRechargeLayout);
-            //如果当前机器人为拖动模式则改为控制模式
-            if (!SpUtils.getBoolean(getContext(), "isLock", true)) {
-                controlMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
-                controlMode.setPowerlock(1);
-                EventBus.getDefault().post(controlMode);
-                SpUtils.putBoolean(getContext(), "isLock", true);
-                //更新页面ui显示机器人模式
-                updateRobotInfo();
-            }
-        });
-        myDialog.setTitle("自动回充提示");
-        myDialog.show();
+//        myDialog = new MyDialog(getContext());
+//        myDialog.setMessage("请确认是否要进行自动回充?");
+//        myDialog.setNegativeOnclicListener("取消", () -> {
+//            myDialog.dismiss();
+//        });
+//        myDialog.setPositiveOnclicListener("确定", () -> {
+//            myDialog.dismiss();
+//            //自动回充
+////            OperationUtils.robotRecharge();
+//            btStateSwitch(autoRechargeLayout);
+//            //如果当前机器人为拖动模式则改为控制模式
+//            if (!SpUtils.getBoolean(getContext(), "isLock", true)) {
+//                controlMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
+//                controlMode.setPowerlock(1);
+//                EventBus.getDefault().post(controlMode);
+//                SpUtils.putBoolean(getContext(), "isLock", true);
+//                //更新页面ui显示机器人模式
+//                updateRobotInfo();
+//            }
+//        });
+//        myDialog.setTitle("自动回充提示");
+//        myDialog.show();
     }
 
     /**
@@ -661,34 +661,34 @@ public class NormalHomeFragment extends MvpBaseFragment<NormalHomeView, NormalHo
     public void onMsg(SpeakEvent eve) {
         switch (eve.getType()) {
             case MSG_TTS_SHOW_DIALOG:
-                if (myDialog != null) {
-                    if (myDialog.isShowing()) {
-                        myDialog.dismiss();
-                    }
-                    myDialog = null;
-                }
-                myDialog = new MyDialog(getContext());
-                myDialog.setTitle("播放提示");
-                myDialog.setMessage(eve.getText() + "播放结束！");
-                myDialog.setPositiveOnclicListener("再放一遍", () -> {
-                    myDialog.dismiss();
-                    FilePlayEvent filePlayEvent = new FilePlayEvent(FILE_PLAY_OK, "4");
-                    EventBus.getDefault().post(filePlayEvent);
-                });
-                myDialog.setNegativeOnclicListener("确认", () -> {
-                    myDialog.dismiss();
-                    SpeakEvent speakEvent = new SpeakEvent();
-                    speakEvent.setType(MSG_TTS_CANCEL);
-                    speakEvent.setAction("txt_finished");
-                    EventBus.getDefault().post(speakEvent);
-                    //播放结束弹窗提示,点击确认按钮后,机器人运行状态切换,充电状态大于执行操作中状态
-                    if (SpUtils.getBoolean(getContext(), "isCharge", false)) {
-                        saveRobotstatus(5);
-                    } else {
-                        saveRobotstatus(1);
-                    }
-                });
-                myDialog.show();
+//                if (myDialog != null) {
+//                    if (myDialog.isShowing()) {
+//                        myDialog.dismiss();
+//                    }
+//                    myDialog = null;
+//                }
+//                myDialog = new MyDialog(getContext());
+//                myDialog.setTitle("播放提示");
+//                myDialog.setMessage(eve.getText() + "播放结束！");
+//                myDialog.setPositiveOnclicListener("再放一遍", () -> {
+//                    myDialog.dismiss();
+//                    FilePlayEvent filePlayEvent = new FilePlayEvent(FILE_PLAY_OK, "4");
+//                    EventBus.getDefault().post(filePlayEvent);
+//                });
+//                myDialog.setNegativeOnclicListener("确认", () -> {
+//                    myDialog.dismiss();
+//                    SpeakEvent speakEvent = new SpeakEvent();
+//                    speakEvent.setType(MSG_TTS_CANCEL);
+//                    speakEvent.setAction("txt_finished");
+//                    EventBus.getDefault().post(speakEvent);
+//                    //播放结束弹窗提示,点击确认按钮后,机器人运行状态切换,充电状态大于执行操作中状态
+//                    if (SpUtils.getBoolean(getContext(), "isCharge", false)) {
+//                        saveRobotstatus(5);
+//                    } else {
+//                        saveRobotstatus(1);
+//                    }
+//                });
+//                myDialog.show();
                 break;
         }
     }
@@ -702,70 +702,70 @@ public class NormalHomeFragment extends MvpBaseFragment<NormalHomeView, NormalHo
         switch (daemonEvent.getType()) {
             case RobotConfig.TASK_DIALOG:
                 LogUtils.d(TAG, "TASK_DIALOG !!!!!    daemonEvent.getAction() = " + daemonEvent.getAction());
-                if (daemonEvent.getAction().equals("2")) {
-                    String filename = daemonEvent.extra;
-                    LogUtils.d("LauncherActivity", "filename = " + filename);
-                    if (myDialog != null) {
-                        myDialog.dismiss();
-                        myDialog = null;
-                    }
-                    myDialog = new MyDialog(getContext());
-                    myDialog.setTitle("播放提示");
-                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
-                    myDialog.setPositiveOnclicListener("开始播放", () -> {
-                        myDialog.dismiss();
-                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "2");
-                        EventBus.getDefault().post(filePlayEvent);
-                    });
-                    myDialog.setNegativeOnclicListener("取消", () -> {
-                        myDialog.dismiss();
-                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "2");
-                        EventBus.getDefault().post(filePlayEvent);
-                    });
-                    myDialog.show();
-                } else if (daemonEvent.getAction().equals("3")) {
-                    String filename = daemonEvent.extra;
-                    LogUtils.d("LauncherActivity", "filename = " + filename);
-                    if (myDialog != null) {
-                        myDialog.dismiss();
-                        myDialog = null;
-                    }
-                    myDialog = new MyDialog(getContext());
-                    myDialog.setTitle("播放提示");
-                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
-                    myDialog.setPositiveOnclicListener("开始播放", () -> {
-                        myDialog.dismiss();
-                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "3");
-                        EventBus.getDefault().post(filePlayEvent);
-                    });
-                    myDialog.setNegativeOnclicListener("取消", () -> {
-                        myDialog.dismiss();
-                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "3");
-                        EventBus.getDefault().post(filePlayEvent);
-                    });
-                    myDialog.show();
-                } else if (daemonEvent.getAction().equals("4")) {
-                    String filename = daemonEvent.extra;
-                    LogUtils.d("LauncherActivity", "filename = " + filename);
-                    if (myDialog != null) {
-                        myDialog.dismiss();
-                        myDialog = null;
-                    }
-                    myDialog = new MyDialog(getContext());
-                    myDialog.setTitle("播放提示");
-                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
-                    myDialog.setPositiveOnclicListener("开始播放", () -> {
-                        myDialog.dismiss();
-                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "4");
-                        EventBus.getDefault().post(filePlayEvent);
-                    });
-                    myDialog.setNegativeOnclicListener("取消", () -> {
-                        myDialog.dismiss();
-                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "4");
-                        EventBus.getDefault().post(filePlayEvent);
-                    });
-                    myDialog.show();
-                }
+//                if (daemonEvent.getAction().equals("2")) {
+//                    String filename = daemonEvent.extra;
+//                    LogUtils.d("LauncherActivity", "filename = " + filename);
+//                    if (myDialog != null) {
+//                        myDialog.dismiss();
+//                        myDialog = null;
+//                    }
+//                    myDialog = new MyDialog(getContext());
+//                    myDialog.setTitle("播放提示");
+//                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
+//                    myDialog.setPositiveOnclicListener("开始播放", () -> {
+//                        myDialog.dismiss();
+//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "2");
+//                        EventBus.getDefault().post(filePlayEvent);
+//                    });
+//                    myDialog.setNegativeOnclicListener("取消", () -> {
+//                        myDialog.dismiss();
+//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "2");
+//                        EventBus.getDefault().post(filePlayEvent);
+//                    });
+//                    myDialog.show();
+//                } else if (daemonEvent.getAction().equals("3")) {
+//                    String filename = daemonEvent.extra;
+//                    LogUtils.d("LauncherActivity", "filename = " + filename);
+//                    if (myDialog != null) {
+//                        myDialog.dismiss();
+//                        myDialog = null;
+//                    }
+//                    myDialog = new MyDialog(getContext());
+//                    myDialog.setTitle("播放提示");
+//                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
+//                    myDialog.setPositiveOnclicListener("开始播放", () -> {
+//                        myDialog.dismiss();
+//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "3");
+//                        EventBus.getDefault().post(filePlayEvent);
+//                    });
+//                    myDialog.setNegativeOnclicListener("取消", () -> {
+//                        myDialog.dismiss();
+//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "3");
+//                        EventBus.getDefault().post(filePlayEvent);
+//                    });
+//                    myDialog.show();
+//                } else if (daemonEvent.getAction().equals("4")) {
+//                    String filename = daemonEvent.extra;
+//                    LogUtils.d("LauncherActivity", "filename = " + filename);
+//                    if (myDialog != null) {
+//                        myDialog.dismiss();
+//                        myDialog = null;
+//                    }
+//                    myDialog = new MyDialog(getContext());
+//                    myDialog.setTitle("播放提示");
+//                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
+//                    myDialog.setPositiveOnclicListener("开始播放", () -> {
+//                        myDialog.dismiss();
+//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "4");
+//                        EventBus.getDefault().post(filePlayEvent);
+//                    });
+//                    myDialog.setNegativeOnclicListener("取消", () -> {
+//                        myDialog.dismiss();
+//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "4");
+//                        EventBus.getDefault().post(filePlayEvent);
+//                    });
+//                    myDialog.show();
+//                }
                 break;
             default:
                 break;

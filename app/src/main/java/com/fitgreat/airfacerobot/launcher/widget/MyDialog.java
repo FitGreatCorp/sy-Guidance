@@ -1,5 +1,6 @@
 package com.fitgreat.airfacerobot.launcher.widget;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -14,7 +15,7 @@ import com.fitgreat.airfacerobot.R;
 /**
  * 更新提示弹框
  */
-public class MyDialog extends Dialog implements View.OnTouchListener {
+public class MyDialog extends AlertDialog implements View.OnTouchListener {
     private Button btn_cancel, btn_ok;
     private TextView tv_version, tv_update_content, tv_title;
 

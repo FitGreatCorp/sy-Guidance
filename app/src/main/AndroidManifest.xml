@@ -42,6 +42,7 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
@@ -92,6 +93,9 @@
             android:name=".mediaplayer.PdfPlayActivity"
             android:screenOrientation="landscape" />
         <activity
+            android:name=".mediaplayer.TextPlayActivity"
+            android:screenOrientation="landscape" />
+        <activity
             android:name=".mediaplayer.VideoPlayActivity"
             android:screenOrientation="landscape" />
         <activity
@@ -122,6 +126,10 @@
             android:screenOrientation="landscape" />
         <activity
             android:name=".commonproblem.CommonProblemActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/MyTranslucentTheme" />
+        <activity
+            android:name=".introductionlist.IntroductionListActivity"
             android:screenOrientation="landscape"
             android:theme="@style/MyTranslucentTheme" />
         <activity

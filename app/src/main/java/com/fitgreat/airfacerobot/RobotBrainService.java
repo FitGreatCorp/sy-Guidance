@@ -11,7 +11,6 @@ import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.os.Build;
 import android.os.Handler;
@@ -19,21 +18,19 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
-import android.support.v4.app.INotificationSideChannel;
 import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.alibaba.fastjson.JSON;
-import com.bumptech.glide.Glide;
-import com.fitgreat.airfacerobot.aiui.PlayTtsTask;
+import com.fitgreat.airfacerobot.speech.PlayTtsTask;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.headeractuator.HeaderActuatorManager;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
+import com.fitgreat.airfacerobot.mediaplayer.TextPlayActivity;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
@@ -97,6 +94,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.fitgreat.airfacerobot.MyApp.getContext;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
@@ -107,7 +105,6 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
@@ -118,11 +115,8 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ISLOCK_CHANGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_RETRY_INIT_SIGNAL;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_ON;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_SPEAK_TEXT;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_START_INIT_VOICE;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_SET_LIGHT_SUCCESS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_STOP_MOVE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TASK_END;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS;
@@ -141,7 +135,6 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.ROBOT_STOP_MOVE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_MSG_ROBOT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.TASK_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.UPDATE_ROBOT_STATUS_TO_SERVER;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_CLOSE_ANDROID_SHARE;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.MSG_FILE_CAN_NOT_PLAY;
@@ -271,6 +264,7 @@ public class RobotBrainService extends Service {
         headerActuatorManager = new HeaderActuatorManager();
         jRos = JRos.getInstance();
         speechManager = SpeechManager.instance(this);
+
         //注册网络监听器
         checkNetWorkState();
         playTtsTask = new PlayTtsTask(speechManager);
@@ -349,29 +343,6 @@ public class RobotBrainService extends Service {
             LogUtils.d(TAG, "  当前电量,  " + Integer.parseInt(getBattery()) + "  当前机器人运行状态,  " + RobotInfoUtils.getRobotRunningStatus() + "  speechManager是否为空,  " + (speechManager != null));
             //ros初始化状态
             boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
-            //获取机器人电量判断是否过低
-            if (action.equals(TIME_POWER)) {
-                if (rosInitTagState) {
-                    if (Integer.parseInt(getBattery()) < 30) {
-                        String workFlowString = SpUtils.getString(getContext(), RECHARGE_SPECIFIC_WORKFLOW, null);
-                        if (RobotInfoUtils.getRobotRunningStatus().equals("1")) { //机器人空闲时
-                            if (workFlowString != null) {
-                                if (!workFlowString.equals("null") && MyApp.isNeedLowBatteryPrompt()) {   //服务端配置自动回充工作流
-                                    //电量低于20% 语音播报"当前电量过低，我要去充电了"
-                                    if (speechManager != null) {
-//                                        speechManager.textTtsPlay(getResources().getString(R.string.chargereminder), "0");
-                                    }
-                                    //弹窗提示回充,倒计时30秒,结束后开始回充
-//                                    EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
-                                }
-                            }
-                        }
-                    }
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + TIME_INTERVAL, pendingIntentPower);
-                }
-            }
             //定时任务1秒执行一次
             if (action.equals(INTERVAL_SECOND_TASK)) {
                 if (rosInitTagState) {
@@ -519,14 +490,14 @@ public class RobotBrainService extends Service {
                             instruction_status = "-1";
                             BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                             //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我"
-                            speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0");
+                            speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0",null);
                             new Handler().postDelayed(() -> {
-                                speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0");
+                                speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0",null);
                             }, 5 * 1000);
                             //单点导航任务结束
                             SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                         } else {
-                            speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.prompt_task_exception), "0");
+                            speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.prompt_task_exception), "0",null);
                             OperationUtils.startSpecialWorkFlow(1);
                         }
                     }
@@ -666,7 +637,7 @@ public class RobotBrainService extends Service {
                 break;
             case PLAY_TASK_PROMPT_INFO:
                 LogUtils.d("CommandTodo", actionDdsEvent.getmActionContent());
-                speechManager.textTtsPlay(actionDdsEvent.getmActionContent(), "0");
+                speechManager.textTtsPlay(actionDdsEvent.getmActionContent(), actionDdsEvent.action,null);
                 break;
             case DDS_OBSERVER_REGISTERED://dds初始化成功 Observer注册
                 LogUtils.d("CommandTodo", "Observer注册");
@@ -847,7 +818,7 @@ public class RobotBrainService extends Service {
                 speakTipsFuture = ExecutorManager.getInstance().executeScheduledTask(new Runnable() {
                     @Override
                     public void run() {
-                        speechManager.textTtsPlay(event.getText(), "0");
+                        speechManager.textTtsPlay(event.getText(), "0",null);
                     }
                 }, 0, SpUtils.getInt(RobotBrainService.this, "de_time", 10), TimeUnit.SECONDS);
                 break;
@@ -874,7 +845,7 @@ public class RobotBrainService extends Service {
                 break;
             case MSG_SPEAK_TEXT:
                 LogUtils.d(TAG, "MSG_SPEAK_TEXT:  " + event.getText());
-                speechManager.textTtsPlay(event.getText(), "0");
+                speechManager.textTtsPlay(event.getText(), "0",null);
                 //显示播报信息到首页记录
                 EventBus.getDefault().post(new NavigationTip(event.getText()));
                 break;
@@ -1072,7 +1043,7 @@ public class RobotBrainService extends Service {
                 }
                 jRos.op_runParking((byte) 0);
                 if (speechManager != null) {
-                    speechManager.textTtsPlay(getString(R.string.task_terminated_title), "0");
+                    speechManager.textTtsPlay(getString(R.string.task_terminated_title), "0",null);
                 }
                 //取消循环播放宣教提示语定时任务
                 ExecutorManager.getInstance().cancelScheduledTask(speakTipsFuture);
@@ -1299,7 +1270,7 @@ public class RobotBrainService extends Service {
      * @param playContent
      */
     private void playShowContent(String playContent) {
-        speechManager.textTtsPlay(playContent, "0");
+        speechManager.textTtsPlay(playContent, "0",null);
         //更新提示信息到首页对话记录
         EventBus.getDefault().post(new NavigationTip(playContent));
     }
@@ -1455,18 +1426,34 @@ public class RobotBrainService extends Service {
                                     } else if (operationType.equals("4")) {
                                         //发送关闭院内介绍工作流提示弹窗
                                         sendBroadcast(new Intent(CLOSE_START_INTRODUCTION_DIALOG));
-                                        handler.postDelayed(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                if (playTtsTask != null) {
-                                                    playTtsTask.setOnPlayDoneListener((String resultCode) -> {
-                                                        instruction_status = resultCode;
-                                                    });
-                                                    playTtsTask.exePlayTtsTask(container, fileUrl, instructionId, updateInstructionCallback);
-                                                }
-                                            }
-                                        }, 2000);
-                                        LogUtils.d("startSpecialWorkFlow", "开始播放text文本任务\t\t");
+//                                        handler.postDelayed(new Runnable() {
+//                                            @Override
+//                                            public void run() {
+//                                                if (playTtsTask != null) {
+//                                                    playTtsTask.setOnPlayDoneListener((String resultCode) -> {
+//                                                        instruction_status = resultCode;
+//                                                    });
+//                                                    playTtsTask.exePlayTtsTask(container, fileUrl, instructionId, updateInstructionCallback);
+//                                                }
+//                                            }
+//                                        }, 2000);
+                                        if (TextUtils.isEmpty(fileUrl)) {
+                                            instruction_status = "-1";
+                                            BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                                            return;
+                                        } else {
+                                            Intent textIntent = new Intent(RobotBrainService.this, TextPlayActivity.class);
+                                            textIntent.putExtra("container", container);
+                                            textIntent.putExtra("blob", fileUrl);
+                                            textIntent.putExtra("instructionId", instructionId);
+                                            textIntent.putExtra("instructionName", instructionName);
+                                            textIntent.putExtra("status", instruction_status);
+                                            textIntent.putExtra("F_Type", instructionType);
+                                            textIntent.putExtra("operationType", operationType);
+                                            textIntent.putExtra("operationProcedureId", produceId);
+                                            startActivity(textIntent);
+                                        }
+                                        LogUtils.d(DEFAULT_LOG_TAG, "开始播放text文本任务\t\t"+fileUrl);
                                     } else if (operationType.equals("5")) {
                                         taskVideoCall = false;
                                         jRos.op_runParking((byte) 1);
@@ -1537,7 +1524,7 @@ public class RobotBrainService extends Service {
                                 nextNavigationDestination = currentNavigationDestination;
                                 //本次导航目的地
                                 currentNavigationDestination = instructionName;
-                                speechManager.textTtsPlay(nextNavigationDestination + "已讲完啦,我将去" + currentNavigationDestination + "啦", "0");
+                                speechManager.textTtsPlay(nextNavigationDestination + "已讲完啦,我将去" + currentNavigationDestination + "啦", "0",null);
                                 //更新显示语音数据到首页
                                 EventBus.getDefault().post(new NavigationTip(nextNavigationDestination + "已讲完啦,我将去" + currentNavigationDestination + "啦"));
                                 //记录当前导航目的地信息
@@ -1556,10 +1543,10 @@ public class RobotBrainService extends Service {
                             String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
                             //院内介绍工作流启动标志
                             boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-                            if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")&&startIntroductionWorkflowTag) { //当前机器人语言为中文
+                            if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && startIntroductionWorkflowTag) { //当前机器人语言为中文
                                 //重启院内介绍工作流程中文版
                                 OperationUtils.startSpecialWorkFlow(3);
-                            } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")&&startIntroductionWorkflowTag) {
+                            } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && startIntroductionWorkflowTag) {
                                 //重启院内介绍工作流程英文版
                                 OperationUtils.startSpecialWorkFlow(2);
                             }
