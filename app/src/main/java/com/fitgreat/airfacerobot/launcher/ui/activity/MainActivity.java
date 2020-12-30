@@ -45,6 +45,7 @@ import com.fitgreat.airfacerobot.floatball.DelayOnClickListener;
 import com.fitgreat.airfacerobot.floatball.FloatWindow;
 import com.fitgreat.airfacerobot.floatball.FloatWindowOption;
 import com.fitgreat.airfacerobot.floatball.FloatWindowViewStateCallback;
+import com.fitgreat.airfacerobot.introductionlist.IntroductionListActivity;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
@@ -79,7 +80,6 @@ import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.ShellCmdUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.fitgreat.archmvp.base.util.UIUtils;
-import com.fitgreat.ros.message.Log;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -94,8 +94,6 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-import static com.blankj.utilcode.util.StringUtils.getString;
-import static com.fitgreat.airfacerobot.MyApp.getContext;
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
@@ -103,15 +101,12 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_BOO
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_REBOOT_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIGATION_PAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_UNTIE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.DELAY_CONNECT_INTERFACE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
@@ -174,11 +169,15 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private int countDownTime = 30;
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
-    private Timer introductionTimer;
-    private TimerTask introductionTimerTask;
-    private int introductionCountdown;
+
+
     //院内介绍提示加载框
     private AlertDialog startIntroductionAlertDialog;
+    private String currentLanguage;
+    private TimerTask introductionTimerTask;
+    private Timer introductionTimer;
+    private int introductionCountdown;
+
 
     @Override
     public int getLayoutResource() {
@@ -212,7 +211,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         warnningDialog = new WarnningDialog(this);
         //启动机器人说话动画
         mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
-        AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getDrawable();
+        AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getBackground();
         animationDrawable.start();
         //院内介绍工作流启动标志默认为false
         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
@@ -314,8 +313,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     protected void onResume() {
         super.onResume();
         isResume = true;
+        //首页是否显示标志
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, true);
         //切换当前机器显示语言选择状态
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
         if (currentLanguage.equals("en")) {
             mLanguageEnglish.setSelected(true);
             mLanguageChinese.setSelected(false);
@@ -344,16 +345,21 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
                 mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
             }
+
+            //dds对话Observer注册
+            EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
+            //启动语音唤醒,打开one shot模式
+            EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
             //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
             introductionTimer = new Timer();
             introductionTimerTask = new TimerTask() {
                 @Override
                 public void run() {
                     introductionCountdown++;
-                    if (introductionCountdown == 180000) {
+                    if (introductionCountdown == 180) {
                         stopIntroductionTimer();
                         //当前机器人语言设置
-                        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+                        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
                         if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
                             //重启院内介绍工作流程中文版
                             OperationUtils.startSpecialWorkFlow(3);
@@ -365,22 +371,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 }
             };
             introductionTimer.schedule(introductionTimerTask, 0, 1000);
-            LogUtils.d(DEFAULT_LOG_TAG, "空闲3分钟后启动院内介绍工作流:  " + introductionCountdown);
-            //dds对话Observer注册
-            EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
-            //启动语音唤醒,打开one shot模式
-            EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
-//            SpeechManager.startAsrVoice(new SpeechManager.AsrVoiceListener() {
-//                @Override
-//                public void asrBufferReceived(byte[] bytes) {
-//
-//                }
-//
-//                @Override
-//                public void asrFinalResults(String s) {
-//
-//                }
-//            });
+            LogUtils.d(DEFAULT_LOG_TAG, "空闲3分钟后启动院内介绍工作流:  " + introductionCountdown + "   currentLanguage  " + currentLanguage);
         }
     }
 
@@ -388,7 +379,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     protected void onPause() {
         super.onPause();
         isResume = false;
-        stopIntroductionTimer();
+        //首页是否显示标志
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
         //关闭语音唤醒,关闭one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
         //关闭dds语音播报
@@ -399,6 +391,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             startIntroductionAlertDialog = null;
         }
         SpeechManager.closeOneShotWakeup();
+        //停止三分钟倒计时启动院内介绍工作流
+        stopIntroductionTimer();
     }
 
 
@@ -454,7 +448,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
 
     @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english})
     public void onclick(View view) {
-        stopIntroductionTimer();
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
                 RouteUtils.goToActivity(getContext(), SettingActivity.class);
@@ -479,12 +472,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @Override
-    public void recreate() {
-        super.recreate();
-        LogUtils.d("recreate", "   recreate   MainActivity    ");
-    }
-
     /**
      * 取消循环院内介绍计时器
      */
@@ -502,36 +489,37 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 启动院内介绍工作流
      */
     private void startIntroductionWorkFlow() {
-        boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-        if (startIntroductionWorkflowTag) { //拦截多次点击
-            return;
-        }
-        //启动院内介绍工作流提示弹窗
-        startIntroductionAlertDialog = new AlertDialog.Builder(this).create();
-        startIntroductionAlertDialog.setCanceledOnTouchOutside(false);
-        startIntroductionAlertDialog.show();
-        //设置布局
-        Window dialogWindow = startIntroductionAlertDialog.getWindow();
-        dialogWindow.setContentView(R.layout.start_introduction_tip);
-        //获取屏幕宽高
-        Display defaultDisplay = getWindow().getWindowManager().getDefaultDisplay();
-        Point screenSizePoint = new Point();
-        defaultDisplay.getSize(screenSizePoint);
-        //设置弹窗宽高 位置
-        WindowManager.LayoutParams attributes = dialogWindow.getAttributes();
-        attributes.gravity = Gravity.CENTER;
-        attributes.width = (int) ((screenSizePoint.x) * (0.5));
-        attributes.height = (int) ((screenSizePoint.y) * (0.5));
-        dialogWindow.setAttributes(attributes);
-        //当前机器人语言设置
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
-            //启动院内介绍工作流中文版
-            OperationUtils.startSpecialWorkFlow(3);
-        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
-            //启动院内介绍工作流英文版
-            OperationUtils.startSpecialWorkFlow(2);
-        }
+        RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
+//        boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
+//        if (startIntroductionWorkflowTag) { //拦截多次点击
+//            return;
+//        }
+//        //启动院内介绍工作流提示弹窗
+//        startIntroductionAlertDialog = new AlertDialog.Builder(this).create();
+//        startIntroductionAlertDialog.setCanceledOnTouchOutside(false);
+//        startIntroductionAlertDialog.show();
+//        //设置布局
+//        Window dialogWindow = startIntroductionAlertDialog.getWindow();
+//        dialogWindow.setContentView(R.layout.start_introduction_tip);
+//        //获取屏幕宽高
+//        Display defaultDisplay = getWindow().getWindowManager().getDefaultDisplay();
+//        Point screenSizePoint = new Point();
+//        defaultDisplay.getSize(screenSizePoint);
+//        //设置弹窗宽高 位置
+//        WindowManager.LayoutParams attributes = dialogWindow.getAttributes();
+//        attributes.gravity = Gravity.CENTER;
+//        attributes.width = (int) ((screenSizePoint.x) * (0.5));
+//        attributes.height = (int) ((screenSizePoint.y) * (0.5));
+//        dialogWindow.setAttributes(attributes);
+//        //当前机器人语言设置
+//        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+//        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
+//            //启动院内介绍工作流中文版
+//            OperationUtils.startSpecialWorkFlow(3);
+//        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
+//            //启动院内介绍工作流英文版
+//            OperationUtils.startSpecialWorkFlow(2);
+//        }
     }
 
     /**
@@ -908,73 +896,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case MSG_ROS_NEXT_STEP:
                 excNextStep(rosUpdateStep);
                 break;
-            case RobotConfig.TASK_DIALOG:
-                LogUtils.d(TAG, "TASK_DIALOG !!!!!    daemonEvent.getAction() = " + daemonEvent.getAction());
-//                if (daemonEvent.getAction().equals("2")) {
-//                    String filename = daemonEvent.extra;
-//                    LogUtils.d("LauncherActivity", "filename = " + filename);
-//                    if (myDialog != null) {
-//                        myDialog.dismiss();
-//                        myDialog = null;
-//                    }
-//                    myDialog = new MyDialog(getContext());
-//                    myDialog.setTitle("播放提示");
-//                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
-//                    myDialog.setPositiveOnclicListener("开始播放", () -> {
-//                        myDialog.dismiss();
-//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "2");
-//                        EventBus.getDefault().post(filePlayEvent);
-//                    });
-//                    myDialog.setNegativeOnclicListener("取消", () -> {
-//                        myDialog.dismiss();
-//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "2");
-//                        EventBus.getDefault().post(filePlayEvent);
-//                    });
-//                    myDialog.show();
-//                } else if (daemonEvent.getAction().equals("3")) {
-//                    String filename = daemonEvent.extra;
-//                    LogUtils.d("LauncherActivity", "filename = " + filename);
-//                    if (myDialog != null) {
-//                        myDialog.dismiss();
-//                        myDialog = null;
-//                    }
-//                    myDialog = new MyDialog(getContext());
-//                    myDialog.setTitle("播放提示");
-//                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
-//                    myDialog.setPositiveOnclicListener("开始播放", () -> {
-//                        myDialog.dismiss();
-//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "3");
-//                        EventBus.getDefault().post(filePlayEvent);
-//                    });
-//                    myDialog.setNegativeOnclicListener("取消", () -> {
-//                        myDialog.dismiss();
-//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "3");
-//                        EventBus.getDefault().post(filePlayEvent);
-//                    });
-//                    myDialog.show();
-//                } else if (daemonEvent.getAction().equals("4")) {
-//                    String filename = daemonEvent.extra;
-//                    LogUtils.d("LauncherActivity", "filename = " + filename);
-//                    if (myDialog != null) {
-//                        myDialog.dismiss();
-//                        myDialog = null;
-//                    }
-//                    myDialog = new MyDialog(getContext());
-//                    myDialog.setTitle("播放提示");
-//                    myDialog.setMessage("请问现在开始播放" + filename + "吗？");
-//                    myDialog.setPositiveOnclicListener("开始播放", () -> {
-//                        myDialog.dismiss();
-//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_OK, "4");
-//                        EventBus.getDefault().post(filePlayEvent);
-//                    });
-//                    myDialog.setNegativeOnclicListener("取消", () -> {
-//                        myDialog.dismiss();
-//                        FilePlayEvent filePlayEvent = new FilePlayEvent(RobotConfig.FILE_PLAY_CANCEL, "4");
-//                        EventBus.getDefault().post(filePlayEvent);
-//                    });
-//                    myDialog.show();
-//                }
-                break;
             default:
                 break;
         }
@@ -1055,21 +976,24 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         Bundle bundle = null;
         switch (commandDataEvent.getCommandType()) {
             case SINGLE_POINT_NAVIGATION:
-                LogUtils.d("CommandTodo", "----SINGLE_POINT_NAVIGATION---MainActivity-----");
-                intent = new Intent(getContext(), ChoseDestinationActivity.class);
-                bundle = new Bundle();
-                bundle.putSerializable("LocationEntity", commandDataEvent.getLocationEntity());
-                intent.putExtra("bundle", bundle);
-                startActivity(intent);
+                LogUtils.d(DEFAULT_LOG_TAG, "----SINGLE_POINT_NAVIGATION---MainActivity-----");
+                if (isResume) {
+                    intent = new Intent(getContext(), ChoseDestinationActivity.class);
+                    bundle = new Bundle();
+                    bundle.putSerializable("LocationEntity", commandDataEvent.getLocationEntity());
+                    intent.putExtra("bundle", bundle);
+                    startActivity(intent);
+                }
                 break;
             case COMMON_PROBLEM_TAG:
-                isResume = false;
-                LogUtils.d("CommandTodo", "----COMMON_PROBLEM_TAG---MainActivity-----");
-                intent = new Intent(getContext(), CommonProblemActivity.class);
-                bundle = new Bundle();
-                bundle.putSerializable("CommonProblemEntity", commandDataEvent.getCommonProblemEntity());
-                intent.putExtra("bundle", bundle);
-                startActivity(intent);
+                LogUtils.d(DEFAULT_LOG_TAG, "----COMMON_PROBLEM_TAG---MainActivity-----" + isResume);
+                if (isResume) {
+                    intent = new Intent(getContext(), CommonProblemActivity.class);
+                    bundle = new Bundle();
+                    bundle.putSerializable("CommonProblemEntity", commandDataEvent.getCommonProblemEntity());
+                    intent.putExtra("bundle", bundle);
+                    startActivity(intent);
+                }
                 break;
             default:
                 break;

@@ -3,16 +3,20 @@ package com.fitgreat.airfacerobot.ros;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.RobotBrainService;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
+import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.ros.moudel.RosInfo;
 import com.fitgreat.archmvp.base.util.ExecutorManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
+import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.ros.address.InetAddressFactory;
@@ -63,6 +67,9 @@ import move_base_msgs.RunValidStateRequest;
 import move_base_msgs.RunValidStateResponse;
 import sensor_msgs.BatteryState;
 import std_msgs.Byte;
+
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
@@ -198,6 +205,8 @@ public class RosManager {
             }
         }
     };
+    private boolean broadcastGreetSwitchTag;
+    private String string_hello;
 
     public boolean isPowerStatus() {
         return mPowerStatus == 1;
@@ -233,16 +242,18 @@ public class RosManager {
             clientHasPerson.call(msg, new ServiceResponseListener<autoparkResponse>() {
                 @Override
                 public void onSuccess(autoparkResponse setmodeResponse) {    //  getResult  为 false  机器附近有物体  true   没有物体
-                    LogUtils.d(TAG, "judgmentHasPerson success    getMsg   " + setmodeResponse.getMsg() + "   getResult      " + setmodeResponse.getResult() + "  机器人状态  " + RobotInfoUtils.getRobotRunningStatus() + "  播放次数 " + playTipTime);
-                    if (!setmodeResponse.getResult() && RobotInfoUtils.getRobotRunningStatus().equals("1")) {
-                        LogUtils.d(TAG, "机器人当前空闲,机器人附近有障碍物");
+                    LogUtils.d(TAG, "judgmentHasPerson success    getMsg   " + setmodeResponse.getMsg() + "   getResult      " + setmodeResponse.getResult());
+                    if (!setmodeResponse.getResult()) {
                         playTipTime++;
-                        if (playTipTime == 1) {  //人靠近提示只播放一次
-//                            playShowText("你好，我是小白，很高兴为您服务如需登记可以点击来访登记，如需要大厅参观，点击引导讲解，小白会为您带路并讲解相关知识呢。");
+                        //是否播放迎宾语
+                        broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
+                        string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");
+                        LogUtils.d(TAG, "机器人附近有障碍物,迎宾语播放开关 , " + broadcastGreetSwitchTag + "  迎宾语内容,  " + string_hello);
+                        if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello))) { //播放迎宾语开关打开
+                            playShowText(string_hello);
                         }
                     } else {
-                        LogUtils.d(TAG, "机器人当前不空闲,机器人附近没有障碍物");
-                        playTipTime = 0;
+                        LogUtils.d(TAG, "机器人附近没有障碍物");
                     }
                 }
 
@@ -256,6 +267,13 @@ public class RosManager {
         }
     }
 
+    /**
+     * 播放并首页展示对应文案
+     */
+    public static void playShowText(String content) {
+        EventBus.getDefault().post(new NavigationTip(content));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, content));
+    }
 
     public synchronized void initNode() {
         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
@@ -285,15 +303,15 @@ public class RosManager {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-
-//                rosManagerInitTimer = new Timer();
-//                rosManagerInitTimerTask = new TimerTask() {
-//                    @Override
-//                    public void run() {
-//                        judgmentHasPerson((byte) 3);
-//                    }
-//                };
-//                rosManagerInitTimer.schedule(rosManagerInitTimerTask, 0, 5 * 1000);
+                //定时检测机器人旁边是否有人
+                rosManagerInitTimer = new Timer();
+                rosManagerInitTimerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        judgmentHasPerson((byte) 3);
+                    }
+                };
+                rosManagerInitTimer.schedule(rosManagerInitTimerTask, 0, 5 * 1000);
             }
 
             @Override
@@ -350,6 +368,7 @@ public class RosManager {
         }
     }
 
+    private int playTime = 0;
     /**
      * 是否在墙内消息返回
      */
@@ -357,9 +376,16 @@ public class RosManager {
 
         @Override
         public void onNewMessage(Byte aByte) {
-            LogUtils.d("startSpecialWorkFlow", "whetherInsideWallMessageListener : " + aByte.getData());
+            LogUtils.d(DEFAULT_LOG_TAG, "whetherInsideWallMessageListener : " + aByte.getData());
             if ((int) aByte.getData() == 1) { //机器人在墙内 需要帮忙移动出来
-                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text)));
+                playTime++;
+                if (playTime == 1) {
+                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text)));
+                } else if (playTime == 2) {
+                    playTime = 0;
+                }
+            } else {
+                playTime = 0;
             }
         }
     };

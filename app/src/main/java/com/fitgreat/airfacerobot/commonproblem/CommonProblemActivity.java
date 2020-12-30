@@ -1,6 +1,7 @@
 package com.fitgreat.airfacerobot.commonproblem;
 
 import android.graphics.Rect;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.fitgreat.airfacerobot.commonproblem.view.CommonProblemView;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
+import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
@@ -41,7 +43,9 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_BY_INSTRUCTION;
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
@@ -54,8 +58,8 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG
 public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, CommonProblemPresenter> implements CommonProblemView {
     @BindView(R.id.common_problem_list)
     RecyclerView mCommonProblemList;
-    @BindView(R.id.common_problem_robot_animation)
-    ImageView mCommonProblemRobotAnimation;
+    @BindView(R.id.common_problem_robot_image)
+    ImageView commonProblemRobotImage;
     @BindView(R.id.common_problem_answer)
     TextView mCommonProblemAnswer;
     private CommonProblemAdapter commonProblemAdapter;
@@ -74,10 +78,15 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void initData() {
+        //注册EventBus
+        EventBus.getDefault().register(this);
         //获取常见问题列表
         mPresenter.getQuestionList();
         //启动语音唤醒,打开one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
+        //启动机器人动画
+        AnimationDrawable animationDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
+        animationDrawable.start();
     }
 
     @Override
@@ -97,6 +106,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //解绑EventBus
+        EventBus.getDefault().unregister(this);
         //mvp模式销毁当前页面时置空presenter持有view引用
         mPresenter.detachView();
     }
@@ -164,15 +175,17 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             commonProblemAdapter.notifyDataSetChanged();
             //更新页面问题答案显示
             playProblem(commonProblemEntity);
+            LogUtils.d(DEFAULT_LOG_TAG, "getIntent().hasExtra(\"bundle\") CommonProblemEntity   ");
         }
     }
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMsg(CommandDataEvent commandDataEvent) {
-        switch (commandDataEvent.getCommandType()) {
+    public void onMsg(AskAnswerDataEvent askAnswerDataEvent) {
+        switch (askAnswerDataEvent.getCommandType()) {
             case COMMON_PROBLEM_TAG:
-                CommonProblemEntity commonProblemEntity = commandDataEvent.getCommonProblemEntity();
+                LogUtils.d(DEFAULT_LOG_TAG, "----COMMON_PROBLEM_TAG---CommonProblemActivity-----");
+                CommonProblemEntity commonProblemEntity = askAnswerDataEvent.getCommonProblemEntity();
                 //更新当前播报问题选中状态
                 int itemPosition = CashUtils.getProblemPosition(commonProblemEntity.getF_QId());
                 SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, itemPosition);
@@ -188,22 +201,19 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(ShowContent showContent) {
         String voiceMessageText = showContent.getContent1().trim();
-        LogUtils.d("ShowContent", "MessageBean:CommonProblemActivity----->" + voiceMessageText);
+        LogUtils.d(DEFAULT_LOG_TAG, "MessageBean:CommonProblemActivity----->" + voiceMessageText);
         mCommonProblemAnswer.setText(voiceMessageText);
     }
-
     /**
      * 更新页面问题答案显示
      */
     private void playProblem(CommonProblemEntity commonProblemEntity) {
-        new Handler().postDelayed(() -> {
-            String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
-            if (currentLanguage != null && currentLanguage.equals("zh")) {
-                broadCastProblem(commonProblemEntity.getF_Answer());
-            } else {
-                broadCastProblem(commonProblemEntity.getF_EAnswer());
-            }
-        }, 3 * 1000);
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+        if (currentLanguage != null && currentLanguage.equals("zh")) {
+            broadCastProblem(commonProblemEntity.getF_Answer());
+        } else {
+            broadCastProblem(commonProblemEntity.getF_EAnswer());
+        }
     }
 
     private void broadCastProblem(String broadCastAnswer) {

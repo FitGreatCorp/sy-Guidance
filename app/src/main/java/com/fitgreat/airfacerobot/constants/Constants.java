@@ -91,17 +91,19 @@ public interface Constants {
      * 公用弹窗选择按钮否
      */
     String DIALOG_NO = "dialog_no";
-
-
     /**
      * 单点导航指令
      */
     String SINGLE_POINT_NAVIGATION = "single_point_navigation";
 
     /**
-     * 常见问题指令
+     * 首页收到指令跳转常见问题模块
      */
     String COMMON_PROBLEM_TAG = "common_problem_tag";
+    /**
+     * 导航任务
+     */
+    String COMMON_PROBLEM_BY_INSTRUCTION = "common_problem_by_instruction";
 
     /**
      * 常见问题指令

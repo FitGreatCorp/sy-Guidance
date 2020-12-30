@@ -37,6 +37,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
@@ -58,19 +59,19 @@ public class OperationUtils {
         //获取机器人信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
         if (workFlowType == 1) {
-            LogUtils.d("startSpecialWorkFlow", "--启动自动回充工作流程--" + workFlowType);
+            LogUtils.d(DEFAULT_LOG_TAG, "--启动自动回充工作流程--" + workFlowType);
             //自动回充工作流启动标志
             SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, true);
             //更新自动回充工作流信息
             automaticRechargeWorkflow("charge", robotInfo, workFlowType);
         } else if (workFlowType == 2) {
-            LogUtils.d("startSpecialWorkFlow", "--启动院内介绍英文版工作流程--");
+            LogUtils.d(DEFAULT_LOG_TAG, "--启动院内介绍英文版工作流程--");
             //医院介绍工作流英文版启动标志
             SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, true);
             //更新引导工作流信息
             automaticRechargeWorkflow("introduction-syEN", robotInfo, workFlowType);
         } else if (workFlowType == 3) {
-            LogUtils.d("startSpecialWorkFlow", "--启动院内介绍工作流程--");
+            LogUtils.d(DEFAULT_LOG_TAG, "--启动院内介绍工作流程--");
             //医院介绍工作流启动标志
             SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, true);
             //更新引导工作流信息
@@ -87,22 +88,22 @@ public class OperationUtils {
         if (mapInfoString != null) {
             //解析地图信息获取对象
             MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
-            LogUtils.d("startSpecialWorkFlow", "获取特定工作流");
+            LogUtils.d(DEFAULT_LOG_TAG, "获取特定工作流");
             ConcurrentHashMap<String, String> param = new ConcurrentHashMap<>();
             param.put("departmentId", mapEntity.getF_DepartmentId());
             param.put("mapId", mapEntity.getF_Id());
             param.put("type", workflowType);
-            LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(param));
+            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(param));
             BusinessRequest.getRequestWithParam(param, ApiRequestUrl.SPECIFIC_WORK_FLOM, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    LogUtils.e(TAG, "获取特定工作流失败: " + e.toString());
+                    LogUtils.e(DEFAULT_LOG_TAG, "获取特定工作流失败: " + e.toString());
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d("startSpecialWorkFlow", "获取特定工作流成功: " + stringResponse);
+                    LogUtils.d(DEFAULT_LOG_TAG, "获取特定工作流成功: " + stringResponse);
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
@@ -110,7 +111,7 @@ public class OperationUtils {
                             //根据工作流id发起任务
                             WorkflowEntity workflowEntity = JSON.parseObject(msgString, WorkflowEntity.class);
                             //发起活动流程自动回充
-                            LogUtils.d("startSpecialWorkFlow", "发起特殊活动流程\t\t" + msgString);
+                            LogUtils.d(DEFAULT_LOG_TAG, "发起特殊活动流程\t\t" + msgString);
                             HashMap<String, String> param = new HashMap<>();
                             param.put("hospitalName", robotInfo.getF_Hospital());
                             param.put("departmentName", robotInfo.getF_Department());
@@ -121,17 +122,17 @@ public class OperationUtils {
                             param.put("operationName", workflowEntity.getF_Name());
                             param.put("goWhere", "");
                             param.put("doWhat", workflowEntity.getF_Id());
-                            LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(param));
+                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(param));
                             BusinessRequest.postStringRequest(JSON.toJSONString(param), ApiRequestUrl.INITIATE_ACTION, new Callback() {
                                 @Override
                                 public void onFailure(Call call, IOException e) {
-                                    LogUtils.e(TAG, "发起活动流程失败: " + e.toString());
+                                    LogUtils.e(DEFAULT_LOG_TAG, "发起活动流程失败: " + e.toString());
                                 }
 
                                 @Override
                                 public void onResponse(Call call, Response response) throws IOException {
                                     String stringResponse = response.body().string();
-                                    LogUtils.d("startSpecialWorkFlow", "发起活动流程成功: " + stringResponse);
+                                    LogUtils.d(DEFAULT_LOG_TAG, "发起活动流程成功: " + stringResponse);
                                     try {
                                         JSONObject jsonObject = new JSONObject(stringResponse);
                                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
@@ -145,7 +146,7 @@ public class OperationUtils {
                                                 BusinessRequest.getNextStep(actionId, new Callback() {
                                                     @Override
                                                     public void onFailure(Call call, IOException e) {
-                                                        LogUtils.e(TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
+                                                        LogUtils.e(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
                                                     }
 
                                                     @Override
@@ -157,8 +158,8 @@ public class OperationUtils {
                                                                 String type = baseResObj.getString("type");
                                                                 if (type.equals("success")) {
                                                                     String msg = baseResObj.getString("msg");
-                                                                    LogUtils.d("startSpecialWorkFlow", "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tmsg");
-                                                                    LogUtils.json("startSpecialWorkFlow", msg);
+                                                                    LogUtils.d(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tmsg");
+                                                                    LogUtils.json(DEFAULT_LOG_TAG, msg);
                                                                     NextOperationData nextOperationData = JsonUtils.decode(msg, NextOperationData.class);
                                                                     if (nextOperationData != null) {
                                                                         if (nextOperationData.getOperationType() == null || !nextOperationData.getOperationType().equals("End")) {
@@ -174,8 +175,8 @@ public class OperationUtils {
                                                                             autoMoveEvent.setY(nextOperationData.getF_Y());
                                                                             autoMoveEvent.setE(nextOperationData.getF_Z());
                                                                             autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
-                                                                            LogUtils.d("startSpecialWorkFlow", "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
-                                                                            LogUtils.json("startSpecialWorkFlow", JSON.toJSONString(autoMoveEvent));
+                                                                            LogUtils.d(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
+                                                                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(autoMoveEvent));
                                                                             if (nextOperationData.getF_Type().equals("Operation")) { //执行操作任务
                                                                                 autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
                                                                             } else { //导航移动到某地

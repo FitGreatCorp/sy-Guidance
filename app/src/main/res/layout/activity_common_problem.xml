@@ -51,13 +51,13 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
-        android:id="@+id/common_problem_robot_animation"
+        android:id="@+id/common_problem_robot_image"
         android:layout_width="@dimen/px120"
         android:layout_height="@dimen/px150"
         android:layout_marginLeft="@dimen/px20"
         android:layout_marginBottom="@dimen/px20"
         android:scaleType="fitCenter"
-        android:src="@drawable/wink_speak_animation"
+        android:background="@drawable/wink_speak_animation"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         tools:ignore="MissingConstraints" />
@@ -78,5 +78,5 @@
         android:textColor="#FFFFFFFF"
         android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/common_problem_robot_animation" />
+        app:layout_constraintLeft_toRightOf="@+id/common_problem_robot_image" />
 </androidx.constraintlayout.widget.ConstraintLayout>

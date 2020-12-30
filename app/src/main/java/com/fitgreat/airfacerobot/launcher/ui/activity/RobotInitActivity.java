@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_RETRY_INIT_SIGNAL;
 
@@ -122,14 +123,14 @@ public class RobotInitActivity extends MvpBaseActivity {
 
     @Override
     public void disconnectNetWork() {
-        LogUtils.d("LanguageSettings", "---RobotInitActivity---断网-----");
+        LogUtils.d(DEFAULT_LOG_TAG, "---RobotInitActivity---断网-----");
         finish();
         RouteUtils.goToActivity(RobotInitActivity.this, RobotInitActivity.class);
     }
 
     @Override
     public void disconnectRos() {
-        LogUtils.d("LanguageSettings", "---RobotInitActivity---jros断开-----");
+        LogUtils.d(DEFAULT_LOG_TAG, "---RobotInitActivity---jros断开-----");
         //ros连接失败,重新了解ros机器人
         ros_initaled = false;
         updateCheckProgress(RobotConfig.INIT_TYPE_ROS_PROGRESS, "0");
@@ -184,7 +185,7 @@ public class RobotInitActivity extends MvpBaseActivity {
         LogUtils.d(TAG, "-----------start check self-------------");
         stopService(new Intent(this, RobotBrainService.class));
         if (TextUtils.isEmpty(RobotInfoUtils.getAirFaceDeviceId())) {
-            RobotInfoUtils.setAirFaceDeviceId(PhoneInfoUtils.getIMEI(getContext()));
+            RobotInfoUtils.setAirFaceDeviceId(PhoneInfoUtils.getSn(getContext()));
         }
         startService(new Intent(this, RobotBrainService.class));
         handler.postDelayed(() -> {

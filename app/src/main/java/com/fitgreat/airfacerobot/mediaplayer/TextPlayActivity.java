@@ -5,7 +5,10 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
@@ -25,20 +28,26 @@ import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.github.barteksc.pdfviewer.PDFView;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+
 import butterknife.OnClick;
+
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_SHOW_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_TASK_END;
+
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
+import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 
 /**
  * 院内介绍text文本展示页面
@@ -47,9 +56,9 @@ public class TextPlayActivity extends MvpBaseActivity {
     private static final String TAG = "TextPlayActivity";
     private PDFView pdfView;
     private Handler handler;
-    private Button btn_finish;
+    private TextView textIntroductionContent;
     private static long pdf_trun_time = 4000;
-    private String accessToken, container, blob, url, instructionId, status, F_Type, operationType, operationProcedureId, instructionName;
+    private String accessToken, container, blob, url, instructionId, status, F_Type, operationType, operationProcedureId, instructionName, instructionEnName;
     private int totalpage;
     public static TextPlayActivity instance;
     private boolean finished_one = false;
@@ -59,6 +68,7 @@ public class TextPlayActivity extends MvpBaseActivity {
     private DownloadingDialog downloadingDialog;
     private String localTxtPath;
     private MyDialog myDialog;
+    private TopTitleView textIntroductionTitle;
 
     private Handler handler1 = new Handler() {
         @Override
@@ -123,11 +133,11 @@ public class TextPlayActivity extends MvpBaseActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.text_introduction_constraintLayout:
-//                SignalDataEvent instruct = new SignalDataEvent();
-//                instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
-//                instruct.setInstructionId(instructionId);
-//                instruct.setAction("-1");
-//                EventBus.getDefault().post(instruct);
+                SignalDataEvent instruct = new SignalDataEvent();
+                instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+                instruct.setInstructionId(instructionId);
+                instruct.setAction("-1");
+                EventBus.getDefault().post(instruct);
                 finish();
                 break;
         }
@@ -136,6 +146,8 @@ public class TextPlayActivity extends MvpBaseActivity {
 
     @Override
     public void initData() {
+        textIntroductionContent = findViewById(R.id.text_introduction_content);
+        textIntroductionTitle = findViewById(R.id.text_introduction_title);
         instance = this;
         RobotInfoUtils.setRobotRunningStatus("3");
         if (null != getIntent().getStringExtra("container") && !"".equals(getIntent().getStringExtra("container")) && !"null".equals(getIntent().getStringExtra("container"))) {
@@ -162,8 +174,20 @@ public class TextPlayActivity extends MvpBaseActivity {
         if (null != getIntent().getStringExtra("instructionName") && !"".equals(getIntent().getStringExtra("instructionName")) && !"null".equals(getIntent().getStringExtra("instructionName"))) {
             instructionName = getIntent().getStringExtra("instructionName");
         }
+        if (null != getIntent().getStringExtra("instructionEnName") && !"".equals(getIntent().getStringExtra("instructionEnName")) && !"null".equals(getIntent().getStringExtra("instructionEnName"))) {
+            instructionEnName = getIntent().getStringExtra("instructionEnName");
+        }
         localTxtPath = DownloadUtils.DOWNLOAD_PATH + blob.substring(blob.lastIndexOf("/") + 1);
+        LogUtils.d(DEFAULT_LOG_TAG, "TextPlayActivity:: localTxtPath::" + localTxtPath + " ,instructionEnName ," + instructionEnName + " ,instructionName , " + instructionName);
+        //根据当前系统语言显示任务名称
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && !("null".equals(instructionName))) { //当前机器人语言为中文
+            textIntroductionTitle.setBaseTitle(instructionName);
+        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && !("null".equals(instructionEnName))) {
+            textIntroductionTitle.setBaseTitle(instructionEnName);
+        }
         File file = new File(localTxtPath);
+        LogUtils.d(DEFAULT_LOG_TAG, "TextPlayActivity:: !file.exists()::" + (!file.exists()));
         if (!file.exists()) {
             String url = ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob;
             DownloadUtils.downloadApp(handler, "", url, localTxtPath, true, null);
@@ -175,6 +199,8 @@ public class TextPlayActivity extends MvpBaseActivity {
     private void playTts(String instructionId) {
         LogUtils.d(TAG, "filePath:" + localTxtPath);
         String playContent = FileUtils.readTxt(localTxtPath).trim();
+        //页面展示播报文字text文件内容
+        textIntroductionContent.setText(playContent);
         LogUtils.d(TAG, "playContent.lengt() ========= " + playContent.length() + " , time =====" + (playContent.length() >= 150 ? playContent.length() * 245 / 1000 : playContent.length() * 230 / 1000));
         if (!TextUtils.isEmpty(playContent)) {
             LogUtils.d(TAG, "length:" + playContent.trim().length() + "\ncontent:" + playContent.trim());
@@ -227,11 +253,12 @@ public class TextPlayActivity extends MvpBaseActivity {
         if (ttsId.equals(String.valueOf(targetId))) {
             LogUtils.d(DEFAULT_LOG_TAG, "  tts play end 文字播报结束播报结束, " + " ttsId, " + ttsId);
             LogUtils.d(TAG, "--------tts play end-------");
-            if (!RobotInfoUtils.getRobotRunningStatus().equals("1")) {  //控制端没有接收到取消播放文字任务指令
-                SpeakEvent event = new SpeakEvent();
-                event.setType(MSG_TTS_TASK_END);
-                EventBus.getDefault().post(event);
-            }
+            SignalDataEvent instructEnd = new SignalDataEvent();
+            instructEnd.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+            instructEnd.setInstructionId(instructionId);
+            instructEnd.setAction("2");
+            EventBus.getDefault().post(instructEnd);
+            finish();
         }
     }
 
@@ -262,6 +289,7 @@ public class TextPlayActivity extends MvpBaseActivity {
         }
         finish();
     }
+
     @Override
     public Object createPresenter() {
         return null;

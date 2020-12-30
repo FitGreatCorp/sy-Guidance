@@ -55,7 +55,7 @@ public class SignalManager {
     private final int RE_AUTH_ROBOT = 2000;
     private final int RE_GET_ROBOT_INFO = 2001;
     private final int RE_CONNECT_SIGNALR = 2002;
-    private final int MAX_RETRY_COUNT = 22;
+    private final int MAX_RETRY_COUNT = 30;
     private int reAuthCount = 0;
     private int reGetCount = 0;
     private int reSignalCount = 0;
@@ -225,7 +225,7 @@ public class SignalManager {
     private void getRobotInfo() {
         LogUtils.d(TAG, "getAirFaceDeviceId:" + RobotInfoUtils.getAirFaceDeviceId());
         if (TextUtils.isEmpty(RobotInfoUtils.getAirFaceDeviceId())) {
-            RobotInfoUtils.setAirFaceDeviceId(PhoneInfoUtils.getIMEI(context));
+            RobotInfoUtils.setAirFaceDeviceId(PhoneInfoUtils.getSn(context));
         }
         BusinessRequest.getRobotInfo(RobotInfoUtils.getAirFaceDeviceId(), new HttpCallback() {
             @Override

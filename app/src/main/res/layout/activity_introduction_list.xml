@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/common_problem_container"
+    android:id="@+id/introduction_list_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent"
@@ -10,9 +10,9 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout_introduction_list"
-        android:layout_width="@dimen/px710"
-        android:layout_height="@dimen/px349"
-        android:layout_marginTop="@dimen/px50"
+        android:layout_width="@dimen/px730"
+        android:layout_height="@dimen/px289"
+        android:layout_marginTop="@dimen/px110"
         android:background="@android:color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -44,10 +44,21 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/introduction_list_recyclerView"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/px20"
-            app:layout_constraintTop_toBottomOf="@+id/introduction_list_title" />
+            android:layout_marginLeft="@dimen/px20"
+            android:layout_marginTop="@dimen/px25"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+           app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <View
+        android:id="@+id/introduction_list_back"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -163,7 +162,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     public void getLocationInfo() {
         //获取地图信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
-        LogUtils.json("robotInfo", "机器人信息==>" + StringEscapeUtils.unescapeJava(JsonUtils.encode(robotInfo)));
+        LogUtils.json(DEFAULT_LOG_TAG, "机器人信息==>" + StringEscapeUtils.unescapeJava(JsonUtils.encode(robotInfo)));
         if (robotInfo != null) {
             //设置参数
             HashMap<String, String> parameterMap = new HashMap<>();
@@ -172,13 +171,13 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             BusinessRequest.postStringRequest(JSON.toJSONString(parameterMap), ApiRequestUrl.GET_ONE_MAP, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    LogUtils.e(TAG, "获取地图,导航位置信息失败-->" + e.getMessage());
+                    LogUtils.e(DEFAULT_LOG_TAG, "获取地图,导航位置信息失败-->" + e.getMessage());
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d(TAG, "获取地图,导航位置信息成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
+                    LogUtils.d(DEFAULT_LOG_TAG, "获取地图,导航位置信息成功");
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         String type = jsonObject.getString("type");
@@ -327,6 +326,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         }
         //获取地图信息
         String mapString = msgObj.getString("map");
+        LogUtils.d(DEFAULT_LOG_TAG, "医院地图信息:  " + mapString);
         //缓存地图信息到本地
         SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, mapString);
         //解析获取地图信息
@@ -341,14 +341,14 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         if (currentChineseMapFile.exists()) {
             currentChineseMapFile.delete();
         }
-        LogUtils.d(TAG, "中文地图下载路径:" + mapEntity.getF_MapFileUrl());
+        LogUtils.d(DEFAULT_LOG_TAG, "中文地图下载路径: " + mapEntity.getF_MapFileUrl());
         downloadMap(mapEntity.getF_MapFileUrl(), currentChineseMapPath);
         //下载英文地图
         File currentEnglishMapFile = new File(currentEnglishMapPath);
         if (currentEnglishMapFile.exists()) {
             currentEnglishMapFile.delete();
         }
-        LogUtils.d(TAG, "英文地图下载路径:" + mapEntity.getF_EMapUrl());
+        LogUtils.d(DEFAULT_LOG_TAG, "英文地图下载路径: " + mapEntity.getF_EMapUrl());
         downloadMap(mapEntity.getF_EMapUrl(), currentEnglishMapPath);
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
@@ -356,24 +356,24 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
         info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
         info.put("floor", mapEntity.getF_Floor());
-        LogUtils.d(TAG, "拼接参数:info=>" + JSON.toJSONString(info));
+        LogUtils.d(DEFAULT_LOG_TAG, "拼接参数:info=>" + JSON.toJSONString(info));
         BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                LogUtils.e(TAG, "获取常见问题失败:onFailure=>" + e.toString());
+                LogUtils.e(DEFAULT_LOG_TAG, "获取常见问题失败:onFailure=>" + e.toString());
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String stringResponse = response.body().string();
-                LogUtils.d(TAG, "获取常见问题成功:onResponse=>" + stringResponse);
+                LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse=>" + stringResponse);
                 try {
                     JSONObject jsonObject = new JSONObject(stringResponse);
                     if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                         String msg = jsonObject.getString("msg");
                         if (msg != null && !msg.equals("null")) {
                             List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
-                            LogUtils.json(TAG, JSON.toJSONString(commonProblemEntities));
+                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(commonProblemEntities));
                             //保存常见问题到本地
                             SpUtils.putString(MyApp.getContext(), "problemList", msg);
                         }
@@ -383,6 +383,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                 }
             }
         });
+
     }
 
     /**

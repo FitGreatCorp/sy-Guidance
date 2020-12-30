@@ -126,6 +126,10 @@ public interface ApiRequestUrl {
      * 获取医院操作任务数据
      */
     String GET_OPERATION_LIST = ApiDomainManager.getFitgreatDomain() + "/api/hospital/operation/list";
+    /**
+     * 获取医院操作任务数据(只包含播放宣教视频,pdf,text文本)
+     */
+    String GET_OPERATION_LIST_V = ApiDomainManager.getFitgreatDomain() + "/api/hospital/operation/v2/list";
 
     /**
      * 新增活动
@@ -154,4 +158,8 @@ public interface ApiRequestUrl {
      * 获取常见问题列表
      */
     String COMMON_PROBLEM_LIST = ApiDomainManager.getFitgreatDomain() + "/api/question/list";
+    /**
+     * 工作流列表数据
+     */
+    String WORK_FLOW_LIST = ApiDomainManager.getFitgreatDomain() + "/api/workflow/list";
 }

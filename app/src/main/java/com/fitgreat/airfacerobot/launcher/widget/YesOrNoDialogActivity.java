@@ -25,6 +25,8 @@ import com.fitgreat.archmvp.base.util.SpUtils;
 import org.greenrobot.eventbus.EventBus;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
@@ -104,10 +106,10 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
             public void run() {
                 countDown++;
                 if (countDown == 30) { //导航到达终点30秒后语音提示
-                    LogUtils.d("startSpecialWorkFlow", "导航到达目的地30秒后");
+                    LogUtils.d(DEFAULT_LOG_TAG, "导航到达目的地30秒无操作后提示");
                     playShowText(MvpBaseActivity.getActivityContext().getString(R.string.arrive_destination_prompt_three));
-                } else if (countDown == 32) {
-                    LogUtils.d("startSpecialWorkFlow", "导航到达目的地一分钟后,回到首页启动自动回充");
+                } else if (countDown == 180) {
+                    LogUtils.d(DEFAULT_LOG_TAG, "导航到达目的3分钟无操作后,回到首页启动自动回充");
                     choseNoBt();
                 }
             }

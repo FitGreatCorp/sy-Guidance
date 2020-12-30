@@ -28,6 +28,7 @@ android {
             version "3.6.0"
         }
     }
+    ndkVersion '22.0.7026061'
 
 }
 

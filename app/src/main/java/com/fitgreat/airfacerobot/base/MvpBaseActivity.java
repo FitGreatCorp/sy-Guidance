@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,10 +16,8 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.ui.BaseView;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.gyf.barlibrary.ImmersionBar;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
@@ -42,6 +42,7 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
     //页面集合
     private List<AppCompatActivity> activityList = new ArrayList<AppCompatActivity>();
     private static Context activityContext;
+    public Handler baseHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

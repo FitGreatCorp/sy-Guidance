@@ -18,11 +18,11 @@
     <TextView
         android:id="@+id/tv_net"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/px60"
         android:layout_alignLeft="@+id/init_progress_net"
         android:layout_alignRight="@+id/init_progress_net"
         android:layout_marginTop="150dp"
-        android:maxWidth="200dp"
+        android:maxWidth="@dimen/px200"
         android:text="@string/net_starting"
         android:textAlignment="center"
         android:textColor="#FF49B8AB"
@@ -75,29 +75,30 @@
         android:id="@+id/ll_net_timeout"
         android:layout_width="210dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="98dp"
-        android:gravity="center"
         android:layout_below="@+id/init_progress_net"
-        android:orientation="vertical"
+        android:layout_marginLeft="98dp"
         android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="vertical"
         android:visibility="gone">
 
         <Button
             android:id="@+id/btn_retry"
             android:layout_width="116dp"
             android:layout_height="36dp"
-            android:textColor="@color/white"
-            android:textSize="14sp"
+            android:background="@drawable/bg_green_btn"
             android:text="重试"
-            android:background="@drawable/bg_green_btn" />
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
         <TextView
             android:id="@+id/tv_reseasn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="#49B8AB"
+            android:layout_marginTop="16dp"
             android:text="网络质量差，请检查网络后重试"
-            android:layout_marginTop="16dp"/>
+            android:textColor="#49B8AB"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -105,11 +106,11 @@
     <TextView
         android:id="@+id/tv_ros"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/px60"
         android:layout_alignLeft="@+id/init_progress_ros"
         android:layout_alignRight="@+id/init_progress_ros"
         android:layout_marginTop="150dp"
-        android:maxWidth="200dp"
+        android:maxWidth="@dimen/px200"
         android:text="@string/ros_starting"
         android:textAlignment="center"
         android:textColor="#F9AA33"
@@ -162,11 +163,11 @@
     <TextView
         android:id="@+id/tv_voice"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/px60"
         android:layout_alignLeft="@+id/init_progress_talk"
         android:layout_alignRight="@+id/init_progress_talk"
         android:layout_marginTop="150dp"
-        android:maxWidth="200dp"
+        android:maxWidth="@dimen/px200"
         android:text="@string/voice_starting"
         android:textAlignment="center"
         android:textColor="#F66662"

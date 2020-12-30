@@ -14,6 +14,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.fitgreat.airfacerobot.R;
 
 public class TopTitleView extends ConstraintLayout {
+
+    private TextView baseTitleView;
+
     public TopTitleView(Context context) {
         super(context);
     }
@@ -33,13 +36,13 @@ public class TopTitleView extends ConstraintLayout {
         String titleName = typedArray.getString(R.styleable.TopTitleView_titleName);
         View inflate = LayoutInflater.from(context).inflate(R.layout.view_base_title, this, true);
         ImageView baseBack = inflate.findViewById(R.id.base_back);
-        TextView baseTitle = inflate.findViewById(R.id.base_title);
         baseBack.setOnClickListener((view) -> {
             if (mBaseBackListener != null) {
                 mBaseBackListener.back();
             }
         });
-        baseTitle.setText(titleName);
+        baseTitleView = inflate.findViewById(R.id.base_title);
+        baseTitleView.setText(titleName);
         typedArray.recycle();
     }
 
@@ -51,5 +54,13 @@ public class TopTitleView extends ConstraintLayout {
 
     public void setBackKListener(BaseBackListener baseBackListener) {
         this.mBaseBackListener = baseBackListener;
+    }
+
+    /**
+     * 设置标题内容
+     * @param baseTitleValue
+     */
+    public void setBaseTitle(String baseTitleValue) {
+        baseTitleView.setText(baseTitleValue);
     }
 }

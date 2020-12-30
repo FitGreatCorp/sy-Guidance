@@ -264,7 +264,22 @@ public interface RobotConfig {
     String ANDROID_SYSTEM_BOOT_UP_TAG = "android.intent.action.BOOT_COMPLETED";
 
     /**
-     *初始化页面调用网络接口是否延时标志
+     *首页是否显示标志
      */
-    String DELAY_CONNECT_INTERFACE_TAG = "delay_connect_interface_tag";
+    String MAIN_PAGE_WHETHER_SHOW = "main_page_whether_show";
+
+
+    /**
+     *单点导航任务开启标志
+     */
+    String CURRENT_NAVIGATION_START_TAG = "current_navigation_start_tag";
+    /**
+     *播放迎宾语开关
+     */
+    String BROADCAST_GREET_SWITCH_TAG = "broadcast_greet_switch_tag";
+
+    /**
+     *当前空闲工作流数据
+     */
+    String CURRENT_FREE_OPERATION = "current_free_operation";
 }

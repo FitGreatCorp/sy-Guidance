@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_item_introduction_list"
     android:layout_width="@dimen/px200"
-    android:layout_height="@dimen/px190"
+    android:layout_height="@dimen/px200"
     tools:ignore="MissingConstraints">
 
     <ImageView
@@ -17,8 +17,11 @@
 
     <ImageView
         android:id="@+id/introduction_process_kind_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/px30"
+        android:layout_height="@dimen/px22"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_margin="@dimen/px15"
         android:scaleType="fitCenter" />
 
     <TextView
@@ -29,6 +32,7 @@
         android:gravity="center"
         android:maxLines="1"
         android:textColor="@android:color/white"
+        android:layout_marginBottom="@dimen/px20"
         android:textSize="@dimen/textSize15"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

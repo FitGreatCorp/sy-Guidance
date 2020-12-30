@@ -23,6 +23,7 @@ import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.ui.activity.MainActivity;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
+import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
@@ -46,6 +47,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.blankj.utilcode.util.StringUtils.getString;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIGATION_PAGE;
@@ -93,8 +95,12 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //解绑EventBus
+        EventBus.getDefault().unregister(this);
         //单点导航任务结束
         SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+        //解绑关闭页面广播
+        unregisterReceiver(closeBroadcastReceiver);
     }
 
     @OnClick({R.id.chose_destination_container})
@@ -110,6 +116,8 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
     @Override
     public void initData() {
+        //注册EventBus
+        EventBus.getDefault().register(this);
         //根据当前语言加载展示地图
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
         //单点导航任务结束
@@ -124,7 +132,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         if (getIntent().hasExtra("bundle")) { //通过指令进入当前页面发起导航任务
             Bundle bundle = getIntent().getBundleExtra("bundle");
             LocationEntity locationEntity = (LocationEntity) bundle.getSerializable("LocationEntity");
-            LogUtils.d("startSpecialWorkFlow", "指令跳转选择导航页面: tipContent " + getNavigationTip(locationEntity) + " currentLanguage " + currentLanguage);
+            LogUtils.d(DEFAULT_LOG_TAG, "指令跳转选择导航页面: tipContent " + getNavigationTip(locationEntity) + " currentLanguage " + currentLanguage);
             //单点导航提示弹窗
             showDialogNavigation(true, getNavigationTip(locationEntity), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
         }
@@ -182,11 +190,11 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMsg(CommandDataEvent commandDataEvent) {
-        switch (commandDataEvent.getCommandType()) {
+    public void onMsg(AskAnswerDataEvent askAnswerDataEvent) {
+        switch (askAnswerDataEvent.getCommandType()) {
             case SINGLE_POINT_NAVIGATION:
-                LogUtils.d("startSpecialWorkFlow", "----SINGLE_POINT_NAVIGATION---ChoseDestinationActivity-----");
-                LocationEntity locationEntity = commandDataEvent.getLocationEntity();
+                LogUtils.d(DEFAULT_LOG_TAG, "----SINGLE_POINT_NAVIGATION---ChoseDestinationActivity-----");
+                LocationEntity locationEntity = askAnswerDataEvent.getLocationEntity();
                 showDialogNavigation(true, getNavigationTip(locationEntity), MvpBaseActivity.getActivityContext().getString(R.string.answer_yes), MvpBaseActivity.getActivityContext().getString(R.string.answer_no), locationEntity);
                 break;
             default:

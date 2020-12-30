@@ -6,6 +6,11 @@ public class OperationInfo {
     String F_Type;
     String F_FileUrl;
     String F_HospitalId;
+    String F_DescImg;
+    String F_Memo;
+    String F_IsBreak;
+    String F_EName;
+    String F_EFileUrl;
 
     public String getF_id() {
         return F_id;
@@ -63,6 +68,27 @@ public class OperationInfo {
         F_IsBreak = f_IsBreak;
     }
 
-    String F_Memo;
-    String F_IsBreak;
+    public String getF_DescImg() {
+        return F_DescImg;
+    }
+
+    public void setF_DescImg(String f_DescImg) {
+        F_DescImg = f_DescImg;
+    }
+
+    public String getF_EName() {
+        return F_EName;
+    }
+
+    public void setF_EName(String f_EName) {
+        F_EName = f_EName;
+    }
+
+    public String getF_EFileUrl() {
+        return F_EFileUrl;
+    }
+
+    public void setF_EFileUrl(String f_EFileUrl) {
+        F_EFileUrl = f_EFileUrl;
+    }
 }

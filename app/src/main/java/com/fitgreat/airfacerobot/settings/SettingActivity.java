@@ -7,15 +7,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotBrainService;
@@ -29,8 +37,13 @@ import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.utils.WebPageUtils;
 import com.fitgreat.airfacerobot.launcher.widget.InputDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
+import com.fitgreat.airfacerobot.model.CommonProblemEntity;
+import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
+import com.fitgreat.airfacerobot.settings.adapter.WorkFlowListAdapter;
+import com.fitgreat.airfacerobot.settings.presenter.SettingsPresenter;
+import com.fitgreat.airfacerobot.settings.view.SettingsView;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.versionupdate.VersionUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
@@ -41,9 +54,15 @@ import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 
 /**
@@ -52,9 +71,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
  * @author zixuefei
  * @since 2020/3/11 0011 10:14
  */
-public class SettingActivity extends MvpBaseActivity {
-    //    @BindView(R.id.settings_voice_point_switch)
-//    Switch voicePointSwitch;
+public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPresenter> implements SettingsView {
     @BindView(R.id.title_bar_title)
     TextView titleBar;
     @BindView(R.id.settings_robot_name)
@@ -95,12 +112,18 @@ public class SettingActivity extends MvpBaseActivity {
     Button btn_save;
     @BindView(R.id.et_hello)
     EditText et_hello;
-    @BindView(R.id.de_time)
-    EditText de_time;
     @BindView(R.id.drag_mode_radio)
     TextView dragModeRadio;
     @BindView(R.id.control_mode_radio)
     TextView controlModeRadio;
+    @BindView(R.id.broadcast_greet_radioGroup)
+    RadioGroup broadcastGreetRadioGroup;
+    @BindView(R.id.broadcast_greet_yes)
+    RadioButton broadcastGreetYes;
+    @BindView(R.id.broadcast_greet_no)
+    RadioButton broadcastGreetNo;
+    @BindView(R.id.free_operation)
+    TextView freeOperation;
 
     LinearLayout info;
     LinearLayout hello;
@@ -111,6 +134,8 @@ public class SettingActivity extends MvpBaseActivity {
     private static final String TAG = "SettingActivity";
     private Drawable selectedDrawable;
     private Drawable normalDrawable;
+    private boolean broadcastGreetSwitchTag;
+    private List<WorkflowEntity> mWorkflowEntityList;
 
     @Override
     public int getLayoutResource() {
@@ -119,6 +144,8 @@ public class SettingActivity extends MvpBaseActivity {
 
     @Override
     public void initData() {
+        //获取工作流列表
+        mPresenter.getWorkflowList();
         initImmersionBar(true);
         titleBar.setText(getString(R.string.setup_module_title));
         inputDialog = new InputDialog(this);
@@ -126,10 +153,6 @@ public class SettingActivity extends MvpBaseActivity {
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         info = findViewById(R.id.inc_info);
         hello = findViewById(R.id.inc_hello);
-//        voicePointSwitch.setChecked(RobotInfoUtils.isPlayVoiceEnabled());
-//        voicePointSwitch.setOnCheckedChangeListener((CompoundButton buttonView, boolean isChecked) -> {
-//            RobotInfoUtils.setPlayVoiceEnabled(isChecked);
-//        });
         RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
         if (robotInfoData != null) {
             robotName.setText(robotInfoData.getF_Name());
@@ -160,9 +183,9 @@ public class SettingActivity extends MvpBaseActivity {
         STRING_HELLO = SpUtils.getString(getContext(), "hello_string", "");
         et_hello.setText(STRING_HELLO);
         if (SpUtils.getInt(getContext(), "de_time", 10) != 10) {
-            de_time.setText(String.valueOf(SpUtils.getInt(getContext(), "de_time", 10)));
+//            de_time.setText(String.valueOf(SpUtils.getInt(getContext(), "de_time", 10)));
         } else {
-            de_time.setText("10");
+//            de_time.setText("10");
         }
         //机器人工作模式状态
         boolean isControlModel = SpUtils.getBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
@@ -177,6 +200,25 @@ public class SettingActivity extends MvpBaseActivity {
             dragModeRadio.setCompoundDrawables(selectedDrawable, null, null, null);
             controlModeRadio.setCompoundDrawables(normalDrawable, null, null, null);
         }
+        //是否播放迎宾语
+        broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
+        //进入设置页面播放迎宾语开关显示状态
+        if (broadcastGreetSwitchTag) {
+            broadcastGreetYes.setChecked(true);
+        } else {
+            broadcastGreetNo.setChecked(true);
+        }
+        //设置播放迎宾语开关
+        broadcastGreetRadioGroup.setOnCheckedChangeListener(((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.broadcast_greet_yes:
+                    SpUtils.putBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, true);
+                    break;
+                case R.id.broadcast_greet_no:
+                    SpUtils.putBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
+                    break;
+            }
+        }));
     }
 
     @Override
@@ -207,11 +249,11 @@ public class SettingActivity extends MvpBaseActivity {
         finish();
     }
 
-
     @Override
-    public Object createPresenter() {
-        return null;
+    public SettingsPresenter createPresenter() {
+        return new SettingsPresenter();
     }
+
 
     /**
      * Settings.ACTION_WIFI_SETTINGS  打开WiFi设置
@@ -232,7 +274,7 @@ public class SettingActivity extends MvpBaseActivity {
             , R.id.settings_apps_layout, R.id.settings_date_time_layout, R.id.settings_language_layout,
             R.id.settings_inputmethod_layout, R.id.settings_develop_layout, R.id.settings_reboot_layout,
             R.id.settings_shutdown_layout, R.id.settings_robot_official_website_layout, R.id.settings_wifi_layout,
-            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio, R.id.drag_mode_radio, R.id.control_mode_radio})
+            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio, R.id.drag_mode_radio, R.id.control_mode_radio, R.id.free_operation})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.ll_info:
@@ -321,19 +363,7 @@ public class SettingActivity extends MvpBaseActivity {
                 LogUtils.d(TAG, "btn_save !!!!!!!");
                 SpUtils.putString(getContext(), "hello_string", et_hello.getText().toString());
                 inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
-
-                if (de_time.getText().toString().equals("")) {
-                    SpUtils.putInt(getContext(), "de_time", 10);
-                } else {
-                    if (Integer.valueOf(de_time.getText().toString().trim()) < 10) {
-                        SpUtils.putInt(getContext(), "de_time", 10);
-                        de_time.setText("10");
-                        Toast.makeText(getContext(), "间隔时间不能小于10秒!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        SpUtils.putInt(getContext(), "de_time", Integer.valueOf(de_time.getText().toString().trim()));
-                        Toast.makeText(getContext(), "设置成功！", Toast.LENGTH_SHORT).show();
-                    }
-                }
+                ToastUtils.showSmallToast("设置成功");
                 break;
             case R.id.test_domains_radio:
                 if (!TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")) {
@@ -435,9 +465,49 @@ public class SettingActivity extends MvpBaseActivity {
             case R.id.control_mode_radio: //切换控制模式
                 switchRobotModel(true, controlModeRadio, dragModeRadio);
                 break;
+            case R.id.free_operation: //空闲操作选择
+                choseFreeOperation();
+                break;
             default:
                 break;
         }
+    }
+
+    /**
+     * 选择机器人空闲执行工作流  首页
+     */
+    public void choseFreeOperation() {
+        if (mWorkflowEntityList != null && mWorkflowEntityList.size() != 0) {
+            View inflate = View.inflate(this, R.layout.free_operation_list, null);
+            PopupWindow popupWindow = new PopupWindow(this);
+            //设置PopupWindow属性显示
+            popupWindow.setContentView(inflate);
+            popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+            popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            //设置列表数据并显示
+            RecyclerView freeOperationRecyclerView = inflate.findViewById(R.id.free_operation_recyclerView);
+            WorkFlowListAdapter workFlowListAdapter = new WorkFlowListAdapter(mWorkflowEntityList);
+            freeOperationRecyclerView.setAdapter(workFlowListAdapter);
+            freeOperationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            workFlowListAdapter.setOnItemClickListener((adapter, view, position) -> {
+                WorkflowEntity workflowEntity = (WorkflowEntity) adapter.getData().get(position);
+                //缓存当前选择空闲工作流
+                SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, JSON.toJSONString(workflowEntity));
+                //关闭popupWindow
+                popupWindow.dismiss();
+                //显示当前选择空闲工作流名字
+                freeOperation.setText(workflowEntity.getF_Name());
+            });
+            //显示PopupWindow
+            popupWindow.showAsDropDown(freeOperation);
+        } else {
+            ToastUtils.showSmallToast("空闲操作工作流数据没有,需要服务端配置");
+        }
+    }
+
+    @Override
+    public void showWorkflowList(List<WorkflowEntity> workflowEntityList) {
+        mWorkflowEntityList = workflowEntityList;
     }
 
     /**

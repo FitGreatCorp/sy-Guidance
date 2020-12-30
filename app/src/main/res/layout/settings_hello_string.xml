@@ -1,58 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
+    android:orientation="vertical"
     android:padding="10dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:gravity="center">
+        android:layout_height="@dimen/px50"
+        android:layout_marginTop="@dimen/px10"
+        android:gravity="center|left"
+        android:orientation="horizontal">
 
         <TextView
+            android:layout_width="@dimen/px80"
+            android:layout_height="wrap_content"
+            android:text="自动迎宾:"
+            android:textColor="@android:color/black" />
+
+        <RadioGroup
+            android:id="@+id/broadcast_greet_radioGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="提示语设置"
-            android:textColor="#000000"
-            android:textSize="16sp" />
-    </RelativeLayout>
+            android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/et_hello"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/edit_bg"
-        android:gravity="top|left"
-        android:hint="请输入提示语"
-        android:textSize="14sp"
-        android:focusedByDefault="false"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp" />
+            <RadioButton
+                android:id="@+id/broadcast_greet_yes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="是" />
 
-    <EditText
-        android:id="@+id/de_time"
+            <RadioButton
+                android:id="@+id/broadcast_greet_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/px30"
+                android:text="否" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:inputType="number"
-        android:layout_marginTop="5dp"
-        android:background="@drawable/edit_bg"
-        android:hint="间隔时长需不小于10秒"
-        android:textSize="14sp"
-        android:padding="5dp" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px10"
+        android:gravity="center|left"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="@dimen/px80"
+            android:layout_height="wrap_content"
+            android:text="迎宾语:"
+            android:textColor="@android:color/black" />
+
+        <EditText
+            android:id="@+id/et_hello"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/edit_bg"
+            android:focusedByDefault="false"
+            android:gravity="top|left"
+            android:hint="请输入迎宾语"
+            android:paddingLeft="10dp"
+            android:paddingTop="5dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="5dp"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px50"
+        android:layout_marginTop="@dimen/px10"
+        android:gravity="center|left"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="@dimen/px80"
+            android:layout_height="wrap_content"
+            android:text="空闲操作:"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/free_operation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edit_bg"
+            android:gravity="top|left"
+            android:paddingLeft="10dp"
+            android:paddingTop="5dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="5dp"
+            android:textSize="14sp" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btn_save"
+        style="?android:attr/borderlessButtonStyle"
         android:layout_width="400dp"
         android:layout_height="40dp"
         android:layout_marginTop="20dp"
-        android:text="保存"
-        android:textColor="#ffffff"
         android:background="@drawable/power_mode_layout_bg"
-        style="?android:attr/borderlessButtonStyle" />
-
+        android:text="保存"
+        android:textColor="#ffffff" />
 </LinearLayout>

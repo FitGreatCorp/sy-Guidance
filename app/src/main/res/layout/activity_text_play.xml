@@ -21,5 +21,5 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/px0"
         android:layout_weight="1"
-        android:padding="@dimen/px15" />
+        android:padding="@dimen/px25" />
 </LinearLayout>

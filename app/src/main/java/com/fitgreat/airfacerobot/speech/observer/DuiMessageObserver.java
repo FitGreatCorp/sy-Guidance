@@ -5,9 +5,17 @@ import com.aispeech.dui.dds.agent.MessageObserver;
 import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
+import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
+import com.fitgreat.airfacerobot.model.ActionDdsEvent;
+import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
+import com.fitgreat.airfacerobot.model.CommandDataEvent;
+import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.model.DialogStateEvent;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
+import com.fitgreat.airfacerobot.speech.model.CommonProblemEvent;
 import com.fitgreat.airfacerobot.speech.model.MessageBean;
 import com.fitgreat.airfacerobot.speech.model.ShowContent;
 import com.fitgreat.airfacerobot.speech.model.ShowContentMain;
@@ -21,8 +29,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
 /**
  * 客户端MessageObserver, 用于处理客户端动作的消息响应.
@@ -45,6 +57,10 @@ public class DuiMessageObserver implements MessageObserver {
             "sys.resource.updated",
     };
     private static final String TAG = "DuiMessageObserver";
+    private String currentLanguage;
+    private AskAnswerDataEvent askAnswerDataEvent;
+    private CommandDataEvent commandDataEvent;
+
 
     public DuiMessageObserver() {
         mGson = new Gson();
@@ -72,6 +88,10 @@ public class DuiMessageObserver implements MessageObserver {
         }
         LogUtils.json("CommandTodo", data);
         boolean startCommonProblemModelTag = SpUtils.getBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, false);
+        boolean mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
+
+        //当前设备语言
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
         MessageBean bean = null;
         switch (message) {
             case "context.output.text":
@@ -85,7 +105,7 @@ public class DuiMessageObserver implements MessageObserver {
                 }
                 bean.setText(txt);
                 bean.setType(MessageBean.TYPE_OUTPUT);
-                LogUtils.d("CommandTodo", "context.output.text = " + bean.getText());
+                LogUtils.d(DEFAULT_LOG_TAG, "context.output.text = " + bean.getText());
                 EventBus.getDefault().post(bean);
                 break;
             case "context.input.text":
@@ -122,93 +142,26 @@ public class DuiMessageObserver implements MessageObserver {
                 }
                 LogUtils.d(DEFAULT_LOG_TAG, "context.input.text = " + bean.getText());
                 if (startCommonProblemModelTag) {
-                    LogUtils.json("CommandTodo", JSON.toJSONString(showContent));
                     EventBus.getDefault().post(showContent);
                 } else {
                     EventBus.getDefault().post(bean);
                 }
-                break;
-            case "context.widget.content":
-                bean = new MessageBean();
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    String title = jo.optString("title", "");
-                    String subTitle = jo.optString("subTitle", "");
-                    String imgUrl = jo.optString("imageUrl", "");
-                    bean.setTitle(title);
-                    bean.setSubTitle(subTitle);
-                    bean.setImgUrl(imgUrl);
-                    bean.setType(MessageBean.TYPE_WIDGET_CONTENT);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "context.widget.list":
-                bean = new MessageBean();
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    JSONArray array = jo.optJSONArray("content");
-                    if (array == null || array.length() == 0) {
-                        return;
+                if (currentLanguage != null && currentLanguage.equals("en") && bean.getText().length() > 3) {
+                    commandDataEvent = new CommandDataEvent();
+                    askAnswerDataEvent = new AskAnswerDataEvent();
+                    CommonProblemEntity commonProblemEntity = CashUtils.getProblemOne(bean.getText().toLowerCase());
+                    if (mainPageShowTag && commonProblemEntity != null) {
+                        commandDataEvent.setCommandType(COMMON_PROBLEM_TAG);
+                        commandDataEvent.setCommonProblemEntity(commonProblemEntity);
+                        EventBus.getDefault().post(commandDataEvent);
+                    } else {
+                        if (commonProblemEntity != null) {  //英文识别常见问题
+                            askAnswerDataEvent.setCommandType(COMMON_PROBLEM_TAG);
+                            askAnswerDataEvent.setCommonProblemEntity(commonProblemEntity);
+                            EventBus.getDefault().post(askAnswerDataEvent);
+                        }
                     }
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject object = array.optJSONObject(i);
-                        String title = object.optString("title", "");
-                        String subTitle = object.optString("subTitle", "");
-                        MessageBean b = new MessageBean();
-                        b.setTitle(title);
-                        b.setSubTitle(subTitle);
-                        bean.addMessageBean(b);
-                    }
-                    int currentPage = jo.optInt("currentPage");
-                    bean.setCurrentPage(currentPage);
-                    bean.setType(MessageBean.TYPE_WIDGET_LIST);
-                    int itemsPerPage = jo.optInt("itemsPerPage");
-                    bean.setItemsPerPage(itemsPerPage);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "context.widget.web":
-                bean = new MessageBean();
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    String url = jo.optString("url");
-                    bean.setUrl(url);
-                    bean.setType(MessageBean.TYPE_WIDGET_WEB);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "context.widget.custom":
-                bean = new MessageBean();
-                try {
-                    JSONObject jo = new JSONObject(data);
-                    String name = jo.optString("name");
-                    if (name.equals("weather")) {
-                        bean.setWeatherBean(mGson.fromJson(data, WeatherBean.class));
-                        bean.setType(MessageBean.TYPE_WIDGET_WEATHER);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case "context.widget.media":
-                JSONObject jsonObject;
-                int count = 0;
-                String name = "";
-                try {
-                    jsonObject = new JSONObject(data);
-                    count = jsonObject.optInt("count");
-                    name = jsonObject.optString("widgetName");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                if (count > 0) { //跳转播放页面
-//                    Intent intent = new Intent(AirFaceApp.getContext(), PlayerActivity.class);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    intent.putExtra("data", data);
-//                    AirFaceApp.getContext().startActivity(intent);
+                    LogUtils.d(DEFAULT_LOG_TAG, "英文模式下问题识别 = " + bean.getText());
                 }
                 break;
             case "sys.dialog.state":

@@ -24,6 +24,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
@@ -85,7 +86,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             BusinessRequest.postStringRequest(info.toString(), ApiRequestUrl.CREATE_ACTION, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    LogUtils.e("startSpecialWorkFlow", "选择导航,发起活动流程失败:onFailure=>" + e.toString());
+                    LogUtils.e(DEFAULT_LOG_TAG, "选择导航,发起活动流程失败:onFailure=>" + e.toString());
                     //单点导航任务结束
                     SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                 }
@@ -93,12 +94,12 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d("startSpecialWorkFlow", "选择导航,发起活动流程成功:onResponse=>" + stringResponse);
+                    LogUtils.d(DEFAULT_LOG_TAG, "选择导航,发起活动流程成功:onResponse=>" + stringResponse);
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                             String actionId = jsonObject.getString("msg");
-                            LogUtils.d("startSpecialWorkFlow", "当前活动id , " + actionId);
+                            LogUtils.d(DEFAULT_LOG_TAG, "当前活动id , " + actionId);
                             //改变当前机器人状态为操作中
                             RobotInfoUtils.setRobotRunningStatus(String.valueOf(3));
                             //更新时间戳
@@ -132,7 +133,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
         BusinessRequest.getNextStep(actionId, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                LogUtils.e(TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
+                LogUtils.e(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
                 //单点导航任务结束
                 SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
@@ -140,15 +141,15 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String result = response.body().string();
-                LogUtils.d("startSpecialWorkFlow", "选择导航,获取下一步操作成功==>" + result);
+                LogUtils.d(DEFAULT_LOG_TAG, "选择导航,获取下一步操作成功==>" + result);
                 try {
                     JSONObject baseResObj = new JSONObject(result);
                     if (baseResObj.has("type") && baseResObj.getString("type").equals("success")) {
                         String msgString = baseResObj.getString("msg");
-                        LogUtils.json("startSpecialWorkFlow", msgString);
+                        LogUtils.json(DEFAULT_LOG_TAG, msgString);
                         if (msgString != null) {
                             NextOperationData nextOperationData = JSON.parseObject(msgString, NextOperationData.class);
-                            LogUtils.d("startSpecialWorkFlow", JSON.toJSONString(nextOperationData));
+                            LogUtils.d(DEFAULT_LOG_TAG, JSON.toJSONString(nextOperationData));
                             SignalDataEvent autoMoveEvent = new SignalDataEvent();
                             if (!nextOperationData.getF_Type().equals("End")) {
                                 autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
@@ -162,7 +163,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                                 autoMoveEvent.setY(nextOperationData.getF_Y());
                                 autoMoveEvent.setE(nextOperationData.getF_Z());
                                 autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
-                                LogUtils.d("startSpecialWorkFlow", "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
+                                LogUtils.d(DEFAULT_LOG_TAG, "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
                                 autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                 EventBus.getDefault().post(autoMoveEvent);
                             }else {

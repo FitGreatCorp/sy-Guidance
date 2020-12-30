@@ -368,7 +368,7 @@ public class NormalHomeFragment extends MvpBaseFragment<NormalHomeView, NormalHo
     private void getRobotInfo() {
         LogUtils.d(TAG, "getAirFaceDeviceId:" + RobotInfoUtils.getAirFaceDeviceId());
         if (TextUtils.isEmpty(RobotInfoUtils.getAirFaceDeviceId())) {
-            RobotInfoUtils.setAirFaceDeviceId(PhoneInfoUtils.getIMEI(getContext()));
+            RobotInfoUtils.setAirFaceDeviceId(PhoneInfoUtils.getSn(getContext()));
         }
         BusinessRequest.getRobotInfo(RobotInfoUtils.getAirFaceDeviceId(), new HttpCallback() {
             @Override

@@ -82,10 +82,10 @@
     <string name="task_terminated_title">Task terminated</string>
     <string name="navigation_success_tip_one">I have arrived\t</string>
     <string name="navigation_success_tip_two">\tDo you need other services?</string>
-    <string name="need_yes_title">Need</string>
-    <string name="need_no_title">Not needed</string>
+    <string name="need_yes_title">YES</string>
+    <string name="need_no_title">NO</string>
     <string name="arrive_destination_prompt_one">Arrived</string>
-    <string name="arrive_destination_prompt_two">Yes, do you need other services? If you don’t need it, please click "not needed" and let me go back。</string>
+    <string name="arrive_destination_prompt_two">Yes, do you need other services? If not, please click "no" to let me go back。</string>
     <string name="start_navigation_tip_one">I\'m going\t</string>
     <string name="start_navigation_tip_two">\t</string>
     <string name="charge_success_tip">Successfully charged</string>
