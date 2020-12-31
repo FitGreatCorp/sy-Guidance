@@ -16,6 +16,7 @@ import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
+import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
@@ -40,6 +41,9 @@ import okhttp3.Response;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.LOGFILE_CREATE_TIME;
 import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
+import static com.fitgreat.airfacerobot.constants.Constants.basePath;
+import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPath;
+import static com.fitgreat.airfacerobot.constants.Constants.currentEnglishMapPath;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
@@ -112,107 +116,7 @@ public class OperationUtils {
                             WorkflowEntity workflowEntity = JSON.parseObject(msgString, WorkflowEntity.class);
                             //发起活动流程自动回充
                             LogUtils.d(DEFAULT_LOG_TAG, "发起特殊活动流程\t\t" + msgString);
-                            HashMap<String, String> param = new HashMap<>();
-                            param.put("hospitalName", robotInfo.getF_Hospital());
-                            param.put("departmentName", robotInfo.getF_Department());
-                            param.put("hardwareId", robotInfo.getF_HardwareId());
-                            param.put("robotAccountId", robotInfo.getF_Id());
-                            param.put("promoter", robotInfo.getF_Id());
-                            param.put("operationProcedreId", "");
-                            param.put("operationName", workflowEntity.getF_Name());
-                            param.put("goWhere", "");
-                            param.put("doWhat", workflowEntity.getF_Id());
-                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(param));
-                            BusinessRequest.postStringRequest(JSON.toJSONString(param), ApiRequestUrl.INITIATE_ACTION, new Callback() {
-                                @Override
-                                public void onFailure(Call call, IOException e) {
-                                    LogUtils.e(DEFAULT_LOG_TAG, "发起活动流程失败: " + e.toString());
-                                }
-
-                                @Override
-                                public void onResponse(Call call, Response response) throws IOException {
-                                    String stringResponse = response.body().string();
-                                    LogUtils.d(DEFAULT_LOG_TAG, "发起活动流程成功: " + stringResponse);
-                                    try {
-                                        JSONObject jsonObject = new JSONObject(stringResponse);
-                                        if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
-                                            String actionId = jsonObject.getString("msg");
-                                            if (actionId != null) { //活动id存在
-                                                //改变当前机器人状态为操作中
-                                                saveRobotstatus(3);
-                                                //更新时间戳
-                                                BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
-                                                //获取下一步操作
-                                                BusinessRequest.getNextStep(actionId, new Callback() {
-                                                    @Override
-                                                    public void onFailure(Call call, IOException e) {
-                                                        LogUtils.e(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
-                                                    }
-
-                                                    @Override
-                                                    public void onResponse(Call call, Response response) throws IOException {
-                                                        String result = response.body().string();
-                                                        try {
-                                                            JSONObject baseResObj = new JSONObject(result);
-                                                            if (baseResObj.has("type")) {
-                                                                String type = baseResObj.getString("type");
-                                                                if (type.equals("success")) {
-                                                                    String msg = baseResObj.getString("msg");
-                                                                    LogUtils.d(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tmsg");
-                                                                    LogUtils.json(DEFAULT_LOG_TAG, msg);
-                                                                    NextOperationData nextOperationData = JsonUtils.decode(msg, NextOperationData.class);
-                                                                    if (nextOperationData != null) {
-                                                                        if (nextOperationData.getOperationType() == null || !nextOperationData.getOperationType().equals("End")) {
-                                                                            SignalDataEvent autoMoveEvent = new SignalDataEvent();
-                                                                            autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
-                                                                            autoMoveEvent.setInstructionType(nextOperationData.getF_Type());
-                                                                            autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
-                                                                            autoMoveEvent.setContainer(nextOperationData.getF_Container());
-                                                                            autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
-                                                                            autoMoveEvent.setProduceId(actionId);
-                                                                            autoMoveEvent.setOperationType(nextOperationData.getOperationType());
-                                                                            autoMoveEvent.setX(nextOperationData.getF_X());
-                                                                            autoMoveEvent.setY(nextOperationData.getF_Y());
-                                                                            autoMoveEvent.setE(nextOperationData.getF_Z());
-                                                                            autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
-                                                                            LogUtils.d(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
-                                                                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(autoMoveEvent));
-                                                                            if (nextOperationData.getF_Type().equals("Operation")) { //执行操作任务
-                                                                                autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
-                                                                            } else { //导航移动到某地
-                                                                                autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
-                                                                            }
-                                                                            EventBus.getDefault().post(autoMoveEvent);
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        } catch (JSONException e) {
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                        } else {
-                                            if (workFlowTypeInt == 1) {
-                                                playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
-                                                new Handler(Looper.getMainLooper()).post(() -> {
-                                                    ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
-                                                });
-                                                //自动回充工作流后台没有配置,可再次启动自动回充工作流
-                                                SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
-                                            } else {
-                                                playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                                                new Handler(Looper.getMainLooper()).post(() -> {
-                                                    ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                                                });
-                                            }
-                                        }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
+                            startActivity(workflowEntity, robotInfo, workFlowTypeInt);
                         } else {
                             if (workFlowTypeInt == 1) {
                                 playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
@@ -234,6 +138,108 @@ public class OperationUtils {
                 }
             });
         }
+    }
+
+    /**
+     * 根据工作流发起活动
+     */
+    public static void startActivity(WorkflowEntity workflowEntity, RobotInfoData robotInfo, int workFlowTypeInt) {
+        HashMap<String, String> param = new HashMap<>();
+        param.put("hospitalName", robotInfo.getF_Hospital());
+        param.put("departmentName", robotInfo.getF_Department());
+        param.put("hardwareId", robotInfo.getF_HardwareId());
+        param.put("robotAccountId", robotInfo.getF_Id());
+        param.put("promoter", robotInfo.getF_Id());
+        param.put("operationProcedreId", "");
+        param.put("operationName", workflowEntity.getF_Name());
+        param.put("goWhere", "");
+        param.put("doWhat", workflowEntity.getF_Id());
+        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(param));
+        BusinessRequest.postStringRequest(JSON.toJSONString(param), ApiRequestUrl.INITIATE_ACTION, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                LogUtils.e(DEFAULT_LOG_TAG, "发起活动流程失败: " + e.toString());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String stringResponse = response.body().string();
+                LogUtils.d(DEFAULT_LOG_TAG, "发起活动流程成功: " + stringResponse);
+                try {
+                    JSONObject jsonObject = new JSONObject(stringResponse);
+                    if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
+                        String actionId = jsonObject.getString("msg");
+                        if (actionId != null) { //活动id存在
+                            //改变当前机器人状态为操作中
+                            saveRobotstatus(3);
+                            //更新时间戳
+                            BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
+                            //获取下一步操作
+                            BusinessRequest.getNextStep(actionId, new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    LogUtils.e(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    String result = response.body().string();
+                                    try {
+                                        JSONObject baseResObj = new JSONObject(result);
+                                        if (baseResObj.has("type")) {
+                                            String type = baseResObj.getString("type");
+                                            if (type.equals("success")) {
+                                                String msg = baseResObj.getString("msg");
+                                                LogUtils.d(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tmsg");
+                                                LogUtils.json(DEFAULT_LOG_TAG, msg);
+                                                NextOperationData nextOperationData = JsonUtils.decode(msg, NextOperationData.class);
+                                                if (nextOperationData != null) {
+                                                    if (nextOperationData.getOperationType() == null || !nextOperationData.getOperationType().equals("End")) {
+                                                        SignalDataEvent autoMoveEvent = new SignalDataEvent();
+                                                        autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
+                                                        autoMoveEvent.setInstructionType(nextOperationData.getF_Type());
+                                                        autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
+                                                        autoMoveEvent.setContainer(nextOperationData.getF_Container());
+                                                        autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
+                                                        autoMoveEvent.setProduceId(actionId);
+                                                        autoMoveEvent.setOperationType(nextOperationData.getOperationType());
+                                                        autoMoveEvent.setX(nextOperationData.getF_X());
+                                                        autoMoveEvent.setY(nextOperationData.getF_Y());
+                                                        autoMoveEvent.setE(nextOperationData.getF_Z());
+                                                        autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
+                                                        LogUtils.d(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:\t\t获取到的下一步任务种类\t\tautoMoveEvent");
+                                                        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(autoMoveEvent));
+                                                        if (nextOperationData.getF_Type().equals("Operation")) { //执行操作任务
+                                                            autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
+                                                        } else { //导航移动到某地
+                                                            autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
+                                                        }
+                                                        EventBus.getDefault().post(autoMoveEvent);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        if (workFlowTypeInt == 1) {
+                            playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                            new Handler(Looper.getMainLooper()).post(() -> {
+                                ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                            });
+                            //自动回充工作流后台没有配置,可再次启动自动回充工作流
+                            SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
@@ -309,5 +315,46 @@ public class OperationUtils {
     private static void saveRobotstatus(int status) {
         //改变当前机器人状态为空闲
         RobotInfoUtils.setRobotRunningStatus(String.valueOf(status));
+    }
+
+    /**
+     * 下载最新中/英文地图到本地
+     */
+    public static void downLoadMap(MapEntity mapEntity) {
+        File parentFile = new File(basePath);
+        if (!parentFile.exists()) {
+            parentFile.mkdir();
+        }
+        //下载最新中文地图
+        downloadLatestMap(currentChineseMapPath, "中文地图下载: ", mapEntity.getF_MapFileUrl());
+        //下载英文地图
+        downloadLatestMap(currentEnglishMapPath, "英文地图下载: ", mapEntity.getF_EMapUrl());
+    }
+
+    /**
+     * 下载最新地图到本地
+     */
+    private static void downloadLatestMap(String currentMapPath, String s, String f_eMapUrl) {
+        File currentEnglishMapFile = new File(currentMapPath);
+        LogUtils.d(DEFAULT_LOG_TAG, s + f_eMapUrl);
+        if (!currentEnglishMapFile.exists()) { //本地没有中英文版本地图需要下载
+            DownloadUtils.download(f_eMapUrl, currentEnglishMapPath, false, new DownloadUtils.OnDownloadListener() {
+                @Override
+                public void onDownloadSuccess(String filePath) {
+                    LogUtils.d(DEFAULT_LOG_TAG, "地图下载成功:" + filePath);
+                }
+
+                @Override
+                public void onDownloading(int progress) {
+                }
+
+                @Override
+                public void onDownloadFailed(Exception e) {
+                    LogUtils.e(DEFAULT_LOG_TAG, "地图下载失败:" + e.getMessage());
+                }
+            });
+        } else {
+            LogUtils.d(DEFAULT_LOG_TAG, s + "  本地已下载, " + currentMapPath);
+        }
     }
 }

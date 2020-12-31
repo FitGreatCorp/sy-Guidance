@@ -98,8 +98,6 @@ public class RosManager {
     private Publisher<Byte> ctrlPublisher = null;
     private Publisher<Twist> velPublisher = null;
     private Subscriber<BatteryState> batteryStateSubscriber;
-
-
     //是否在墙内订阅
     private Subscriber<Byte> whetherInsideWallSubscriber;
 
@@ -213,11 +211,6 @@ public class RosManager {
     }
 
     /**
-     * 人靠近设备播放语音提示次数
-     */
-    private int playTipTime = 0;
-
-    /**
      * 判断附近是否有人接口
      *
      * @param type
@@ -244,7 +237,6 @@ public class RosManager {
                 public void onSuccess(autoparkResponse setmodeResponse) {    //  getResult  为 false  机器附近有物体  true   没有物体
                     LogUtils.d(TAG, "judgmentHasPerson success    getMsg   " + setmodeResponse.getMsg() + "   getResult      " + setmodeResponse.getResult());
                     if (!setmodeResponse.getResult()) {
-                        playTipTime++;
                         //是否播放迎宾语
                         broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
                         string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");

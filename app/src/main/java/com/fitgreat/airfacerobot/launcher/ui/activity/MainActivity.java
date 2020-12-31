@@ -51,6 +51,7 @@ import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
+import com.fitgreat.airfacerobot.model.MapEntity;
 import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.model.RecordInfo;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
@@ -62,6 +63,7 @@ import com.fitgreat.airfacerobot.launcher.widget.CommonTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.WarnningDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.launcher.widget.TimeCountDownDialog;
+import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.FilePlayEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
@@ -102,11 +104,13 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_REB
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
@@ -169,15 +173,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private int countDownTime = 30;
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
-
-
     //院内介绍提示加载框
     private AlertDialog startIntroductionAlertDialog;
     private String currentLanguage;
     private TimerTask introductionTimerTask;
     private Timer introductionTimer;
-    private int introductionCountdown;
-
+    //空闲操作倒计时5分钟
+    private int freeOperationCountdown;
 
     @Override
     public int getLayoutResource() {
@@ -355,23 +357,21 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             introductionTimerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    introductionCountdown++;
-                    if (introductionCountdown == 180) {
+                    freeOperationCountdown++;
+                    if (freeOperationCountdown == 300) {
                         stopIntroductionTimer();
-                        //当前机器人语言设置
-                        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-                        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
-                            //重启院内介绍工作流程中文版
-                            OperationUtils.startSpecialWorkFlow(3);
-                        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
-                            //重启院内介绍工作流程英文版
-                            OperationUtils.startSpecialWorkFlow(2);
+                        String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
+                        WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
+                        LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " currentLanguage  " + currentLanguage + "   " + JSON.toJSONString(workflowEntity));
+                        if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,切机器人状态为冲电中时不执行该工作流任务
+                            return;
+                        } else {
+                            OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
                         }
                     }
                 }
             };
             introductionTimer.schedule(introductionTimerTask, 0, 1000);
-            LogUtils.d(DEFAULT_LOG_TAG, "空闲3分钟后启动院内介绍工作流:  " + introductionCountdown + "   currentLanguage  " + currentLanguage);
         }
     }
 
@@ -453,13 +453,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 RouteUtils.goToActivity(getContext(), SettingActivity.class);
                 break;
             case R.id.constraintLayout_me_want_go: //我要去
-                RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
+                goToChoseDestinationModel();
                 break;
             case R.id.constraintLayout_common_problem: //常见问题
                 RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
                 break;
             case R.id.constraintLayout_hospital_introduction: //院内介绍
-                startIntroductionWorkFlow();
+                RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
                 break;
             case R.id.language_chinese: //应用语言显示中文
                 setLanguage("zh", mLanguageChinese, mLanguageEnglish);
@@ -473,53 +473,36 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
     /**
-     * 取消循环院内介绍计时器
+     * 跳转我要去模块
      */
-    private void stopIntroductionTimer() {
-        introductionCountdown = 0;
-        if (introductionTimer != null) {
-            LogUtils.d("startSpecialWorkFlow", "3分钟启动院内介绍工作流计时器取消: " + introductionCountdown);
-            //取消启动院内介绍工作流3分钟计时
-            introductionTimer.cancel();
-            introductionTimer = null;
+    private void goToChoseDestinationModel() {
+        String mapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
+        //解析获取地图信息
+        MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
+        if (TextUtils.isEmpty(mapEntity.getF_EMapUrl())) {
+            ToastUtils.showSmallToast("请配置英文地图");
+            return;
         }
+        if (TextUtils.isEmpty(mapEntity.getF_MapFileUrl())) {
+            ToastUtils.showSmallToast("请配置中文地图");
+            return;
+        }
+        //下载最新中英文地图
+        OperationUtils.downLoadMap(mapEntity);
+        RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
     }
 
     /**
-     * 启动院内介绍工作流
+     * 取消循环院内介绍计时器
      */
-    private void startIntroductionWorkFlow() {
-        RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
-//        boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-//        if (startIntroductionWorkflowTag) { //拦截多次点击
-//            return;
-//        }
-//        //启动院内介绍工作流提示弹窗
-//        startIntroductionAlertDialog = new AlertDialog.Builder(this).create();
-//        startIntroductionAlertDialog.setCanceledOnTouchOutside(false);
-//        startIntroductionAlertDialog.show();
-//        //设置布局
-//        Window dialogWindow = startIntroductionAlertDialog.getWindow();
-//        dialogWindow.setContentView(R.layout.start_introduction_tip);
-//        //获取屏幕宽高
-//        Display defaultDisplay = getWindow().getWindowManager().getDefaultDisplay();
-//        Point screenSizePoint = new Point();
-//        defaultDisplay.getSize(screenSizePoint);
-//        //设置弹窗宽高 位置
-//        WindowManager.LayoutParams attributes = dialogWindow.getAttributes();
-//        attributes.gravity = Gravity.CENTER;
-//        attributes.width = (int) ((screenSizePoint.x) * (0.5));
-//        attributes.height = (int) ((screenSizePoint.y) * (0.5));
-//        dialogWindow.setAttributes(attributes);
-//        //当前机器人语言设置
-//        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-//        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh")) { //当前机器人语言为中文
-//            //启动院内介绍工作流中文版
-//            OperationUtils.startSpecialWorkFlow(3);
-//        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en")) {
-//            //启动院内介绍工作流英文版
-//            OperationUtils.startSpecialWorkFlow(2);
-//        }
+    private void stopIntroductionTimer() {
+        freeOperationCountdown = 0;
+        if (introductionTimer != null) {
+            LogUtils.d(DEFAULT_LOG_TAG, "首页无操作 计时器取消: " + freeOperationCountdown);
+            //取消无操作计时器计时
+            introductionTimer.cancel();
+            introductionTimer = null;
+        }
     }
 
     /**

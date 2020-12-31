@@ -19,6 +19,8 @@ public class CommonProblemPresenter extends BasePresenterImpl<CommonProblemView>
         if (problemListString != null) {
             List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(problemListString, CommonProblemEntity.class);
             mView.showQuestionList(commonProblemEntities);
+        }else {
+            mView.showQuestionList(null);
         }
     }
 }

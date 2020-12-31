@@ -74,7 +74,7 @@
     <string name="common_problem_title">Common Problem</string>
     <string name="emergency_click_prompt">Sorry, my emergency stop button is activated and the task cannot be performed.</string>
     <string name="prompt_problem_has_no">sorry，I don\'t know the question,can you change the question？</string>
-    <string name="prompt_task_exception">The current task is abnormal, I will return to the original point to charge。</string>
+    <string name="prompt_task_exception">The current task is abnormal。</string>
     <string name="ask_for_help_text">Nurse sister, please help me。</string>
     <string name="start_chose_destination_tip_one">Are you going to \t</string>
     <string name="start_chose_destination_tip_two">\t?\tClick "Yes" and I will take you there</string>
@@ -97,4 +97,8 @@
     <string name="prompt_while_busy">Sorry, the robot is currently busy, please wait. . .</string>
     <string name="arrive_destination_prompt_three">Do you need other services?</string>
     <string name="introduction_list_title">Introduction</string>
+    <string name="navigation_title">Navigating</string>
+    <string name="booting_title">Booting</string>
+    <string name="end_boot_bt">End boot</string>
+    <string name="no_data_title">no content yet</string>
 </resources>

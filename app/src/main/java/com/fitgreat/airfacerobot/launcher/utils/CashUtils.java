@@ -24,7 +24,6 @@ public class CashUtils {
         String stringLocationList = SpUtils.getString(MyApp.getContext(), "locationList", null);
         if (stringLocationList != null) {
             locationList = JSON.parseArray(stringLocationList, LocationEntity.class);
-            LogUtils.json(TAG, JSON.toJSONString(locationList));
         }
         return locationList;
     }

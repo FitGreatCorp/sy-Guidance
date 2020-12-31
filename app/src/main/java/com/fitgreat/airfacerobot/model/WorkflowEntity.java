@@ -1,7 +1,7 @@
 package com.fitgreat.airfacerobot.model;
 
 /**
- * 控制端自动回充,第一步获取特定工作流
+ * 工作流对象
  */
 public class WorkflowEntity {
     public String F_Id;

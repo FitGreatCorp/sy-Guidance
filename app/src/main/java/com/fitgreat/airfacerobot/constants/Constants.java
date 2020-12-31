@@ -110,4 +110,14 @@ public interface Constants {
      */
     String DEFAULT_LOG_TAG = "guidance_sy_hxk";
 
+    String basePath = Environment.getExternalStorageDirectory().getPath() + "/ExternalResource/";
+    /**
+     * 中文地图本地存储路径
+     */
+    String currentChineseMapPath = basePath + "currentChineseMap.png";
+    /**
+     * 英文地图本地存储路径
+     */
+    String currentEnglishMapPath = basePath + "currentEnglishMap.png";
+
 }

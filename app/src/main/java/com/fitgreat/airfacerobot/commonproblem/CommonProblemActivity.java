@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -62,6 +63,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     ImageView commonProblemRobotImage;
     @BindView(R.id.common_problem_answer)
     TextView mCommonProblemAnswer;
+    @BindView(R.id.linearLayout_no_data)
+    LinearLayout mLinearLayoutNoData;
     private CommonProblemAdapter commonProblemAdapter;
     private static final String TAG = "CommonProblemActivity";
     private boolean isResume;
@@ -154,28 +157,36 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void showQuestionList(List<CommonProblemEntity> commonProblemEntities) {
-        commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities);
-        commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
-            SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, position);
-            commonProblemAdapter.notifyDataSetChanged();
-            //语音播报问题答案
-            CommonProblemEntity commonProblemEntity = (CommonProblemEntity) adapter.getData().get(position);
-            playProblem(commonProblemEntity);
-        });
-        mCommonProblemList.setLayoutManager(new GridLayoutManager(this, 3));
-        mCommonProblemList.addItemDecoration(new MyItemDecoration(10));
-        mCommonProblemList.setAdapter(commonProblemAdapter);
-        //通过指令从首页跳转到常见问题页面
-        if (getIntent().hasExtra("bundle")) {
-            Bundle bundle = getIntent().getBundleExtra("bundle");
-            CommonProblemEntity commonProblemEntity = (CommonProblemEntity) bundle.getSerializable("CommonProblemEntity");
-            //更新当前播报问题选中状态
-            int itemPosition = CashUtils.getProblemPosition(commonProblemEntity.getF_QId());
-            SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, itemPosition);
-            commonProblemAdapter.notifyDataSetChanged();
-            //更新页面问题答案显示
-            playProblem(commonProblemEntity);
-            LogUtils.d(DEFAULT_LOG_TAG, "getIntent().hasExtra(\"bundle\") CommonProblemEntity   ");
+        if (commonProblemEntities != null) { //服务端常见问题有数据
+            mLinearLayoutNoData.setVisibility(View.GONE);
+            mCommonProblemList.setVisibility(View.VISIBLE);
+            //设置常见问题列表数据
+            commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities);
+            commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
+                SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, position);
+                commonProblemAdapter.notifyDataSetChanged();
+                //语音播报问题答案
+                CommonProblemEntity commonProblemEntity = (CommonProblemEntity) adapter.getData().get(position);
+                playProblem(commonProblemEntity);
+            });
+            mCommonProblemList.setLayoutManager(new GridLayoutManager(this, 3));
+            mCommonProblemList.addItemDecoration(new MyItemDecoration(10));
+            mCommonProblemList.setAdapter(commonProblemAdapter);
+            //通过指令从首页跳转到常见问题页面
+            if (getIntent().hasExtra("bundle")) {
+                Bundle bundle = getIntent().getBundleExtra("bundle");
+                CommonProblemEntity commonProblemEntity = (CommonProblemEntity) bundle.getSerializable("CommonProblemEntity");
+                //更新当前播报问题选中状态
+                int itemPosition = CashUtils.getProblemPosition(commonProblemEntity.getF_QId());
+                SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, itemPosition);
+                commonProblemAdapter.notifyDataSetChanged();
+                //更新页面问题答案显示
+                playProblem(commonProblemEntity);
+                LogUtils.d(DEFAULT_LOG_TAG, "getIntent().hasExtra(\"bundle\") CommonProblemEntity   ");
+            }
+        } else { //服务端常见问题没有数据
+            mLinearLayoutNoData.setVisibility(View.VISIBLE);
+            mCommonProblemList.setVisibility(View.GONE);
         }
     }
 
@@ -204,6 +215,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         LogUtils.d(DEFAULT_LOG_TAG, "MessageBean:CommonProblemActivity----->" + voiceMessageText);
         mCommonProblemAnswer.setText(voiceMessageText);
     }
+
     /**
      * 更新页面问题答案显示
      */
@@ -216,6 +228,9 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         }
     }
 
+    /**
+     * 播放常见问题
+     */
     private void broadCastProblem(String broadCastAnswer) {
         EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, broadCastAnswer));
         //页面答案显示

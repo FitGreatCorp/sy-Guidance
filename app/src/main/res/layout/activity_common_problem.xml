@@ -42,12 +42,46 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/common_problem_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/px0"
             android:layout_margin="@dimen/px20"
-            app:layout_constraintTop_toBottomOf="@+id/common_problem_title" />
+            android:visibility="gone"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/common_problem_title"
+            app:layout_constraintVertical_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/linearLayout_no_data"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/px0"
+            android:layout_margin="@dimen/px20"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/common_problem_title"
+            app:layout_constraintVertical_weight="1">
+
+            <ImageView
+                android:id="@+id/image_no_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/common_img_no_data" />
+
+            <TextView
+                android:id="@+id/title_no_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/px40"
+                android:text="@string/no_data_title"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/textSize14" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
@@ -56,8 +90,8 @@
         android:layout_height="@dimen/px150"
         android:layout_marginLeft="@dimen/px20"
         android:layout_marginBottom="@dimen/px20"
-        android:scaleType="fitCenter"
         android:background="@drawable/wink_speak_animation"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         tools:ignore="MissingConstraints" />

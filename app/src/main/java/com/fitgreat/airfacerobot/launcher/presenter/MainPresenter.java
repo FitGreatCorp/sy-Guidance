@@ -2,13 +2,11 @@ package com.fitgreat.airfacerobot.launcher.presenter;
 
 import android.content.Context;
 import android.os.Build;
-import android.os.Environment;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
-
+import android.text.TextUtils;
 import androidx.annotation.RequiresApi;
-
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -32,14 +30,12 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,8 +45,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.basePath;
+import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPath;
+import static com.fitgreat.airfacerobot.constants.Constants.currentEnglishMapPath;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_OPERATION_INFO;
@@ -63,12 +61,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     private List<LocationEntity> locationList = new ArrayList<>();
     private List<OperationInfo> operationInfosList = new ArrayList<>();
     private static final String TAG = "MainPresenter";
-    String basePath = Environment.getExternalStorageDirectory().getPath() + "/ExternalResource/";
-    //中文地图本地存储路径
-    String currentChineseMapPath = basePath + "currentChineseMap.png";
-    //英文地图本地存储路径
-    String currentEnglishMapPath = basePath + "currentEnglishMap.png";
-
 
     /**
      * 检查hardware版本更新
@@ -336,54 +328,59 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         if (!parentFile.exists()) {
             parentFile.mkdir();
         }
-        //下载中文地图
-        File currentChineseMapFile = new File(currentChineseMapPath);
-        if (currentChineseMapFile.exists()) {
-            currentChineseMapFile.delete();
-        }
-        LogUtils.d(DEFAULT_LOG_TAG, "中文地图下载路径: " + mapEntity.getF_MapFileUrl());
-        downloadMap(mapEntity.getF_MapFileUrl(), currentChineseMapPath);
+        //下载最新中文地图
+        downloadLatestMap(currentChineseMapPath, "中文地图下载: ", mapEntity.getF_MapFileUrl());
         //下载英文地图
-        File currentEnglishMapFile = new File(currentEnglishMapPath);
-        if (currentEnglishMapFile.exists()) {
-            currentEnglishMapFile.delete();
-        }
-        LogUtils.d(DEFAULT_LOG_TAG, "英文地图下载路径: " + mapEntity.getF_EMapUrl());
-        downloadMap(mapEntity.getF_EMapUrl(), currentEnglishMapPath);
+        downloadLatestMap(currentEnglishMapPath, "英文地图下载: ", mapEntity.getF_EMapUrl());
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
         //获取常见问题列表问题
-        ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
-        info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
-        info.put("floor", mapEntity.getF_Floor());
-        LogUtils.d(DEFAULT_LOG_TAG, "拼接参数:info=>" + JSON.toJSONString(info));
-        BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                LogUtils.e(DEFAULT_LOG_TAG, "获取常见问题失败:onFailure=>" + e.toString());
-            }
+       if (!TextUtils.isEmpty(mapEntity.getF_Floor())&&(!TextUtils.isEmpty(RobotInfoUtils.getRobotInfo().getF_HospitalId()))){
+           ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
+           info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
+           info.put("floor", mapEntity.getF_Floor());
+           LogUtils.d(DEFAULT_LOG_TAG, "拼接参数:info=>" + JSON.toJSONString(info));
+           BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
+               @Override
+               public void onFailure(Call call, IOException e) {
+                   LogUtils.e(DEFAULT_LOG_TAG, "获取常见问题失败:onFailure=>" + e.toString());
+               }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String stringResponse = response.body().string();
-                LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse=>" + stringResponse);
-                try {
-                    JSONObject jsonObject = new JSONObject(stringResponse);
-                    if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
-                        String msg = jsonObject.getString("msg");
-                        if (msg != null && !msg.equals("null")) {
-                            List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
-                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(commonProblemEntities));
-                            //保存常见问题到本地
-                            SpUtils.putString(MyApp.getContext(), "problemList", msg);
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+               @Override
+               public void onResponse(Call call, Response response) throws IOException {
+                   String stringResponse = response.body().string();
+                   LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse=>" + stringResponse);
+                   try {
+                       JSONObject jsonObject = new JSONObject(stringResponse);
+                       if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
+                           String msg = jsonObject.getString("msg");
+                           if (msg != null && !msg.equals("null")) {
+                               List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
+//                               LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(commonProblemEntities));
+                               //保存常见问题到本地
+                               SpUtils.putString(MyApp.getContext(), "problemList", msg);
+                           }
+                       }
+                   } catch (JSONException e) {
+                       e.printStackTrace();
+                   }
+               }
+           });
+       }else {
+           SpUtils.putString(MyApp.getContext(), "problemList", null);
+       }
+    }
 
+    /**
+     * 下载最新地图到本地
+     */
+    private void downloadLatestMap(String currentMapPath, String s, String f_eMapUrl) {
+        File currentMapFile = new File(currentMapPath);
+        if (currentMapFile.exists()) {
+            currentMapFile.delete();
+        }
+        LogUtils.d(DEFAULT_LOG_TAG, s + f_eMapUrl);
+        downloadMap(f_eMapUrl, currentMapPath);
     }
 
     /**
@@ -396,7 +393,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         DownloadUtils.download(downloadMapUrl, saveMapPath, false, new DownloadUtils.OnDownloadListener() {
             @Override
             public void onDownloadSuccess(String filePath) {
-                LogUtils.d(TAG, "地图下载成功:" + filePath);
+                LogUtils.d(DEFAULT_LOG_TAG, "地图下载成功:" + filePath);
             }
 
             @Override
@@ -405,7 +402,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
 
             @Override
             public void onDownloadFailed(Exception e) {
-                LogUtils.e(TAG, "地图下载失败:" + e.getMessage());
+                LogUtils.e(DEFAULT_LOG_TAG, "地图下载失败:" + e.getMessage());
             }
         });
     }

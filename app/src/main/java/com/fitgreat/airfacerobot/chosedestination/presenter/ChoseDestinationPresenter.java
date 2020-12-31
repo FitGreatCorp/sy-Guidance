@@ -1,11 +1,16 @@
 package com.fitgreat.airfacerobot.chosedestination.presenter;
 
+import android.os.Handler;
+import android.view.WindowManager;
+
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
+import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
@@ -19,22 +24,29 @@ import org.json.JSONObject;
 import java.io.IOException;
 import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinationView> {
     private static final String TAG = "ChoseDestinationPresent";
+    private MyTipDialog loadTipDialog;
 
     /**
      * 发起操作任务
      */
     public void startLocationTask(LocationEntity locationInfo) {
+        //开始导航提示加载弹窗
+        loadTipDialog = new MyTipDialog(MyApp.getContext());
+        loadTipDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
+        loadTipDialog.setTipLoadModel(true);
+        loadTipDialog.setTipDialogSelectListener(MyApp.getContext().getString(R.string.booting_title), null);
+        loadTipDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        loadTipDialog.show();
+        //发起单点导航任务
         JSONArray operationList = new JSONArray();
         JSONArray instructionList = new JSONArray();
         //添加操作任务
@@ -87,8 +99,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                 @Override
                 public void onFailure(Call call, IOException e) {
                     LogUtils.e(DEFAULT_LOG_TAG, "选择导航,发起活动流程失败:onFailure=>" + e.toString());
-                    //单点导航任务结束
-                    SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                    endNavigationTask();
                 }
 
                 @Override
@@ -106,21 +117,18 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                             BusinessRequest.getServerTime(SyncTimeCallback.syncTimeCallback);
                             //获取流程中的下一步操作
                             getNextStepInfo(actionId);
-                        }else {
-                            //单点导航任务结束
-                            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                        } else {
+                            endNavigationTask();
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        //单点导航任务结束
-                        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                        endNavigationTask();
                     }
                 }
             });
         } catch (JSONException e) {
             e.printStackTrace();
-            //单点导航任务结束
-            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+            endNavigationTask();
         }
     }
 
@@ -129,7 +137,7 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
      *
      * @param actionId 流程id
      */
-    public void getNextStepInfo(String actionId) {
+    private void getNextStepInfo(String actionId) {
         BusinessRequest.getNextStep(actionId, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -166,22 +174,37 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                                 LogUtils.d(DEFAULT_LOG_TAG, "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
                                 autoMoveEvent.setType(OPERATION_TYPE_AUTO_MOVE);
                                 EventBus.getDefault().post(autoMoveEvent);
-                            }else {
-                                //单点导航任务结束
-                                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                                //开始导航提示弹窗关闭
+                                if (loadTipDialog != null) {
+                                    loadTipDialog.dismiss();
+                                    loadTipDialog = null;
+                                }
+                            } else {
+                                endNavigationTask();
                             }
-                        }else {
-                            //单点导航任务结束
-                            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                        } else {
+                            endNavigationTask();
                         }
-                    }else {
-                        //单点导航任务结束
-                        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                    } else {
+                        endNavigationTask();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         });
+    }
+
+    /**
+     * 单点导航任务终止
+     */
+    private void endNavigationTask() {
+        //开始导航提示弹窗关闭
+        if (loadTipDialog != null) {
+            loadTipDialog.dismiss();
+            loadTipDialog = null;
+        }
+        //单点导航任务结束
+        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
     }
 }
