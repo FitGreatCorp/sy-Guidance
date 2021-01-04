@@ -6,7 +6,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Point;
 import android.graphics.drawable.AnimationDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -16,11 +15,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.Display;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,7 +27,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
 import com.alibaba.fastjson.JSON;
-import com.bumptech.glide.Glide;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -47,7 +41,7 @@ import com.fitgreat.airfacerobot.floatball.FloatWindowOption;
 import com.fitgreat.airfacerobot.floatball.FloatWindowViewStateCallback;
 import com.fitgreat.airfacerobot.introductionlist.IntroductionListActivity;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
-import com.fitgreat.airfacerobot.launcher.widget.MyCountDownDialog;
+import com.fitgreat.airfacerobot.launcher.widget.NormalOrCountDownDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.ValidationOrPromptDialog;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
@@ -56,7 +50,6 @@ import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.MapEntity;
 import com.fitgreat.airfacerobot.model.NavigationTip;
-import com.fitgreat.airfacerobot.model.RecordInfo;
 import com.fitgreat.airfacerobot.model.RobotSignalEvent;
 import com.fitgreat.airfacerobot.launcher.presenter.MainPresenter;
 import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
@@ -64,13 +57,10 @@ import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.CommonTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.WarnningDialog;
-import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
 import com.fitgreat.airfacerobot.model.WorkflowEntity;
-import com.fitgreat.airfacerobot.remotesignal.model.FilePlayEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
-import com.fitgreat.airfacerobot.remotesignal.model.SpeakEvent;
 import com.fitgreat.airfacerobot.settings.SettingActivity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.speech.model.MessageBean;
@@ -182,9 +172,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     //空闲操作倒计时5分钟
     private int freeOperationCountdown;
     private MyTipDialog tipRechargeDialog;
-    private MyCountDownDialog lowBatteryTipDialog;
+    private NormalOrCountDownDialog lowBatteryTipDialog;
     private ValidationOrPromptDialog validationOrPromptDialog;
     private RobotInfoData robotInfoData;
+    private NormalOrCountDownDialog normalOrCountDownDialog;
 
     @Override
     public int getLayoutResource() {
@@ -195,10 +186,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @Override
     public void initData() {
         //第一次安装语言默认为中文
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-        if (currentLanguage.equals("null")) {
-            SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-        }
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //ros初始化状态
         SpUtils.putBoolean(getContext(), INIT_ROS_KEY_TAG, false);
         //启动监听播放text文本时是否关闭提示弹窗
@@ -326,7 +314,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //首页是否显示标志
         SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, true);
         //切换当前机器显示语言选择状态
-        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         if (currentLanguage.equals("en")) {
             mLanguageEnglish.setSelected(true);
             mLanguageChinese.setSelected(false);
@@ -469,10 +457,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
                 break;
             case R.id.language_chinese: //应用语言显示中文
-                setLanguage("zh", mLanguageChinese, mLanguageEnglish);
-                break;
+//                setLanguage("zh", mLanguageChinese, mLanguageEnglish);
             case R.id.language_english: //应用语言显示英文
-                setLanguage("en", mLanguageEnglish, mLanguageChinese);
+//                setLanguage("en", mLanguageEnglish, mLanguageChinese);
+                changeRobotLanguage();
                 break;
             case R.id.auto_recharge_bt: //自动回充安妮
                 rechargeToDo();
@@ -482,9 +470,65 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
+
     @Override
     public void validationPassword(String password) {
         mPresenter.verifyPassword(password);
+    }
+
+    @Override
+    public void verifyFailure() {
+        runOnUiThread(() -> {
+            validationOrPromptDialog = new ValidationOrPromptDialog(this);
+            validationOrPromptDialog.setFailPrompt(true);
+            validationOrPromptDialog.show();
+        });
+    }
+
+    @Override
+    public void verifySuccess() {
+        RouteUtils.goToActivity(getContext(), SettingActivity.class);
+    }
+
+    /**
+     * 切换机器人显示语言
+     */
+    public void setLanguage(String language, Button selectButton, Button normalButton) {
+        SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, language);
+        selectButton.setSelected(true);
+        normalButton.setSelected(false);
+        LanguageUtil.changeAppLanguage(MainActivity.this);
+        clearActivity();
+        //重启app
+        RouteUtils.goHome(MainActivity.this);
+    }
+
+    public void changeRobotLanguage() {
+        normalOrCountDownDialog = new NormalOrCountDownDialog(this);
+        normalOrCountDownDialog.setDialogTitle("提示/Messages");
+        normalOrCountDownDialog.setDialogContent("应用设置将重新启动机器人!\n Applying This Setting Will Restart Your Robot!");
+        normalOrCountDownDialog.setTipDialogYesNoListener("继续/Continue", "取消/Cancel", new NormalOrCountDownDialog.TipDialogYesNoListener() {
+            @Override
+            public void tipProgressChoseYes() {
+                if (currentLanguage.equals("zh")) {
+                    setLanguage("en", mLanguageEnglish, mLanguageChinese);
+                } else {
+                    setLanguage("zh", mLanguageChinese, mLanguageEnglish);
+                }
+            }
+
+            @Override
+            public void tipProgressChoseNo() {
+
+            }
+
+            @Override
+            public void endOfCountdown() {
+
+            }
+        });
+        normalOrCountDownDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        normalOrCountDownDialog.show();
     }
 
     /**
@@ -504,32 +548,45 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 电量低于20%时提示
      */
     private void lowBatteryPrompt() {
-        lowBatteryTipDialog = new MyCountDownDialog(this);
-        lowBatteryTipDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
-        lowBatteryTipDialog.setDialogContent(MyApp.getContext().getString(R.string.battery_low_tip));
-        lowBatteryTipDialog.setCountDownModel(true, handler);
-        lowBatteryTipDialog.setTipDialogYesNoListener(MyApp.getContext().getString(R.string.sure_bt_text),
-                MyApp.getContext().getString(R.string.negative),
-                new MyCountDownDialog.TipDialogYesNoListener() {
-                    @Override
-                    public void tipProgressChoseYes() { //启动自动回充工作流
-                        OperationUtils.startSpecialWorkFlow(1);
-                    }
-
-                    @Override
-                    public void tipProgressChoseNo() {
-                        String rechargeActivityId = SpUtils.getString(MyApp.getContext(), AUTOMATIC_RECHARGE_ACTIVITY_ID, null);
-                        if (!TextUtils.isEmpty(rechargeActivityId)) { //自动回充工作流已启动,终止自动回充工作流
-                            SignalDataEvent instruct = new SignalDataEvent();
-                            instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
-                            instruct.setInstructionId(rechargeActivityId);
-                            instruct.setAction("-1");
-                            EventBus.getDefault().post(instruct);
+        if (isResume) {
+            if (lowBatteryTipDialog == null) {
+                lowBatteryTipDialog = new NormalOrCountDownDialog(this);
+            }
+            lowBatteryTipDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
+            lowBatteryTipDialog.setDialogContent(MyApp.getContext().getString(R.string.battery_low_tip));
+            lowBatteryTipDialog.setCountDownModel(true, handler);
+            lowBatteryTipDialog.setTipDialogYesNoListener(MyApp.getContext().getString(R.string.sure_bt_text),
+                    MyApp.getContext().getString(R.string.negative),
+                    new NormalOrCountDownDialog.TipDialogYesNoListener() {
+                        @Override
+                        public void tipProgressChoseYes() { //启动自动回充工作流
+                            OperationUtils.startSpecialWorkFlow(1);
+                            lowBatteryTipDialog = null;
                         }
-                    }
-                });
-        lowBatteryTipDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-        lowBatteryTipDialog.show();
+
+                        @Override
+                        public void tipProgressChoseNo() {
+                            String rechargeActivityId = SpUtils.getString(MyApp.getContext(), AUTOMATIC_RECHARGE_ACTIVITY_ID, null);
+                            if (!TextUtils.isEmpty(rechargeActivityId)) { //自动回充工作流已启动,终止自动回充工作流
+                                SignalDataEvent instruct = new SignalDataEvent();
+                                instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+                                instruct.setInstructionId(rechargeActivityId);
+                                instruct.setAction("-1");
+                                EventBus.getDefault().post(instruct);
+                            }
+                            lowBatteryTipDialog = null;
+                        }
+
+                        @Override
+                        public void endOfCountdown() {
+                            lowBatteryTipDialog = null;
+                        }
+                    });
+            lowBatteryTipDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+            if (lowBatteryTipDialog != null && (!downloadingDialog.isShowing())) {
+                lowBatteryTipDialog.show();
+            }
+        }
     }
 
     /**
@@ -565,18 +622,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    /**
-     * 切换机器人显示语言
-     */
-    public void setLanguage(String language, Button selectButton, Button normalButton) {
-        SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, language);
-        selectButton.setSelected(true);
-        normalButton.setSelected(false);
-        LanguageUtil.changeAppLanguage(MainActivity.this);
-        clearActivity();
-        //重启app
-        RouteUtils.goHome(MainActivity.this);
-    }
 
     /**
      * 显示悬浮球菜单
@@ -965,7 +1010,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 if (mTextBattery != null && isResume) {
                     int battery = Math.round(robotSignalEvent.getBattery());
                     if (robotSignalEvent.isPowerStatus()) { //机器人充电中
-                        LogUtils.d(DEFAULT_LOG_TAG, "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
+//                        LogUtils.d(DEFAULT_LOG_TAG, "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
                         SpUtils.putBoolean(getContext(), "isCharge", true);
                         if (SpUtils.getBoolean(getContext(), "isVideocall", false)) {  //机器人视频中
                             saveRobotstatus(4);
@@ -1228,19 +1273,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
 
     }
 
-    @Override
-    public void verifyFailure() {
-        runOnUiThread(() -> {
-            validationOrPromptDialog = new ValidationOrPromptDialog(this);
-            validationOrPromptDialog.setFailPrompt(true);
-            validationOrPromptDialog.show();
-        });
-    }
-
-    @Override
-    public void verifySuccess() {
-        RouteUtils.goToActivity(getContext(), SettingActivity.class);
-    }
 
     /**
      * 更改机器人状态信息

@@ -267,6 +267,7 @@
         android:id="@+id/auto_recharge_bt"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/px35"
+        android:padding="@dimen/px5"
         android:layout_marginRight="@dimen/px20"
         android:layout_marginBottom="@dimen/px15"
         android:background="#469AD0"

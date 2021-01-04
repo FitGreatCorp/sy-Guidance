@@ -24,7 +24,7 @@ import java.util.TimerTask;
 /**
  * 提示弹窗  标题  内容 双选择按钮(可倒计时)
  */
-public class MyCountDownDialog extends AlertDialog {
+public class NormalOrCountDownDialog extends AlertDialog {
     private TextView myCountDownDialogTitleView, myCountDownDialogContentView;
     private RadioGroup myCountDownDialogRadioGroup;
     private RadioButton myCountDownDialogYesView, myCountDownDialogNoView;
@@ -38,11 +38,11 @@ public class MyCountDownDialog extends AlertDialog {
     private TimerTask timerTask;
     private Handler mHandler;
 
-    public MyCountDownDialog(Context context) {
+    public NormalOrCountDownDialog(Context context) {
         super(context, R.style.MyDialog);
     }
 
-    public MyCountDownDialog(Context context, int themeResId) {
+    public NormalOrCountDownDialog(Context context, int themeResId) {
         super(context, themeResId);
     }
 
@@ -67,7 +67,7 @@ public class MyCountDownDialog extends AlertDialog {
         Point sizePoint = new Point();
         defaultDisplay.getSize(sizePoint);
         attributes.width = (int) ((sizePoint.x) * 0.4);
-        attributes.height = (int) ((sizePoint.y) * 0.3);
+        attributes.height = (int) ((sizePoint.y) * 0.6);
         getWindow().setAttributes(attributes);
     }
 
@@ -105,8 +105,10 @@ public class MyCountDownDialog extends AlertDialog {
                             myCountDownDialogYesView.setText(mBtSYesText);
                         });
                         timer.cancel();
-                        tipCountTime = 0;
                         dismiss();
+                        if (mTipDialogYesNoListener != null) {
+                            mTipDialogYesNoListener.endOfCountdown();
+                        }
                     }
                 }
             };
@@ -124,12 +126,22 @@ public class MyCountDownDialog extends AlertDialog {
                 case R.id.my_count_down_dialog_yes:
                     if (mTipDialogYesNoListener != null) {
                         dismiss();
+                        if (mCountDownTag) {
+                            timer.cancel();
+                            timer = null;
+                            tipCountTime=20;
+                        }
                         mTipDialogYesNoListener.tipProgressChoseYes();
                     }
                     break;
                 case R.id.my_count_down_dialog_no:
                     if (mTipDialogYesNoListener != null) {
                         dismiss();
+                        if (mCountDownTag) {
+                            timer.cancel();
+                            timer = null;
+                            tipCountTime=20;
+                        }
                         mTipDialogYesNoListener.tipProgressChoseNo();
                     }
                     break;
@@ -163,6 +175,11 @@ public class MyCountDownDialog extends AlertDialog {
         void tipProgressChoseYes();
 
         void tipProgressChoseNo();
+
+        /**
+         * 倒计时结束
+         */
+        void endOfCountdown();
     }
 
     /**

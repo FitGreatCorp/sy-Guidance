@@ -112,7 +112,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         //注册EventBus
         EventBus.getDefault().register(this);
         //根据当前语言加载展示地图
-        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //单点导航任务结束
         SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         //显示悬浮窗

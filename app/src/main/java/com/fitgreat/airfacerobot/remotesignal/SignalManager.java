@@ -105,87 +105,94 @@ public class SignalManager {
      * 创建signalR 通信
      */
     private void initSignalR() {
-        try {
-            destroy();
-            hubConnection = new HubConnection(ApiRequestUrl.SIGNALR_URL, context, new LongPollingTransport()) {
-                @Override
-                public void OnError(Exception exception) {
-                    LogUtils.e(TAG, "HubConnection exception :" + exception.getMessage());
-                    reConnect(RE_CONNECT_SIGNALR);
-                }
-
-                @Override
-                public void OnMessage(String message) {
-                    LogUtils.d(TAG, "message :" + message);
-                }
-
-                @Override
-                public void OnStateChanged(StateBase oldState, StateBase newState) {
-                    LogUtils.d(TAG, "oldState = " + oldState.getState() + " , newState = " + newState.getState());
-                    if (oldState.getState() == ConnectionState.Connecting && newState.getState() == ConnectionState.Connected) {
-                        if (hubProxy != null) {
-                            invokeToJoin(hubProxy);
-                        }
-                    }
-
-                    if (oldState.getState() == ConnectionState.Connecting && newState.getState() == ConnectionState.Disconnected) {
-                        reConnect(RE_CONNECT_SIGNALR);
-                    }
-                }
-            };
-//            打开SignalR通道，建立消息监听
-            hubProxy = hubConnection.CreateHubProxy(SignalConfig.SIGNALR_HUB);
-            hubConnection.Start();
-            if (hubProxy != null) {
-                hubProxy.On(SignalConfig.SIGNAL_RECEIVE_MESSAGE, signalDataCallback);
-            }
-        } catch (Exception e) {
-            LogUtils.e(TAG, "initSignalR Exception:" + e.getMessage());
-            reConnect(RE_CONNECT_SIGNALR);
-        }
+        updateServerProgress(100);
+        resetRetryCount();
+        setJoinSuccess(true);
+        //signal初始化成功发送广播
+        Intent intent = new Intent();
+        intent.setAction(INIT_SIGNAL_SUCCESS);
+        MyApp.getContext().sendBroadcast(intent);
+//        try {
+//            destroy();
+//            hubConnection = new HubConnection(ApiRequestUrl.SIGNALR_URL, context, new LongPollingTransport()) {
+//                @Override
+//                public void OnError(Exception exception) {
+//                    LogUtils.e(TAG, "HubConnection exception :" + exception.getMessage());
+//                    reConnect(RE_CONNECT_SIGNALR);
+//                }
+//
+//                @Override
+//                public void OnMessage(String message) {
+//                    LogUtils.d(TAG, "message :" + message);
+//                }
+//
+//                @Override
+//                public void OnStateChanged(StateBase oldState, StateBase newState) {
+//                    LogUtils.d(TAG, "oldState = " + oldState.getState() + " , newState = " + newState.getState());
+//                    if (oldState.getState() == ConnectionState.Connecting && newState.getState() == ConnectionState.Connected) {
+//                        if (hubProxy != null) {
+//                            invokeToJoin(hubProxy);
+//                        }
+//                    }
+//
+//                    if (oldState.getState() == ConnectionState.Connecting && newState.getState() == ConnectionState.Disconnected) {
+//                        reConnect(RE_CONNECT_SIGNALR);
+//                    }
+//                }
+//            };
+////            打开SignalR通道，建立消息监听
+//            hubProxy = hubConnection.CreateHubProxy(SignalConfig.SIGNALR_HUB);
+//            hubConnection.Start();
+//            if (hubProxy != null) {
+//                hubProxy.On(SignalConfig.SIGNAL_RECEIVE_MESSAGE, signalDataCallback);
+//            }
+//        } catch (Exception e) {
+//            LogUtils.e(TAG, "initSignalR Exception:" + e.getMessage());
+//            reConnect(RE_CONNECT_SIGNALR);
+//        }
     }
 
 
     /**
      * join SignalR服务端组群h
      */
-    public void invokeToJoin(IHubProxy hubProxy) {
-        if (null == hubConnection || null == hubProxy) {
-            return;
-        }
-
-        RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
-        if (robotInfoData != null) {
-            JSONArray jsonArray = new JSONArray();
-            jsonArray.put(robotInfoData.getF_Id());
-            jsonArray.put(robotInfoData.getF_Name());
-            jsonArray.put(robotInfoData.getF_Id());
-            jsonArray.put("robot");
-
-            LogUtils.d(TAG, "join data:" + jsonArray.toString());
-            hubProxy.Invoke("join", jsonArray, new HubInvokeCallback() {
-                @Override
-                public void OnResult(boolean join, String s) {
-                    LogUtils.d(TAG, "join result=" + join + ",msg =" + s);
-                    if (join) {
-                        updateServerProgress(100);
-                        resetRetryCount();
-                        setJoinSuccess(true);
-                        //signal初始化成功发送广播
-                        Intent intent = new Intent();
-                        intent.setAction(INIT_SIGNAL_SUCCESS);
-                        MyApp.getContext().sendBroadcast(intent);
-                    }
-                }
-
-                @Override
-                public void OnError(Exception e) {
-                    LogUtils.e(TAG, "join error:" + e.getMessage());
-                    setJoinSuccess(false);
-                }
-            });
-        }
-    }
+//    public void invokeToJoin(IHubProxy hubProxy) {
+//        if (null == hubConnection || null == hubProxy) {
+//            return;
+//        }
+//
+//        RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
+//        if (robotInfoData != null) {
+//            JSONArray jsonArray = new JSONArray();
+//            jsonArray.put(robotInfoData.getF_Id());
+//            jsonArray.put(robotInfoData.getF_Name());
+//            jsonArray.put(robotInfoData.getF_Id());
+//            jsonArray.put("robot");
+//
+//            LogUtils.d(TAG, "join data:" + jsonArray.toString());
+//            hubProxy.Invoke("join", jsonArray, new HubInvokeCallback() {
+//                @Override
+//                public void OnResult(boolean join, String s) {
+//                    LogUtils.d(TAG, "join result=" + join + ",msg =" + s);
+//                    if (join) {
+//                        updateServerProgress(100);
+//                        resetRetryCount();
+//                        setJoinSuccess(true);
+//                        //signal初始化成功发送广播
+//                        Intent intent = new Intent();
+//                        intent.setAction(INIT_SIGNAL_SUCCESS);
+//                        MyApp.getContext().sendBroadcast(intent);
+//                    }
+//                }
+//
+//                @Override
+//                public void OnError(Exception e) {
+//                    LogUtils.e(TAG, "join error:" + e.getMessage());
+//                    setJoinSuccess(false);
+//                }
+//            });
+//        }
+//    }
 
     /**
      * 机器人服务器token获取

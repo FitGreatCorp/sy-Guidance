@@ -180,10 +180,10 @@ public class TextPlayActivity extends MvpBaseActivity {
         localTxtPath = DownloadUtils.DOWNLOAD_PATH + blob.substring(blob.lastIndexOf("/") + 1);
         LogUtils.d(DEFAULT_LOG_TAG, "TextPlayActivity:: localTxtPath::" + localTxtPath + " ,instructionEnName ," + instructionEnName + " ,instructionName , " + instructionName);
         //根据当前系统语言显示任务名称
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
-        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && !("null".equals(instructionName))) { //当前机器人语言为中文
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+        if (currentLanguage.equals("zh") && !("null".equals(instructionName))) { //当前机器人语言为中文
             textIntroductionTitle.setBaseTitle(instructionName);
-        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && !("null".equals(instructionEnName))) {
+        } else if (currentLanguage.equals("en") && !("null".equals(instructionEnName))) {
             textIntroductionTitle.setBaseTitle(instructionEnName);
         }
         File file = new File(localTxtPath);

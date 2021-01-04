@@ -104,4 +104,7 @@
     <string name="emergency_click_recharge_tip">The emergency stop button is activated and cannot be automatically recharged</string>
     <string name="tip_recharge_tip_content">I\'m going back to charge。</string>
     <string name="termination_bt_text">termination</string>
+    <string name="prompt_enter_password">Please enter the robot login password</string>
+    <string name="prompt_password_wrong">Wrong password, please re-enter</string>
+    <string name="prompt_password_title">Please enter password</string>
 </resources>

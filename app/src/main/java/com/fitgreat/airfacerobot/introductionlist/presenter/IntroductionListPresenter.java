@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.introductionlist.presenter;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
@@ -10,6 +11,7 @@ import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.introductionlist.view.IntroductionListView;
+import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
@@ -30,9 +32,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 
@@ -256,10 +260,18 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
                                 autoMoveEvent.setY(nextOperationData.getF_Y());
                                 autoMoveEvent.setE(nextOperationData.getF_Z());
                                 autoMoveEvent.setF_InstructionEnName(nextOperationData.getF_InstructionEnName());
+                                //隐藏操作任务提示弹窗
+                                mView.hideTipDialog();
+                                //院内介绍为pdf文件播放时,判断文件格式不为pdf格式时添加提示
+                                if (!TextUtils.isEmpty(nextOperationData.getF_FileUrl())) {
+                                    if (nextOperationData.getF_FileUrl().equals(".pdf") && nextOperationData.getOperationType().equals("3")) {
+                                        ToastUtils.showSmallToast("pdf文件格式不对");
+                                        return;
+                                    }
+                                }
                                 LogUtils.d(DEFAULT_LOG_TAG, "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
                                 autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
                                 EventBus.getDefault().post(autoMoveEvent);
-                                mView.hideTipDialog();
                             }
                         }
                     } else {

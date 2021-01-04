@@ -31,8 +31,8 @@ public class CommonProblemAdapter extends BaseQuickAdapter<CommonProblemEntity, 
 
     @Override
     protected void convert(@NotNull BaseViewHolder baseViewHolder, CommonProblemEntity commonProblemEntity) {
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
-        if (currentLanguage != null && currentLanguage.equals("zh")) {
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+        if (currentLanguage.equals("zh")) {
             baseViewHolder.setText(R.id.item_common_problem_title, commonProblemEntity.getF_Question());
         } else {
             baseViewHolder.setText(R.id.item_common_problem_title, commonProblemEntity.getF_EQuestion());

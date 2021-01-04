@@ -51,7 +51,7 @@
     <string name="negative">取消</string>
     <string name="chargereminder">当前电量低于20%，我要去充电了</string>
     <string name="title_note">注意</string>
-    <string name="auto_recharge">"自动回充"</string>
+    <string name="auto_recharge">自动回充</string>
     <string name="auto_mission">自主宣教</string>
     <string name="prompt_no_task">该任务我不会哦，请联系管理员大大给我配置吧</string>
     <string name="wear_equipment">穿戴设备</string>
@@ -104,5 +104,7 @@
     <string name="tip_recharge_tip_content">我要回去冲电了。</string>
     <string name="battery_low_tip">当前电量低于20%,我要去充电了.</string>
     <string name="termination_bt_text">终止</string>
-
+    <string name="prompt_enter_password">请输入机器人登录密码</string>
+    <string name="prompt_password_wrong">密码错误,请重新输入.</string>
+    <string name="prompt_password_title">请输入密码</string>
 </resources>

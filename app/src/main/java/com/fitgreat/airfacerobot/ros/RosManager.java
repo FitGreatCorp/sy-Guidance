@@ -365,11 +365,10 @@ public class RosManager {
      * 是否在墙内消息返回
      */
     private MessageListener<Byte> whetherInsideWallMessageListener = new MessageListener<Byte>() {
-
         @Override
         public void onNewMessage(Byte aByte) {
             if ((int) aByte.getData() == 1) { //机器人在墙内 需要帮忙移动出来
-                LogUtils.d(DEFAULT_LOG_TAG, "机器人在墙内 : " + aByte.getData()+"播放次数 , "+playTime);
+                LogUtils.d(DEFAULT_LOG_TAG, "机器人在墙内 : " + aByte.getData() + "播放次数 , " + playTime);
                 playTime++;
                 if (playTime == 1) {
                     EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text)));

@@ -23,11 +23,8 @@ public class LanguageUtil {
         Configuration configuration = resources.getConfiguration();
         //根据设置语言获取Locale
         Locale locale = null;
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "null");
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         switch (currentLanguage) {
-            case "null":
-                locale = Resources.getSystem().getConfiguration().locale;
-                break;
             case "zh":
                 locale = Locale.CHINESE;
                 break;

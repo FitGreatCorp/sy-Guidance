@@ -37,7 +37,7 @@ public class IntroductionProcessAdapter extends BaseQuickAdapter<OperationInfo, 
     @Override
     protected void convert(@NotNull BaseViewHolder baseViewHolder, OperationInfo operationInfo) {
         //任务名字根据当前系统语言
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && !("null".equals(operationInfo.getF_Name()))) { //当前机器人语言为中文
             baseViewHolder.setText(R.id.item_introduction_process_title, operationInfo.getF_Name());
         } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && !("null".equals(operationInfo.getF_EName()))) {

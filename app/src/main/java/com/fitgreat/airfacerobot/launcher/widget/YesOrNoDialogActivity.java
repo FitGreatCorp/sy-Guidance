@@ -22,7 +22,9 @@ import com.fitgreat.airfacerobot.model.NavigationTip;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.greenrobot.eventbus.EventBus;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -89,10 +91,10 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
             }
         });
         //导航到达终点后弹窗同时,语音提示根据中英文设置拼接提示内容
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
+        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         StringBuilder promptContent = new StringBuilder();
         promptContent.append(MvpBaseActivity.getActivityContext().getString(R.string.arrive_destination_prompt_one));
-        if (currentLanguage != null && currentLanguage.equals("zh")) {
+        if (currentLanguage.equals("zh")) {
             promptContent.append(instructionName);
         } else {
             promptContent.append(instructionEnName);
@@ -123,7 +125,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         Point point = new Point();
         defaultDisplay.getSize(point);
         attributes.width = (int) ((point.x) * 0.4);
-        attributes.height = (int) ((point.y) * 0.45);
+        attributes.height = (int) ((point.y) * 0.35);
         window.setAttributes(attributes);
     }
 
@@ -137,7 +139,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
 
     private void choseNoBt() {
         //关闭选择导航页面
-        sendBroadcast( new Intent(CLOSE_SELECT_NAVIGATION_PAGE));
+        sendBroadcast(new Intent(CLOSE_SELECT_NAVIGATION_PAGE));
         playShowText(getString(R.string.go_back_tip));
         //返回原点充电
         OperationUtils.startSpecialWorkFlow(1);

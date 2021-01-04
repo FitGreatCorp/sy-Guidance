@@ -26,6 +26,7 @@ import java.io.File;
 
 import butterknife.OnClick;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;
@@ -184,6 +185,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
         EventBus.getDefault().post(initUiEvent);
         //判断播放pdf文件本地是否已存在,不存在下载播放
         File file = new File(DownloadUtils.DOWNLOAD_PATH + blob);
+        LogUtils.d(DEFAULT_LOG_TAG,"PDF文件路径::"+file.getPath());
         if (!file.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(PdfPlayActivity.this);

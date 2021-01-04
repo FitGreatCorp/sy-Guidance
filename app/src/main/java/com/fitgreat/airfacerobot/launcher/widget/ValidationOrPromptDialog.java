@@ -1,8 +1,10 @@
 package com.fitgreat.airfacerobot.launcher.widget;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -49,14 +51,20 @@ public class ValidationOrPromptDialog extends AlertDialog {
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
         window.getDecorView().setPadding(0, 0, 0, 0);
+        //设置弹窗款高,根据屏幕宽高
         WindowManager.LayoutParams params = window.getAttributes();
-        params.width = UIUtils.dp2px(getContext(), 557);
-        params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        Display defaultDisplay = window.getWindowManager().getDefaultDisplay();
+        Point point = new Point();
+        defaultDisplay.getSize(point);
+        params.width = (int) ((point.x)*0.4);
+        params.height = (int) ((point.y)*0.4);
         window.setAttributes(params);
         window.setGravity(Gravity.CENTER);
+        //设置弹窗布局
         setContentView(R.layout.dialog_validation_or_prompt);
         ButterKnife.bind(this);
         setCancelable(false);
+        //更新页面显示
         if (mFailPromptTag) { //密码验证不通过提示
             validationFailTip.setVisibility(View.VISIBLE);
             confirmPasswordContent.setVisibility(View.GONE);
