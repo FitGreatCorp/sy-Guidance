@@ -13,6 +13,8 @@ import com.fitgreat.airfacerobot.launcher.utils.LanguageUtil;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+
 /**
  * app启动入口<p>
  *
@@ -38,13 +40,13 @@ public class MyApp extends Application {
         registerLifecycle();
         //app进程唤醒15秒后如果主页没启动，则启动主页
         handler.postDelayed(() -> {
-            LogUtils.d(TAG, "  isMainActivityRunning  ,  " + !isMainActivityRunning);
+            LogUtils.d(DEFAULT_LOG_TAG, "  isMainActivityRunning  ,  " + !isMainActivityRunning);
             if (!isMainActivityRunning) {
                 //重启应用
                 RouteUtils.goHome(this);
             }
         }, 5 * 1000);
-        LogUtils.d(TAG, "-----------START_APP_TAG------");
+        LogUtils.d(DEFAULT_LOG_TAG, "-----------START_APP_TAG------");
         MyCrashHandler handler = new MyCrashHandler();
         Thread.setDefaultUncaughtExceptionHandler(handler);
     }

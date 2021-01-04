@@ -368,8 +368,8 @@ public class RosManager {
 
         @Override
         public void onNewMessage(Byte aByte) {
-            LogUtils.d(DEFAULT_LOG_TAG, "whetherInsideWallMessageListener : " + aByte.getData());
             if ((int) aByte.getData() == 1) { //机器人在墙内 需要帮忙移动出来
+                LogUtils.d(DEFAULT_LOG_TAG, "机器人在墙内 : " + aByte.getData()+"播放次数 , "+playTime);
                 playTime++;
                 if (playTime == 1) {
                     EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text)));

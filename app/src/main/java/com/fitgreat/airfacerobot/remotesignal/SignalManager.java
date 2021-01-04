@@ -172,7 +172,7 @@ public class SignalManager {
                         resetRetryCount();
                         setJoinSuccess(true);
                         //signal初始化成功发送广播
-                        Intent intent =new Intent();
+                        Intent intent = new Intent();
                         intent.setAction(INIT_SIGNAL_SUCCESS);
                         MyApp.getContext().sendBroadcast(intent);
                     }
@@ -246,7 +246,7 @@ public class SignalManager {
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
-                            }else{
+                            } else {
                                 RobotInfoUtils.setRobotLinkedDevicesUrl("");
                             }
                             updateServerProgress(80);
@@ -254,10 +254,12 @@ public class SignalManager {
                         }
                     } else {
                         LogUtils.e(TAG, "---get robot info failed---" + baseResponse.getMsg());
-                        if ("机器人id或设备唯一编码错误".contains(baseResponse.getMsg())) {
-                            showTips("未注册机器人", "设备id:" + RobotInfoUtils.getAirFaceDeviceId() + "\n请联系管理员注册后再使用\n服务器异常：" + baseResponse.getMsg());
-                        } else {
-                            reConnect(RE_AUTH_ROBOT);
+                        if (!TextUtils.isEmpty(baseResponse.getMsg())) {
+                            if ("机器人id或设备唯一编码错误".contains(baseResponse.getMsg())) {
+                                showTips("未注册机器人", "设备id:" + RobotInfoUtils.getAirFaceDeviceId() + "\n请联系管理员注册后再使用\n服务器异常：" + baseResponse.getMsg());
+                            } else {
+                                reConnect(RE_AUTH_ROBOT);
+                            }
                         }
                     }
                 }

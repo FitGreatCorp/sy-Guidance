@@ -263,10 +263,22 @@
         app:layout_constraintLeft_toRightOf="@+id/home_central_circle"
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout_me_want_go" />
 
+    <Button
+        android:id="@+id/auto_recharge_bt"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/px35"
+        android:layout_marginRight="@dimen/px20"
+        android:layout_marginBottom="@dimen/px15"
+        android:background="#469AD0"
+        android:text="@string/auto_recharge"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/robot_language_linearLayout" />
+
     <LinearLayout
         android:id="@+id/robot_language_linearLayout"
         android:layout_width="@dimen/px120"
-        android:layout_height="@dimen/px39"
+        android:layout_height="@dimen/px35"
         android:layout_marginRight="@dimen/px20"
         android:layout_marginBottom="@dimen/px15"
         android:background="@drawable/square_back_blue"
@@ -300,7 +312,7 @@
     <ImageButton
         android:id="@+id/bt_home_setting"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/px35"
         android:layout_marginRight="@dimen/px25"
         android:layout_marginBottom="@dimen/px15"
         android:background="@drawable/square_back_blue"

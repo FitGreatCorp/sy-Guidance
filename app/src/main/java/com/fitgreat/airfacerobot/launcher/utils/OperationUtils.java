@@ -44,6 +44,7 @@ import static com.fitgreat.airfacerobot.constants.Constants.LOG_FILE_PATH;
 import static com.fitgreat.airfacerobot.constants.Constants.basePath;
 import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPath;
 import static com.fitgreat.airfacerobot.constants.Constants.currentEnglishMapPath;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_ACTIVITY_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
@@ -169,6 +170,9 @@ public class OperationUtils {
                     JSONObject jsonObject = new JSONObject(stringResponse);
                     if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                         String actionId = jsonObject.getString("msg");
+                        if (workFlowTypeInt == 1) { //保存自动回充工作流发起活动id(取消自动回充工作流时用)
+                            SpUtils.putString(MyApp.getContext(), AUTOMATIC_RECHARGE_ACTIVITY_ID, actionId);
+                        }
                         if (actionId != null) { //活动id存在
                             //改变当前机器人状态为操作中
                             saveRobotstatus(3);

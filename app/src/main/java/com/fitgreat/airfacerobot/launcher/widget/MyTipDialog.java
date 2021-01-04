@@ -13,6 +13,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import com.fitgreat.airfacerobot.R;
 
 /**
@@ -24,6 +26,7 @@ public class MyTipDialog extends AlertDialog {
     private RadioButton myTipDialogYesView, myTipDialogNoView;
     private Button myTipDialogButton;
     private ProgressBar myTipDialogProgressView;
+    private ConstraintLayout constraintLayoutButtonsView;
     private String mBtSYesText, mBtSNoText, mDialogTitle, mSelfBtText, mDialogContent;
     private TipDialogYesNoListener mTipDialogYesNoListener = null;
     private TipDialogSelectListener mTipDialogSelectListener = null;
@@ -31,7 +34,7 @@ public class MyTipDialog extends AlertDialog {
     private boolean mTipSingleSelectModel = false;
     //加载提示模式,有进度条没有按钮
     private boolean mTipLoadModel = false;
-
+    private boolean mCountDownModel = false;
 
     public MyTipDialog(Context context) {
         super(context, R.style.MyDialog);
@@ -44,6 +47,8 @@ public class MyTipDialog extends AlertDialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //设置弹窗宽高
+        setDialogWidthHeight();
         setContentView(R.layout.my_tip_dialog_layout);
         setCanceledOnTouchOutside(false);
         //初始化界面控件
@@ -54,6 +59,16 @@ public class MyTipDialog extends AlertDialog {
         initEvent();
     }
 
+    private void setDialogWidthHeight() {
+        WindowManager.LayoutParams attributes = getWindow().getAttributes();
+        Display defaultDisplay = getWindow().getWindowManager().getDefaultDisplay();
+        Point sizePoint = new Point();
+        defaultDisplay.getSize(sizePoint);
+        attributes.width = (int) ((sizePoint.x) * 0.4);
+        attributes.height = (int) ((sizePoint.y) * 0.3);
+        getWindow().setAttributes(attributes);
+    }
+
     private void initView() {
         myTipDialogTitleView = findViewById(R.id.my_tip_dialog_title);
         myTipDialogContentView = findViewById(R.id.my_tip_dialog_content);
@@ -62,6 +77,7 @@ public class MyTipDialog extends AlertDialog {
         myTipDialogNoView = findViewById(R.id.my_tip_dialog_no);
         myTipDialogButton = findViewById(R.id.my_tip_dialog_button);
         myTipDialogProgressView = findViewById(R.id.my_tip_dialog_progress);
+        constraintLayoutButtonsView = findViewById(R.id.constraintLayout_buttons);
         if (mTipSingleSelectModel) {
             //加载提示模式 标题,内容,单选按钮
             myTipDialogButton.setVisibility(View.VISIBLE);
@@ -71,9 +87,9 @@ public class MyTipDialog extends AlertDialog {
         } else {
             if (mTipLoadModel) {
                 //加载提示模式 标题,进度条
-                myTipDialogButton.setVisibility(View.INVISIBLE);
-                myTipDialogRadioGroup.setVisibility(View.GONE);
+                constraintLayoutButtonsView.setVisibility(View.GONE);
                 myTipDialogContentView.setVisibility(View.GONE);
+                myTipDialogProgressView.setVisibility(View.VISIBLE);
             } else { //提示弹窗标题,内容,多选按钮模式
                 myTipDialogProgressView.setVisibility(View.GONE);
                 myTipDialogButton.setVisibility(View.GONE);
@@ -81,14 +97,7 @@ public class MyTipDialog extends AlertDialog {
                 myTipDialogRadioGroup.setVisibility(View.VISIBLE);
             }
         }
-        //设置弹窗宽高
-        WindowManager.LayoutParams attributes = getWindow().getAttributes();
-        Display defaultDisplay = getWindow().getWindowManager().getDefaultDisplay();
-        Point sizePoint = new Point();
-        defaultDisplay.getSize(sizePoint);
-        attributes.width = (int) ((sizePoint.x) * 0.5);
-        attributes.height = (int) ((sizePoint.y) * 0.4);
-        getWindow().setAttributes(attributes);
+
     }
 
     private void initData() {

@@ -49,8 +49,7 @@
     <string name="volume">音量</string>
     <string name="positive">确认</string>
     <string name="negative">取消</string>
-    <string name="chargereminder">当前电量过低，我要去充电了</string>
-    <string name="battery_low_tip">当前电量低于20%,将在30后开始自动回充.</string>
+    <string name="chargereminder">当前电量低于20%，我要去充电了</string>
     <string name="title_note">注意</string>
     <string name="auto_recharge">"自动回充"</string>
     <string name="auto_mission">自主宣教</string>
@@ -77,7 +76,7 @@
     <string name="prompt_task_exception">当前任务出现异常。</string>
     <string name="ask_for_help_text">护士姐姐，请帮帮我。</string>
     <string name="start_chose_destination_tip_one">你现在要去\t</string>
-    <string name="start_chose_destination_tip_two">\t吗?\t点击"是"我会带你过去哦</string>
+    <string name="start_chose_destination_tip_two">\t吗?\t点击"\是"\我会带你过去哦</string>
     <string name="navigation_success_tip_one">我已到达\t</string>
     <string name="navigation_success_tip_two">\t是否还需要其他服务?</string>
     <string name="start_chose_destination_dialog_title">提示</string>
@@ -101,4 +100,9 @@
     <string name="navigation_title">引导中</string>
     <string name="end_boot_bt">结束引导</string>
     <string name="no_data_title">暂无内容</string>
+    <string name="emergency_click_recharge_tip">急停按钮已启动无法自动回充</string>
+    <string name="tip_recharge_tip_content">我要回去冲电了。</string>
+    <string name="battery_low_tip">当前电量低于20%,我要去充电了.</string>
+    <string name="termination_bt_text">终止</string>
+
 </resources>

@@ -47,6 +47,9 @@ import com.fitgreat.airfacerobot.floatball.FloatWindowOption;
 import com.fitgreat.airfacerobot.floatball.FloatWindowViewStateCallback;
 import com.fitgreat.airfacerobot.introductionlist.IntroductionListActivity;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
+import com.fitgreat.airfacerobot.launcher.widget.MyCountDownDialog;
+import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
+import com.fitgreat.airfacerobot.launcher.widget.ValidationOrPromptDialog;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
@@ -62,12 +65,12 @@ import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.CommonTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.WarnningDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
-import com.fitgreat.airfacerobot.launcher.widget.TimeCountDownDialog;
 import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.FilePlayEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.InitUiEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
+import com.fitgreat.airfacerobot.remotesignal.model.SpeakEvent;
 import com.fitgreat.airfacerobot.settings.SettingActivity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.airfacerobot.speech.model.MessageBean;
@@ -101,7 +104,9 @@ import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_BOOT_UP_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_REBOOT_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_ACTIVITY_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
@@ -113,10 +118,12 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_OFF;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_ON;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.PROMPT_ROBOT_RECHARGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.TYPE_CHECK_STATE_DONE;
@@ -128,7 +135,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.TYPE_CHECK_STATE_D
  * @author zixuefei
  * @since 2020/3/11 0011 10:14
  */
-public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> implements MainView {
+public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> implements MainView, ValidationOrPromptDialog.ValidationFailListener {
     @BindView(R.id.signal_img)
     ImageView mSignalImg;
     @BindView(R.id.text_battery)
@@ -165,12 +172,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private boolean show_svdialog = false;
     private boolean show_hvdialog = false;
     private Future hdvScheduledFuture;
-    private MyDialog myDialog;
-    private TimeCountDownDialog timeCountDownDialog = null;
-    private Timer countDownTimer;
-    private TimerTask countDownTimerTask;
-    //机器人回充30秒倒计时
-    private int countDownTime = 30;
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
     //院内介绍提示加载框
@@ -180,6 +181,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private Timer introductionTimer;
     //空闲操作倒计时5分钟
     private int freeOperationCountdown;
+    private MyTipDialog tipRechargeDialog;
+    private MyCountDownDialog lowBatteryTipDialog;
+    private ValidationOrPromptDialog validationOrPromptDialog;
+    private RobotInfoData robotInfoData;
 
     @Override
     public int getLayoutResource() {
@@ -219,7 +224,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
         //自动回充工作流启动标志默认为false
         SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+        //设置全屏隐藏状态栏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
+
 
     private class MainBroadcastReceiver extends BroadcastReceiver {
         @Override
@@ -326,19 +334,16 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             mLanguageChinese.setSelected(true);
             mLanguageEnglish.setSelected(false);
         }
-        //jRos初始化状态
-        boolean rosInitTagState = SpUtils.getBoolean(getContext(), INIT_ROS_KEY_TAG, false);
-        if (rosInitTagState) {
-            if (mPresenter != null) {
-                mPresenter.getNetSignalLevel(this);
-            }
+        //更新4g网络信号页面展示信息
+        mPresenter.getNetSignalLevel(this);
+        //机器人名字显示
+        robotInfoData = RobotInfoUtils.getRobotInfo();
+        if (robotInfoData != null) {
             //更新本地导航位置,执行任务信息
             mPresenter.getLocationInfo();
-            //机器人名字显示
-            RobotInfoData robotInfoData = RobotInfoUtils.getRobotInfo();
-            if (robotInfoData != null) {
-                mRobotName.setText(robotInfoData.getF_Name());
-            }
+            //机器人名字信息
+            mRobotName.setText(robotInfoData.getF_Name());
+            LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
             //院内介绍流程没启动时进入首页,语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
             boolean startIntroductionWorkFlowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
             //自动回充工作流启动标志
@@ -347,7 +352,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
                 mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
             }
-
             //dds对话Observer注册
             EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
             //启动语音唤醒,打开one shot模式
@@ -363,7 +367,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
                         WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
                         LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " currentLanguage  " + currentLanguage + "   " + JSON.toJSONString(workflowEntity));
-                        if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,切机器人状态为冲电中时不执行该工作流任务
+                        if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
                             return;
                         } else {
                             OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
@@ -446,11 +450,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english})
+    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english, R.id.auto_recharge_bt})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
-                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+//                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+                validationOrPromptDialog = new ValidationOrPromptDialog(this);
+                validationOrPromptDialog.show();
+                validationOrPromptDialog.setValidationFailListener(this);
                 break;
             case R.id.constraintLayout_me_want_go: //我要去
                 goToChoseDestinationModel();
@@ -467,9 +474,62 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case R.id.language_english: //应用语言显示英文
                 setLanguage("en", mLanguageEnglish, mLanguageChinese);
                 break;
+            case R.id.auto_recharge_bt: //自动回充安妮
+                rechargeToDo();
+                break;
             default:
                 break;
         }
+    }
+
+    @Override
+    public void validationPassword(String password) {
+        mPresenter.verifyPassword(password);
+    }
+
+    /**
+     * 首页按钮自动化回充
+     */
+    private void rechargeToDo() {
+        //如果急停按钮被按下语音提示
+        boolean emergencyTag = SpUtils.getBoolean(MyApp.getContext(), CLICK_EMERGENCY_TAG, false);
+        if (emergencyTag) {
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.emergency_click_recharge_tip)));
+            return;
+        }
+        OperationUtils.startSpecialWorkFlow(1);
+    }
+
+    /**
+     * 电量低于20%时提示
+     */
+    private void lowBatteryPrompt() {
+        lowBatteryTipDialog = new MyCountDownDialog(this);
+        lowBatteryTipDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
+        lowBatteryTipDialog.setDialogContent(MyApp.getContext().getString(R.string.battery_low_tip));
+        lowBatteryTipDialog.setCountDownModel(true, handler);
+        lowBatteryTipDialog.setTipDialogYesNoListener(MyApp.getContext().getString(R.string.sure_bt_text),
+                MyApp.getContext().getString(R.string.negative),
+                new MyCountDownDialog.TipDialogYesNoListener() {
+                    @Override
+                    public void tipProgressChoseYes() { //启动自动回充工作流
+                        OperationUtils.startSpecialWorkFlow(1);
+                    }
+
+                    @Override
+                    public void tipProgressChoseNo() {
+                        String rechargeActivityId = SpUtils.getString(MyApp.getContext(), AUTOMATIC_RECHARGE_ACTIVITY_ID, null);
+                        if (!TextUtils.isEmpty(rechargeActivityId)) { //自动回充工作流已启动,终止自动回充工作流
+                            SignalDataEvent instruct = new SignalDataEvent();
+                            instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+                            instruct.setInstructionId(rechargeActivityId);
+                            instruct.setAction("-1");
+                            EventBus.getDefault().post(instruct);
+                        }
+                    }
+                });
+        lowBatteryTipDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        lowBatteryTipDialog.show();
     }
 
     /**
@@ -741,24 +801,24 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
 
-    /**
-     * 取消回充30秒倒计时
-     */
-    private void cancelCountDown() {
-        if (timeCountDownDialog != null) {
-            timeCountDownDialog.dismiss();
-        }
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-            countDownTimer = null;
-        }
-        if (countDownTimerTask != null) {
-            countDownTimerTask.cancel();
-            countDownTimerTask = null;
-        }
-        //30秒倒计时,下一次提示
-        countDownTime = 30;
-    }
+//    /**
+//     * 取消回充30秒倒计时
+//     */
+//    private void cancelCountDown() {
+//        if (timeCountDownDialog != null) {
+//            timeCountDownDialog.dismiss();
+//        }
+//        if (countDownTimer != null) {
+//            countDownTimer.cancel();
+//            countDownTimer = null;
+//        }
+//        if (countDownTimerTask != null) {
+//            countDownTimerTask.cancel();
+//            countDownTimerTask = null;
+//        }
+//        //30秒倒计时,下一次提示
+//        countDownTime = 30;
+//    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(InitEvent initEvent) {
@@ -806,10 +866,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     }
                 }
                 break;
+            case PROMPT_ROBOT_RECHARGE: //电量低于20%时弹窗提示
+                lowBatteryPrompt();
+                break;
             default:
                 break;
         }
     }
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(DaemonEvent daemonEvent) {
@@ -897,11 +961,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     mSignalImg.setImageLevel(level);
                 }
                 break;
-            case RobotConfig.ROS_MSG_BATTERY:
+            case RobotConfig.ROS_MSG_BATTERY: //TODO 机器人电量页面显示
                 if (mTextBattery != null && isResume) {
                     int battery = Math.round(robotSignalEvent.getBattery());
                     if (robotSignalEvent.isPowerStatus()) { //机器人充电中
-                        LogUtils.d("RobotSignalEvent", "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
+                        LogUtils.d(DEFAULT_LOG_TAG, "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
                         SpUtils.putBoolean(getContext(), "isCharge", true);
                         if (SpUtils.getBoolean(getContext(), "isVideocall", false)) {  //机器人视频中
                             saveRobotstatus(4);
@@ -924,7 +988,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                                 saveRobotstatus(1);
                             }
                         }
-                        LogUtils.d(TAG, "机器人没有充电,当前机器人状态: " + RobotInfoUtils.getRobotRunningStatus() + "  当前机器人电量:  " + battery);
+//                        LogUtils.d(DEFAULT_LOG_TAG, "机器人没有充电,当前机器人状态: " + RobotInfoUtils.getRobotRunningStatus() + "  当前机器人电量:  " + battery);
                         if (battery <= 20) {
                             mBatteryImg.setImageLevel(0);
                         } else if (battery <= 40) {
@@ -1164,6 +1228,20 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
 
     }
 
+    @Override
+    public void verifyFailure() {
+        runOnUiThread(() -> {
+            validationOrPromptDialog = new ValidationOrPromptDialog(this);
+            validationOrPromptDialog.setFailPrompt(true);
+            validationOrPromptDialog.show();
+        });
+    }
+
+    @Override
+    public void verifySuccess() {
+        RouteUtils.goToActivity(getContext(), SettingActivity.class);
+    }
+
     /**
      * 更改机器人状态信息
      *
@@ -1173,6 +1251,5 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //改变当前机器人状态
         RobotInfoUtils.setRobotRunningStatus(String.valueOf(status));
     }
-
 }
 

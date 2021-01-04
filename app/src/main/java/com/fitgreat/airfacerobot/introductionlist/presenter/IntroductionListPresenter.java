@@ -51,7 +51,7 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
         BusinessRequest.postStringRequest(JSON.toJSONString(parameterMap), ApiRequestUrl.GET_OPERATION_LIST_V, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                LogUtils.e(TAG, "onError:获取执行任务列表信息失败-->" + e.getMessage());
+                LogUtils.e(DEFAULT_LOG_TAG, "onError:获取执行任务列表信息失败-->" + e.getMessage());
             }
 
             @Override

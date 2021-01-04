@@ -1,5 +1,6 @@
 package com.fitgreat.airfacerobot.business;
 
+import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
@@ -22,6 +23,8 @@ import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 
 /**
  * 业务数据请求接口类<p>
@@ -92,8 +95,8 @@ public class BusinessRequest {
         HashMap<String, String> bodyStr = new HashMap<>();
         bodyStr.put("robotId", deviceId);
         bodyStr.put("hardwareId", deviceId);
+        LogUtils.json(DEFAULT_LOG_TAG, "getRobotInfo::" + JSON.toJSONString(bodyStr));
         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
-        LogUtils.d(TAG, "getRobotInfo body:" + JsonUtils.encode(bodyStr));
         RequestManager.startPost(ApiRequestUrl.ROBOT_INFO, body, callback);
     }
 

@@ -44,9 +44,10 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/introduction_list_recyclerView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/px20"
+            android:layout_marginRight="@dimen/px20"
             android:layout_marginTop="@dimen/px25"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

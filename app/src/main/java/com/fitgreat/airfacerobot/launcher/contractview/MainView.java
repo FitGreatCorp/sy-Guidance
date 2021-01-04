@@ -20,4 +20,8 @@ public interface MainView extends BaseView {
 
     void getOperationListFailure(String msg);
 
+    void verifyFailure();
+
+    void verifySuccess();
+
 }

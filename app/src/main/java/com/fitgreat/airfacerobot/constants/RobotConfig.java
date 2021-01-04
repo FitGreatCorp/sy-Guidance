@@ -282,4 +282,12 @@ public interface RobotConfig {
      *当前空闲工作流数据
      */
     String CURRENT_FREE_OPERATION = "current_free_operation";
+    /**
+     *自动回充工作流活动id
+     */
+    String AUTOMATIC_RECHARGE_ACTIVITY_ID = "automatic_recharge_activity_id";
+    /**
+     *电量低于20%时弹窗提示
+     */
+    String PROMPT_ROBOT_RECHARGE = "prompt_robot_recharge";
 }

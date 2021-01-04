@@ -101,4 +101,7 @@
     <string name="booting_title">Booting</string>
     <string name="end_boot_bt">End boot</string>
     <string name="no_data_title">no content yet</string>
+    <string name="emergency_click_recharge_tip">The emergency stop button is activated and cannot be automatically recharged</string>
+    <string name="tip_recharge_tip_content">I\'m going back to charge。</string>
+    <string name="termination_bt_text">termination</string>
 </resources>

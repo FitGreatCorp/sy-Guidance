@@ -6,15 +6,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
+import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.chosedestination.presenter.ChoseDestinationPresenter;
 import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
@@ -69,6 +72,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     ImageView mChoseDestinationMapBack;
     private String currentLanguage;
     private CloseBroadcastReceiver closeBroadcastReceiver;
+    private MyTipDialog startNavigationDialog;
 
     @Override
     public ChoseDestinationPresenter createPresenter() {
@@ -133,6 +137,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         }
         //添加导航点按钮位置
         locationList = CashUtils.getLocationList();
+        LogUtils.d(DEFAULT_LOG_TAG, "locationList:  " + JSON.toJSONString(locationList));
         if (locationList != null && locationList.size() != 0) {
             for (int i = 0; i < locationList.size(); i++) {
                 LocationEntity locationEntity = locationList.get(i);
@@ -264,21 +269,24 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         //语音播报提示
         EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, dialogContent));
         //单点导航任务弹窗提示确认
-        YesOrNoDialogFragment yesOrNoDialogFragment = YesOrNoDialogFragment.newInstance(getString(R.string.start_chose_destination_dialog_title), dialogContent, yesBtText, noBtText);
-        yesOrNoDialogFragment.show(getSupportFragmentManager(), "navigation");
-        yesOrNoDialogFragment.setSelectYesNoListener(new YesOrNoDialogFragment.SelectYesNoListener() {
+        startNavigationDialog = new MyTipDialog(MyApp.getContext());
+        startNavigationDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
+        startNavigationDialog.setDialogContent(dialogContent);
+        startNavigationDialog.setTipDialogYesNoListener(yesBtText, noBtText, new MyTipDialog.TipDialogYesNoListener() {
             @Override
-            public void selectYes() {
+            public void tipProgressChoseYes() {
                 if (isStartNavigation) {
                     mPresenter.startLocationTask(locationEntity);
                 }
             }
 
             @Override
-            public void selectNo() {
+            public void tipProgressChoseNo() {
                 //单点导航任务结束
                 SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
         });
+        startNavigationDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        startNavigationDialog.show();
     }
 }

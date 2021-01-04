@@ -6,7 +6,9 @@ import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+
 import androidx.annotation.RequiresApi;
+
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -30,21 +32,26 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
+import static com.fitgreat.airfacerobot.business.ApiRequestUrl.VERIFY_MODULE_PASSWORD;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.basePath;
 import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPath;
@@ -316,9 +323,10 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             }
             locationList.add(locationEntity);
         }
+        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(locationList));
         //获取地图信息
         String mapString = msgObj.getString("map");
-        LogUtils.d(DEFAULT_LOG_TAG, "医院地图信息:  " + mapString);
+        LogUtils.d(DEFAULT_LOG_TAG, "地图信息:  " + mapString);
         //缓存地图信息到本地
         SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, mapString);
         //解析获取地图信息
@@ -335,40 +343,40 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
         //获取常见问题列表问题
-       if (!TextUtils.isEmpty(mapEntity.getF_Floor())&&(!TextUtils.isEmpty(RobotInfoUtils.getRobotInfo().getF_HospitalId()))){
-           ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
-           info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
-           info.put("floor", mapEntity.getF_Floor());
-           LogUtils.d(DEFAULT_LOG_TAG, "拼接参数:info=>" + JSON.toJSONString(info));
-           BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
-               @Override
-               public void onFailure(Call call, IOException e) {
-                   LogUtils.e(DEFAULT_LOG_TAG, "获取常见问题失败:onFailure=>" + e.toString());
-               }
+        if (!TextUtils.isEmpty(mapEntity.getF_Floor()) && (!TextUtils.isEmpty(RobotInfoUtils.getRobotInfo().getF_HospitalId()))) {
+            ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
+            info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
+            info.put("floor", mapEntity.getF_Floor());
+            LogUtils.d(DEFAULT_LOG_TAG, "拼接参数:info=>" + JSON.toJSONString(info));
+            BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    LogUtils.e(DEFAULT_LOG_TAG, "获取常见问题失败:onFailure=>" + e.toString());
+                }
 
-               @Override
-               public void onResponse(Call call, Response response) throws IOException {
-                   String stringResponse = response.body().string();
-                   LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse=>" + stringResponse);
-                   try {
-                       JSONObject jsonObject = new JSONObject(stringResponse);
-                       if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
-                           String msg = jsonObject.getString("msg");
-                           if (msg != null && !msg.equals("null")) {
-                               List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String stringResponse = response.body().string();
+                    LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse=>" + stringResponse);
+                    try {
+                        JSONObject jsonObject = new JSONObject(stringResponse);
+                        if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
+                            String msg = jsonObject.getString("msg");
+                            if (msg != null && !msg.equals("null")) {
+                                List<CommonProblemEntity> commonProblemEntities = JSON.parseArray(msg, CommonProblemEntity.class);
 //                               LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(commonProblemEntities));
-                               //保存常见问题到本地
-                               SpUtils.putString(MyApp.getContext(), "problemList", msg);
-                           }
-                       }
-                   } catch (JSONException e) {
-                       e.printStackTrace();
-                   }
-               }
-           });
-       }else {
-           SpUtils.putString(MyApp.getContext(), "problemList", null);
-       }
+                                //保存常见问题到本地
+                                SpUtils.putString(MyApp.getContext(), "problemList", msg);
+                            }
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } else {
+            SpUtils.putString(MyApp.getContext(), "problemList", null);
+        }
     }
 
     /**
@@ -403,6 +411,41 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             @Override
             public void onDownloadFailed(Exception e) {
                 LogUtils.e(DEFAULT_LOG_TAG, "地图下载失败:" + e.getMessage());
+            }
+        });
+    }
+    /**
+     * 验证设置模块密码
+     */
+    public void verifyPassword(String password) {
+        HashMap<String, String> mapParam = new HashMap();
+        mapParam.put("id", RobotInfoUtils.getRobotInfo().getF_Id());
+        mapParam.put("pwd", password);
+        BusinessRequest.postStringRequest(JSON.toJSONString(mapParam), VERIFY_MODULE_PASSWORD, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                LogUtils.d(DEFAULT_LOG_TAG, "密码验证接口连接失败: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String responseString = response.body().string();
+                LogUtils.d(DEFAULT_LOG_TAG, "密码验证接口连接成功: " + responseString);
+                try {
+                    JSONObject jsonObject = new JSONObject(responseString);
+                    if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
+                        String msgString = jsonObject.getString("msg");
+                        JSONObject msgJsonObject = new JSONObject(msgString);
+                        boolean isPass = msgJsonObject.getBoolean("isPass");
+                        if (isPass) { //密码验证通过
+                            mView.verifySuccess();
+                        } else { //密码验证失败
+                            mView.verifyFailure();
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

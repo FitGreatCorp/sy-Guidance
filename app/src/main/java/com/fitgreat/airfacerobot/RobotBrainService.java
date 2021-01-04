@@ -101,6 +101,7 @@ import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_YES;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_ACTIVITY_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
@@ -240,6 +241,8 @@ public class RobotBrainService extends Service {
             }
         }
     };
+    private MyTipDialog tipRechargingDialog;
+    private boolean rechargingStatus;
 
 
     @Nullable
@@ -366,20 +369,25 @@ public class RobotBrainService extends Service {
 //                        stopmoveEvent.setType(ROBOT_STOP_MOVE);
 //                        EventBus.getDefault().post(stopmoveEvent);
 //                    }
+                    //电量小于20%弹窗提示
+                    int batteryInt = Integer.parseInt(getBattery());
+                    if (batteryInt != 0 && batteryInt < 20) {
+                        EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
+                    }
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + TIMER_INTERVAL_SECOND, pendingIntentEmergency);
                 }
             }
             //周日24:00上传异常日志
-            Calendar calendar = Calendar.getInstance();
-            if (calendar.get(Calendar.SUNDAY) == Calendar.SUNDAY) {  //当前为周日
-                String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
-                if (currentTime.equals("24:00:00")) {  //晚上24:00:00
-                    Intent uploadLogIntent = new Intent(RobotBrainService.this, UploadLogService.class);
-                    startService(uploadLogIntent);
-                }
-            }
+//            Calendar calendar = Calendar.getInstance();
+//            if (calendar.get(Calendar.SUNDAY) == Calendar.SUNDAY) {  //当前为周日
+//                String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
+//                if (currentTime.equals("24:00:00")) {  //晚上24:00:00
+//                    Intent uploadLogIntent = new Intent(RobotBrainService.this, UploadLogService.class);
+//                    startService(uploadLogIntent);
+//                }
+//            }
         }
     }
 
@@ -466,8 +474,6 @@ public class RobotBrainService extends Service {
                     break;
                 case "navigation_stopped":      //导航失败  TODO
                     LogUtils.d(DEFAULT_LOG_TAG, "isTerminal = " + isTerminal + " 本次导航失败导航任务信息--" + currentNavigationDestination + "---" + currentNavigationX + "---" + currentNavigationY + "---" + currentNavigationZ);
-                    //当前导航任务结束,导航失败
-//                    SpUtils.putBoolean(MyApp.getContext(),CURRENT_NAVIGATION_START_TAG,false);
                     if (!isTerminal) {
                         playShowContent(appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_two)));
                     }
@@ -503,11 +509,21 @@ public class RobotBrainService extends Service {
                             //单点导航任务结束
                             SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                         } else {
+                            //单点导航时,连续三次导航失败关闭引导弹窗,停在原地
+                            if (navigationIngDialog != null) {
+                                navigationIngDialog.dismiss();
+                                navigationIngDialog = null;
+                            }
                             speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.prompt_task_exception), "0", null);
                         }
                     }
                     break;
                 case "navigation_arrived":  //导航成功  TODO
+                    //关闭导航中提示弹窗
+                    if (navigationIngDialog != null) {
+                        navigationIngDialog.dismiss();
+                        navigationIngDialog = null;
+                    }
                     //清空本次导航任务地点xyz信息
                     currentNavigationX = null;
                     currentNavigationY = null;
@@ -518,7 +534,7 @@ public class RobotBrainService extends Service {
                     instruction_status = "2";
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                     //自动回充工作流启动后,导航到目的地后不弹窗提示
-                    boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                    rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
                     //单点导航任务结束
                     SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                     //导航成功到达目的地,语音播报提示
@@ -529,9 +545,9 @@ public class RobotBrainService extends Service {
                     } else {
                         startNavigationPrompt.append(instructionEnName);
                     }
-                    LogUtils.d(DEFAULT_LOG_TAG, "导航成功,自动回充工作流启动状态  " + startRechargeTag + "  目的地名字, " + instructionName + "  " + instructionEnName);
+                    LogUtils.d(DEFAULT_LOG_TAG, "导航成功,自动回充工作流启动状态  " + rechargingStatus + "  目的地名字, " + instructionName + "  " + instructionEnName);
                     //自动回充工作流没有启动时,导航成功到达目的地时弹窗提示
-                    if (!startRechargeTag) {
+                    if (!rechargingStatus) {
                         Intent intent = new Intent(MyApp.getContext(), YesOrNoDialogActivity.class);
                         intent.putExtra(DIALOG_TITLE, MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
                         intent.putExtra(DIALOG_CONTENT, appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_two)));
@@ -683,7 +699,7 @@ public class RobotBrainService extends Service {
                             batteryEvent.setConnect(jRos.IsConnected());
                             batteryEvent.setPowerStatus(jRos.getRobotState().isCharge);
                             EventBus.getDefault().post(batteryEvent);
-                            LogUtils.json("RobotSignalEvent", JSON.toJSONString(batteryEvent));
+//                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(batteryEvent));
                             //保存机器人工作模式到本地
                             if (jRos.getRobotState().isLocked) {
                                 SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, true);
@@ -692,7 +708,7 @@ public class RobotBrainService extends Service {
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
-                            LogUtils.e("RobotSignalEvent", "连续获取机器人电量异常:  " + e.getMessage());
+                            LogUtils.e(DEFAULT_LOG_TAG, "连续获取机器人电量异常:  " + e.getMessage());
                         }
                     }
                 };
@@ -725,7 +741,7 @@ public class RobotBrainService extends Service {
 
             @Override
             public void onUpdate(int i) {
-                LogUtils.d(DEFAULT_LOG_TAG, "JRos onUpdate :" + i);
+//                LogUtils.d(DEFAULT_LOG_TAG, "JRos onUpdate :" + i);
                 if (i == 10) {
 //                    handler.postDelayed(() -> {
 //                        setAirPlaneMode(true);
@@ -977,8 +993,14 @@ public class RobotBrainService extends Service {
                 currentNavigationZ = signalDataEvent.getE();
                 LogUtils.d(DEFAULT_LOG_TAG, "开始导航任务");
                 LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(signalDataEvent));
-                //导航中提示弹窗可以终止导航任务
-                showNavigationIngDialog();
+                rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                if (rechargingStatus) {
+                    //自动回充时,任务提示弹窗,可以终止
+                    rechargingDialog();
+                } else {
+                    //导航时,任务提示弹窗,可以终止
+                    showNavigationIngDialog();
+                }
                 //开始导航任务提示语音
                 handler.postDelayed(() -> {
                     //根据当前设备语言拼接提示语中英文版本
@@ -1078,7 +1100,7 @@ public class RobotBrainService extends Service {
             case MSG_CHANGE_POWER_LOCK:
                 ExecutorManager.getInstance().executeTask(() -> jRos.op_setPowerlock((byte) signalDataEvent.getPowerlock()));
                 break;
-            case MSG_INSTRUCTION_STATUS_FINISHED:  //视频,pdf,text文本播放结束/终止
+            case MSG_INSTRUCTION_STATUS_FINISHED:  //终止当前任务
                 instruction_status = signalDataEvent.getAction();
                 LogUtils.d(DEFAULT_LOG_TAG, "视频,pdf,text文本播放结束/终止 !!!!!!!!   instruction_status = " + instruction_status + ", InstructionId =" + signalDataEvent.getInstructionId());
                 BusinessRequest.UpdateInstructionStatue(signalDataEvent.getInstructionId(), instruction_status, updateInstructionCallback);
@@ -1211,22 +1233,45 @@ public class RobotBrainService extends Service {
         //导航中引导提示弹窗
         navigationIngDialog = new MyTipDialog(MyApp.getContext());
         navigationIngDialog.setDialogTitle(MyApp.getContext().getString(R.string.navigation_title));
-        //根据当前语言加载展示地图
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
         if (currentLanguage != null && currentLanguage.equals("zh")) {   //中文地点名字
-            navigationIngDialog.setDialogContent("正在前往\t" + instructionName);
+            navigationIngDialog.setDialogContent("我正在前往\t\"" + instructionName + "\"中...");
         } else {  //英文地点名字
-            navigationIngDialog.setDialogContent("正在前往\t" + instructionEnName);
+            navigationIngDialog.setDialogContent("I am going\t\"" + instructionEnName + "\"中...");
         }
         navigationIngDialog.setTipSingleSelectModel(true);
         navigationIngDialog.setTipDialogSelectListener(MyApp.getContext().getString(R.string.end_boot_bt), new MyTipDialog.TipDialogSelectListener() {
             @Override
             public void tipSelect() {
-
+                LogUtils.d(DEFAULT_LOG_TAG, "终止单点导航任务");
+                instruction_status = "-1";
+                BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                //单点导航任务结束
+                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
         });
         navigationIngDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         navigationIngDialog.show();
+    }
+
+    /**
+     * 自动回充提示弹窗
+     */
+    public void rechargingDialog() {
+        tipRechargingDialog = new MyTipDialog(MyApp.getContext());
+        tipRechargingDialog.setDialogTitle(MyApp.getContext().getString(R.string.auto_recharge));
+        tipRechargingDialog.setDialogContent(MyApp.getContext().getString(R.string.tip_recharge_tip_content));
+        tipRechargingDialog.setTipSingleSelectModel(true);
+        tipRechargingDialog.setTipDialogSelectListener(MyApp.getContext().getString(R.string.termination_bt_text), new MyTipDialog.TipDialogSelectListener() {
+            @Override
+            public void tipSelect() {
+                LogUtils.d(DEFAULT_LOG_TAG, "终止自动回充任务");
+                instruction_status = "-1";
+                BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+            }
+        });
+        tipRechargingDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        tipRechargingDialog.show();
     }
 
     /**
