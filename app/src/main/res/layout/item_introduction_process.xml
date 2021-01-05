@@ -11,7 +11,7 @@
         android:id="@+id/main_introduction_process_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scaleType="fitXY"
+        android:scaleType="fitCenter"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -19,20 +19,20 @@
         android:id="@+id/introduction_process_kind_image"
         android:layout_width="@dimen/px30"
         android:layout_height="@dimen/px22"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="@dimen/px15"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/item_introduction_process_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/px20"
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="1"
         android:textColor="@android:color/white"
-        android:layout_marginBottom="@dimen/px20"
         android:textSize="@dimen/textSize15"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

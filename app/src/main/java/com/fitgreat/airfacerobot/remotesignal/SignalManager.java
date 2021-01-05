@@ -40,6 +40,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.INIT_SIGNAL_SUCCESS;
 
 /**
@@ -237,7 +238,7 @@ public class SignalManager {
         BusinessRequest.getRobotInfo(RobotInfoUtils.getAirFaceDeviceId(), new HttpCallback() {
             @Override
             public void onResult(BaseResponse baseResponse) {
-                LogUtils.d(TAG, "robot info:" + JsonUtils.encode(baseResponse));
+                LogUtils.d(DEFAULT_LOG_TAG, "robot info:" + JsonUtils.encode(baseResponse));
                 if (baseResponse != null) {
                     if (baseResponse.isSucceed() && !baseResponse.isEmptyContent()) {
                         RobotInfoData robotInfoData = JsonUtils.decode(baseResponse.getMsg(), RobotInfoData.class);

@@ -119,5 +119,9 @@ public interface Constants {
      * 英文地图本地存储路径
      */
     String currentEnglishMapPath = basePath + "currentEnglishMap.png";
+    /**
+     * 软件升级包本地路径
+     */
+    String currentApkPath = basePath + "AY-Guidance.apk";
 
 }

@@ -45,6 +45,7 @@ import com.fitgreat.airfacerobot.launcher.widget.NormalOrCountDownDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.ValidationOrPromptDialog;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
+import com.fitgreat.airfacerobot.model.AppVersion;
 import com.fitgreat.airfacerobot.model.CommandDataEvent;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
@@ -148,6 +149,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private static final int REQUEST_ALERT_CODE = 6666;
     private static final int CHECK_HARDWARE_VERSION_CODE = 6667;
     private static final int CHECK_HDVC = 6668;
+    private static final int CHECK_APP_VERSION_CODE = 6669;
     private CommonTipDialog commonTipDialog;
     private FloatWindow floatWindow;
     private boolean isResume;
@@ -328,7 +330,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         robotInfoData = RobotInfoUtils.getRobotInfo();
         if (robotInfoData != null) {
             //更新本地导航位置,执行任务信息
-            mPresenter.getLocationInfo();
+            mPresenter.getLocationInfo(handler);
             //机器人名字信息
             mRobotName.setText(robotInfoData.getF_Name());
             LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
@@ -350,20 +352,31 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 @Override
                 public void run() {
                     freeOperationCountdown++;
-                    if (freeOperationCountdown == 300) {
-                        stopIntroductionTimer();
+                    if (freeOperationCountdown == 50) {
+                        freeOperationCountdown = 0;
                         String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
-                        WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
-                        LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " currentLanguage  " + currentLanguage + "   " + JSON.toJSONString(workflowEntity));
-                        if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
-                            return;
+                        if (!"null".equals(currentFreeOperation)) {
+                            WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
+                            LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " currentLanguage  " + currentLanguage + "   " + JSON.toJSONString(workflowEntity));
+                            if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
+                                return;
+                            } else {
+                                OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
+                                stopIntroductionTimer();
+                            }
                         } else {
-                            OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
+                            LogUtils.d(DEFAULT_LOG_TAG, "请配置空闲执行工作流 : ");
+                            handler.post(() -> {
+                                ToastUtils.showSmallToast("请配置空闲执行工作流");
+                            });
                         }
                     }
                 }
             };
+            LogUtils.d(DEFAULT_LOG_TAG, "空闲时操作计时器启动 :  " + freeOperationCountdown);
             introductionTimer.schedule(introductionTimerTask, 0, 1000);
+            //检查app软件更新
+            mPresenter.checkSoftwareVersion(this);
         }
     }
 
@@ -541,7 +554,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.emergency_click_recharge_tip)));
             return;
         }
-        OperationUtils.startSpecialWorkFlow(1);
+        OperationUtils.startSpecialWorkFlow(1, handler);
     }
 
     /**
@@ -560,7 +573,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     new NormalOrCountDownDialog.TipDialogYesNoListener() {
                         @Override
                         public void tipProgressChoseYes() { //启动自动回充工作流
-                            OperationUtils.startSpecialWorkFlow(1);
+                            OperationUtils.startSpecialWorkFlow(1, handler);
                             lowBatteryTipDialog = null;
                         }
 
@@ -765,7 +778,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             switch (msg.what) {
                 case REQUEST_ALERT_CODE:
                     if (Settings.canDrawOverlays(MainActivity.this)) {
-                        LogUtils.d(TAG, "------has permission: start check self-------");
                         showFloatBall();
                     } else {
                         handler.sendEmptyMessageDelayed(REQUEST_ALERT_CODE, 1000);
@@ -778,7 +790,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     }
                     break;
                 case CHECK_HDVC:
-                    LogUtils.d(TAG, "CHECK_HDVC  CHECK_HDVC  CHECK_HDVC  CHECK_HDVC !!!!!");
                     LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus());
                     if (RobotInfoUtils.getRobotRunningStatus().equals("5") || RobotInfoUtils.getRobotRunningStatus().equals("1")) {
                         ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
@@ -794,7 +805,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         handler.sendEmptyMessageDelayed(CHECK_HDVC, 60000);
                     }
                     break;
-                case DownloadUtils.DOWNLOAD_FAILED:
+                case DownloadUtils.DOWNLOAD_FAILED: //TODO 硬件下载失败
                     if (downloadingDialog != null && downloadingDialog.isShowing()) {
                         downloadingDialog.dismiss();
                     }
@@ -806,7 +817,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     ToastUtils.showSmallToast("硬件下载失败");
                     upgrade_success = false;
                     break;
-                case DownloadUtils.DOWNLOAD_SUCCESS:
+                case DownloadUtils.DOWNLOAD_SUCCESS:  //TODO 硬件下载成功
                     if (fStepBean == null || msg.obj == null) {
                         if (downloadingDialog != null && downloadingDialog.isShowing()) {
                             downloadingDialog.dismiss();
@@ -830,6 +841,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 case DownloadUtils.DOWNLOADING:
                     showDownloadingDialog(msg.arg1);
                     break;
+                case CHECK_APP_VERSION_CODE:  //检查app软件升级
+                    mPresenter.checkSoftwareVersion(MainActivity.this);
+                    break;
                 default:
                     break;
             }
@@ -844,26 +858,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @Override
     public void onBackPressed() {
     }
-
-
-//    /**
-//     * 取消回充30秒倒计时
-//     */
-//    private void cancelCountDown() {
-//        if (timeCountDownDialog != null) {
-//            timeCountDownDialog.dismiss();
-//        }
-//        if (countDownTimer != null) {
-//            countDownTimer.cancel();
-//            countDownTimer = null;
-//        }
-//        if (countDownTimerTask != null) {
-//            countDownTimerTask.cancel();
-//            countDownTimerTask = null;
-//        }
-//        //30秒倒计时,下一次提示
-//        countDownTime = 30;
-//    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(InitEvent initEvent) {
@@ -924,21 +918,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     public void onMsg(DaemonEvent daemonEvent) {
         LogUtils.d(TAG, "daemonEvent:" + JsonUtils.encode(daemonEvent));
         switch (daemonEvent.type) {
-            case RobotConfig.TYPE_SHOW_VERSION_TIPS:
-                ExecutorManager.getInstance().cancelScheduledTask(checkVersionScheduledFuture);
-                checkVersionScheduledFuture = ExecutorManager.getInstance().executeScheduledTask(() -> {
-                    LogUtils.d(TAG, "check update RobotStatus = " + RobotInfoUtils.getRobotRunningStatus());
-                    if ("1".equals(RobotInfoUtils.getRobotRunningStatus()) || "5".equals(RobotInfoUtils.getRobotRunningStatus())) {
-                        handler.post(() -> {
-                            foundAppNewVersion(daemonEvent.action, daemonEvent.extra);
-                            ExecutorManager.getInstance().cancelScheduledTask(checkVersionScheduledFuture);
-                        });
-                    }
-                }, 0, 30, TimeUnit.SECONDS);
-                break;
-            case RobotConfig.TYPE_SHOW_VERSION_PROGRESS:
-                showDownloadingDialog(Integer.parseInt(daemonEvent.action));
-                break;
             case RobotConfig.TYPE_SHOW_VERSION_STATUS:
                 switch (daemonEvent.action) {
                     case "updateFailed":
@@ -979,7 +958,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         OperationUtils.saveSpecialLog("ROSInstallFail", daemonEvent.extra);
                         ToastUtils.showSmallToast("硬件升级失败");
                         upgrade_success = false;
-
                         break;
                     default:
                         break;
@@ -1010,7 +988,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 if (mTextBattery != null && isResume) {
                     int battery = Math.round(robotSignalEvent.getBattery());
                     if (robotSignalEvent.isPowerStatus()) { //机器人充电中
-//                        LogUtils.d(DEFAULT_LOG_TAG, "机器人充电中,当前机器人状态:   , " + RobotInfoUtils.getRobotRunningStatus());
                         SpUtils.putBoolean(getContext(), "isCharge", true);
                         if (SpUtils.getBoolean(getContext(), "isVideocall", false)) {  //机器人视频中
                             saveRobotstatus(4);
@@ -1033,7 +1010,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                                 saveRobotstatus(1);
                             }
                         }
-//                        LogUtils.d(DEFAULT_LOG_TAG, "机器人没有充电,当前机器人状态: " + RobotInfoUtils.getRobotRunningStatus() + "  当前机器人电量:  " + battery);
                         if (battery <= 20) {
                             mBatteryImg.setImageLevel(0);
                         } else if (battery <= 40) {
@@ -1095,7 +1071,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(MessageBean messageBean) {
         String voiceMessageText = messageBean.getText().trim();
-        LogUtils.d("CommandTodo", "MessageBean:MainActivity----->" + voiceMessageText);
         if ((messageBean.getType() == MessageBean.TYPE_INPUT) && isResume) {
             mVoiceMsg.setText(voiceMessageText);
         }
@@ -1127,43 +1102,43 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
     /**
-     * APP发现新版本弹框
+     * APP发现新版本弹框  TODO
      */
-    private void foundAppNewVersion(String title, String content) {
+    public void foundAppNewVersion(AppVersion appVersion) {
         long currenttime = System.currentTimeMillis();
         handler.removeMessages(CHECK_HDVC);
         show_svdialog = true;
-//        LogUtils.d(TAG, " handler.removeMessages(CHECK_HDVC)!!!!!!!!!!!!!!!!!");
         if (currenttime - lasttime >= 30 * 1000 * 60) {
             if (!isFinishing() && commonTipDialog != null) {
                 if (!commonTipDialog.isShowing()) {
-                    LogUtils.d(TAG, "----------show soft version dialog--------");
                     commonTipDialog.show();
                     commonTipDialog.setCancelVisible(true);
                     commonTipDialog.setCancelable(false);
                     commonTipDialog.setOnDialogClick((int which) -> {
                         if (which == R.id.common_tip_ok) {
-
-                            Bundle data = new Bundle();
-                            data.putString("type", "install");
-                            RouteUtils.sendDaemonBroadcast(this, Constants.ACTION_DAEMON_MSG, data);
                             RobotInfoUtils.setRobotRunningStatus("6");
                             showDownloadingDialog(0);
-                            LogUtils.d("task_robot_status", "开始软件升级: " + " 机器人状态 , " + RobotInfoUtils.getRobotRunningStatus());
+                            LogUtils.d(DEFAULT_LOG_TAG, "开始软件下载升级: ");
+                            mPresenter.downloadSoftwareInstall(this, appVersion, handler);
                         } else if (which == R.id.common_tip_cancel) {
                             show_svdialog = false;
                             handler.sendEmptyMessageDelayed(CHECK_HARDWARE_VERSION_CODE, 300);
                         }
                     });
                 }
-                commonTipDialog.setTitleAndContent(title, content);
+                commonTipDialog.setTitleAndContent(appVersion.getF_UpdateTitle(), appVersion.getF_UpdateMsg());
             }
             lasttime = currenttime;
         }
     }
 
+    @Override
+    public void showDownloadAppProgress(int progress) {
+        showDownloadingDialog(progress);
+    }
+
     /**
-     * Hardware发现新版本弹框
+     * Hardware发现新版本弹框   发现硬件升级  TODO
      */
     private void showHardwareNewVersion(VersionInfo versionInfo) {
         upgrade_success = true;
@@ -1181,7 +1156,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     commonTipDialog.setCancelable(false);
                     commonTipDialog.setOnDialogClick((int which) -> {
                         if (which == R.id.common_tip_ok) {
-                            LogUtils.d("task_robot_status", "开始硬件升级" + "    " + (rosUpdateStep != null) + (!rosUpdateStep.isEmpty()));
+                            LogUtils.d(DEFAULT_LOG_TAG, "开始硬件升级" + "    " + (rosUpdateStep != null) + (!rosUpdateStep.isEmpty()));
                             if (rosUpdateStep != null && !rosUpdateStep.isEmpty()) {
                                 RobotInfoUtils.setRobotRunningStatus("6");
                                 excNextStep(rosUpdateStep);
@@ -1198,7 +1173,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     }
 
     /**
-     * 执行下一步骤
+     * 执行下一步骤  TODO 硬件升级下一步
      *
      * @param updateStep
      */
@@ -1252,6 +1227,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
+    /**
+     * 硬件升级检查  TODO
+     *
+     * @param versionInfo
+     */
     @Override
     public void foundHardwareNewVersion(VersionInfo versionInfo) {
         LogUtils.d(TAG, "------foundHardwareNewVersion-------");

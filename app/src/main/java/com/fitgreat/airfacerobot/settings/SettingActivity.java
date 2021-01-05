@@ -136,6 +136,8 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     private Drawable normalDrawable;
     private boolean broadcastGreetSwitchTag;
     private List<WorkflowEntity> mWorkflowEntityList;
+    private String currentFreeOperation;
+    private WorkflowEntity workflowEntity;
 
     @Override
     public int getLayoutResource() {
@@ -219,6 +221,13 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
                     break;
             }
         }));
+        //空闲工作流内容
+        currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
+        LogUtils.d(DEFAULT_LOG_TAG, "当前空闲时工作流信息::" + currentFreeOperation);
+        if (!"null".equals(currentFreeOperation)) {
+            workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
+            freeOperation.setText(workflowEntity.getF_Name());
+        }
     }
 
     @Override
@@ -490,7 +499,7 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             freeOperationRecyclerView.setAdapter(workFlowListAdapter);
             freeOperationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             workFlowListAdapter.setOnItemClickListener((adapter, view, position) -> {
-                WorkflowEntity workflowEntity = (WorkflowEntity) adapter.getData().get(position);
+                workflowEntity = (WorkflowEntity) adapter.getData().get(position);
                 //缓存当前选择空闲工作流
                 SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, JSON.toJSONString(workflowEntity));
                 //关闭popupWindow

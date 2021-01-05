@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.launcher.utils;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
@@ -55,12 +56,14 @@ import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE
 public class OperationUtils {
     private static final String TAG = "OperationUtils";
     private static String msgString;
+    private static Handler mHandler;
 
     /**
      * 发起特殊工作流程
      * workFlowType   1 自动回充 charge   2 三亚院内介绍流程英文版 introduction-syEN   3 三亚院内介绍流程  introduction-sy
      */
-    public static void startSpecialWorkFlow(int workFlowType) {
+    public static void startSpecialWorkFlow(int workFlowType, Handler handler) {
+        mHandler = handler;
         //获取机器人信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
         if (workFlowType == 1) {
@@ -113,22 +116,33 @@ public class OperationUtils {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                             String msgString = jsonObject.getString("msg");
-                            //根据工作流id发起任务
-                            WorkflowEntity workflowEntity = JSON.parseObject(msgString, WorkflowEntity.class);
                             //发起活动流程自动回充
-                            LogUtils.d(DEFAULT_LOG_TAG, "发起特殊活动流程\t\t" + msgString);
-                            startActivity(workflowEntity, robotInfo, workFlowTypeInt);
+                            LogUtils.d(DEFAULT_LOG_TAG, "发起特殊活动流程\t\t" + msgString + " ,workFlowTypeInt, " + workFlowTypeInt + "  ");
+                            if (!msgString.equals("null")) {
+                                //根据工作流id发起任务
+                                WorkflowEntity workflowEntity = JSON.parseObject(msgString, WorkflowEntity.class);
+                                startActivity(workflowEntity, robotInfo, workFlowTypeInt);
+                            } else {
+                                if (workFlowTypeInt == 1) {
+                                    playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                                    mHandler.post(() -> {
+                                        ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
+                                    });
+                                    //自动回充工作流后台没有配置,可再次启动自动回充工作流
+                                    SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                                }
+                            }
                         } else {
                             if (workFlowTypeInt == 1) {
                                 playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
-                                new Handler(Looper.getMainLooper()).post(() -> {
+                                mHandler.post(() -> {
                                     ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
                                 });
                                 //自动回充工作流后台没有配置,可再次启动自动回充工作流
                                 SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                             } else {
                                 playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
-                                new Handler(Looper.getMainLooper()).post(() -> {
+                                mHandler.post(() -> {
                                     ToastUtils.showSmallToast("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                                 });
                             }

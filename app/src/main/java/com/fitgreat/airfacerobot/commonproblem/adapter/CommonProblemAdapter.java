@@ -1,5 +1,6 @@
 package com.fitgreat.airfacerobot.commonproblem.adapter;
 
+import android.view.View;
 import android.widget.TextView;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
@@ -38,13 +39,13 @@ public class CommonProblemAdapter extends BaseQuickAdapter<CommonProblemEntity, 
             baseViewHolder.setText(R.id.item_common_problem_title, commonProblemEntity.getF_EQuestion());
         }
         addChildClickViewIds(R.id.main_item_common_problem);
-        TextView commonProblemTitle = (TextView) baseViewHolder.getView(R.id.item_common_problem_title);
+        TextView commonProblemTitleView = (TextView) baseViewHolder.getView(R.id.item_common_problem_title);
         //根据选中题目编号切换选中状态
         int checkProblemPosition = SpUtils.getInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, DEFAULT_POSITION);
         if (checkProblemPosition == getItemPosition(commonProblemEntity)) {
-            commonProblemTitle.setSelected(true);
+            commonProblemTitleView.setSelected(true);
         } else {
-            commonProblemTitle.setSelected(false);
+            commonProblemTitleView.setSelected(false);
         }
     }
 }

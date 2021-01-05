@@ -255,4 +255,33 @@ public class ShellCmdUtils {
         return false;
     }
 
+    public static void execInstallCmd(String appPath, ExeResult exeResult) {
+        try {
+            //("ps -P|grep bg")执行失败，PC端adb shell ps -P|grep bg执行成功
+            //Process process = Runtime.getRuntime().exec("ps -P|grep tv");
+            //-P 显示程序调度状态，通常是bg或fg，获取失败返回un和er
+            // Process process = Runtime.getRuntime().exec("ps -P");
+            //打印进程信息，不过滤任何条件
+            String[] installAirFaceRobot = {"su", "-c", "pm install -r -d " + appPath};
+            Process process = Runtime.getRuntime().exec(installAirFaceRobot);
+            String content = consumeInputStream(process.getInputStream());
+            int result = process.waitFor();
+            LogUtils.d(TAG, "exec result:" + content + " result:" + result);
+            if (exeResult != null) {
+                exeResult.onResult(result, content);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LogUtils.e(TAG, "exec IOException:" + e.getMessage());
+            if (exeResult != null) {
+                exeResult.onResult(-1, e.getMessage());
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            LogUtils.e(TAG, "exec InterruptedException:" + e.getMessage());
+            if (exeResult != null) {
+                exeResult.onResult(-1, e.getMessage());
+            }
+        }
+    }
 }

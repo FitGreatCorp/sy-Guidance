@@ -40,7 +40,6 @@
         <item name="android:windowFrame">@null</item>
         <!--是否浮现在activity之上-->
         <item name="android:windowIsFloating">true</item>
-        <!--是否模糊  dialog以外的区域 半透明-->
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
@@ -52,5 +51,6 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
     </style>
 </resources>

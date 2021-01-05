@@ -35,18 +35,18 @@ import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 public class BusinessRequest {
     private final static String TAG = BusinessRequest.class.getSimpleName();
 
-    /**
-     * check app version
-     */
-    public static void checkAppVersion(Callback callback) {
-        HashMap<String, String> bodyStr = new HashMap<>();
-        bodyStr.put("appCode", "");
-        bodyStr.put("appType", "android control");
-        bodyStr.put("versionCode", VersionUtils.getVersionName(MyApp.getContext()));
-        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
-        LogUtils.d(TAG, "checkAppVersion body:" + JsonUtils.encode(bodyStr));
-        RequestManager.startPost(ApiRequestUrl.CHECK_APP_VERSION, body, callback);
-    }
+//    /**
+//     * check app version
+//     */
+//    public static void checkAppVersion(Callback callback) {
+//        HashMap<String, String> bodyStr = new HashMap<>();
+//        bodyStr.put("appCode", "");
+//        bodyStr.put("appType", "android control");
+//        bodyStr.put("versionCode", VersionUtils.getVersionName(MyApp.getContext()));
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
+//        LogUtils.d(TAG, "checkAppVersion body:" + JsonUtils.encode(bodyStr));
+//        RequestManager.startPost(ApiRequestUrl.CHECK_APP_VERSION, body, callback);
+//    }
 
     /**
      * check hardware version
@@ -57,7 +57,24 @@ public class BusinessRequest {
         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
         RequestManager.startPost(ApiRequestUrl.CHECK_HARDWARE_VERSION, body, callback);
     }
-
+    /**
+     * check app version
+     * 设备类型
+     * 1：ios 客户端：ios client，
+     * 2：ios控制端:ios control
+     * 3：android客户端: android client
+     * 4：android控制端: android control
+     * 5：ios手持端:ios mini
+     * android 机器人 android_airface_robot
+     * 瑞金学术大厅  RJGuide
+     * 三亚导诊机器人 SYGuide
+     */
+    public static void checkAppVersion(Callback callback) {
+        HashMap<String, String> bodyStr = new HashMap<>();
+        bodyStr.put("appType", "SYGuide");
+        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
+        RequestManager.startPost(ApiRequestUrl.CHECK_APP_VERSION, body, callback);
+    }
     /**
      * 硬件升级结果反馈
      */

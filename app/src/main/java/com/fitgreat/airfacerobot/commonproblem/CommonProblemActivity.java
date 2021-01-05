@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson.JSON;
+import com.chad.library.adapter.base.BaseQuickAdapter;
+import com.chad.library.adapter.base.listener.OnItemChildLongClickListener;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -91,6 +93,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         //启动机器人动画
         animationDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
         animationDrawable.start();
+        //对话框默认显示 "我可以帮你解答问题哦"
+        mCommonProblemAnswer.setText(MyApp.getContext().getString(R.string.prompt_common_problem));
     }
 
     @Override
@@ -163,7 +167,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             mCommonProblemList.setVisibility(View.VISIBLE);
             //设置常见问题列表数据
             commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities);
-            commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
+            commonProblemAdapter.setOnItemChildClickListener((adapter, view, position) -> {
                 SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, position);
                 commonProblemAdapter.notifyDataSetChanged();
                 //语音播报问题答案

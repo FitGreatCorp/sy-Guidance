@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.launcher.contractview;
 
 import android.util.Log;
 
+import com.fitgreat.airfacerobot.model.AppVersion;
 import com.fitgreat.airfacerobot.versionupdate.VersionInfo;
 import com.fitgreat.archmvp.base.ui.BaseView;
 
@@ -23,5 +24,9 @@ public interface MainView extends BaseView {
     void verifyFailure();
 
     void verifySuccess();
+
+    void foundAppNewVersion(AppVersion appVersion);
+
+    void showDownloadAppProgress(int progress);
 
 }

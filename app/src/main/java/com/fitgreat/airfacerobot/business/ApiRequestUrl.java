@@ -28,7 +28,7 @@ public interface ApiRequestUrl {
     /**
      * airface app 版本更新接口
      */
-    String CHECK_APP_VERSION = ApiDomainManager.getFitgreatDomain() + "/api/airface/v1/app/version";
+    String CHECK_APP_VERSION = ApiDomainManager.getFitgreatDomain() + "/api/airface/v2/app/version";
 
     /**
      * ros 硬件版本更新接口

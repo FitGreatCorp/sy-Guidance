@@ -4,7 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -23,6 +27,7 @@ import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
+import com.fitgreat.airfacerobot.launcher.widget.MyTipDialogSetText;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
@@ -72,7 +77,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     ImageView mChoseDestinationMapBack;
     private String currentLanguage;
     private CloseBroadcastReceiver closeBroadcastReceiver;
-    private MyTipDialog startNavigationDialog;
+    private MyTipDialogSetText startNavigationDialog;
 
     @Override
     public ChoseDestinationPresenter createPresenter() {
@@ -100,7 +105,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.chose_destination_container:
-                finish();
+//                finish();
                 break;
             default:
                 break;
@@ -230,16 +235,23 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
      * @param locationEntity 导航位置信息
      * @return
      */
-    public String getNavigationTip(LocationEntity locationEntity) {
+    public SpannableString getNavigationTip(LocationEntity locationEntity) {
         StringBuilder tipContent = new StringBuilder();
-        tipContent.append(getString(R.string.start_chose_destination_tip_one));
-        if (currentLanguage != null && currentLanguage.equals("zh")) {
+        tipContent.append(MyApp.getContext().getString(R.string.start_chose_destination_tip_one));
+        if (currentLanguage.equals("zh")) {
             tipContent.append(locationEntity.getF_Name());
         } else {
             tipContent.append(locationEntity.getF_EName());
         }
         tipContent.append(getString(R.string.start_chose_destination_tip_two));
-        return tipContent.toString();
+        //弹窗提示时,导航点位置信息加粗
+        SpannableString spannableString = new SpannableString(tipContent);
+        if (currentLanguage.equals("zh")) {
+            spannableString.setSpan(new StyleSpan(Typeface.BOLD), MyApp.getContext().getString(R.string.start_chose_destination_tip_one).length(), MyApp.getContext().getString(R.string.start_chose_destination_tip_one).length() + locationEntity.getF_Name().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        } else {
+            spannableString.setSpan(new StyleSpan(Typeface.BOLD), MyApp.getContext().getString(R.string.start_chose_destination_tip_one).length(), MyApp.getContext().getString(R.string.start_chose_destination_tip_one).length() + locationEntity.getF_EName().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return spannableString;
     }
 
     private class CloseBroadcastReceiver extends BroadcastReceiver {
@@ -256,7 +268,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     /**
      * 启动单点导航任务
      */
-    public void showDialogNavigation(boolean isStartNavigation, String dialogContent, String yesBtText, String noBtText, LocationEntity locationEntity) {
+    public void showDialogNavigation(boolean isStartNavigation, SpannableString dialogContent, String yesBtText, String noBtText, LocationEntity locationEntity) {
         //机器人工作模式状态是否为控制模式
         boolean isControlModel = SpUtils.getBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
         if (!isControlModel) { //当前不为控制模式则切换为控制模式
@@ -267,12 +279,12 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             EventBus.getDefault().post(moveMode);
         }
         //语音播报提示
-        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, dialogContent));
+        EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, dialogContent.toString()));
         //单点导航任务弹窗提示确认
-        startNavigationDialog = new MyTipDialog(MyApp.getContext());
+        startNavigationDialog = new MyTipDialogSetText(MyApp.getContext());
         startNavigationDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
         startNavigationDialog.setDialogContent(dialogContent);
-        startNavigationDialog.setTipDialogYesNoListener(yesBtText, noBtText, new MyTipDialog.TipDialogYesNoListener() {
+        startNavigationDialog.setTipDialogYesNoListener(yesBtText, noBtText, new MyTipDialogSetText.TipDialogYesNoListener() {
             @Override
             public void tipProgressChoseYes() {
                 if (isStartNavigation) {

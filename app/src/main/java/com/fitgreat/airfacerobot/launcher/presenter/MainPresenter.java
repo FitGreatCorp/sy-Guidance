@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.launcher.presenter;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
@@ -14,8 +15,12 @@ import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
+import com.fitgreat.airfacerobot.business.Callback.MyStringCallback;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.contractview.MainView;
+import com.fitgreat.airfacerobot.launcher.utils.AppVersionUtils;
+import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
+import com.fitgreat.airfacerobot.model.AppVersion;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.model.DaemonEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
@@ -29,8 +34,10 @@ import com.fitgreat.airfacerobot.versionupdate.VersionUtils;
 import com.fitgreat.archmvp.base.okhttp.BaseResponse;
 import com.fitgreat.archmvp.base.okhttp.HttpMainCallback;
 import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
+import com.fitgreat.archmvp.base.util.FileUtils;
 import com.fitgreat.archmvp.base.util.JsonUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
+import com.fitgreat.archmvp.base.util.ShellCmdUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -54,8 +61,10 @@ import okhttp3.Response;
 import static com.fitgreat.airfacerobot.business.ApiRequestUrl.VERIFY_MODULE_PASSWORD;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.basePath;
+import static com.fitgreat.airfacerobot.constants.Constants.currentApkPath;
 import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPath;
 import static com.fitgreat.airfacerobot.constants.Constants.currentEnglishMapPath;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.RECHARGE_OPERATION_INFO;
@@ -68,6 +77,11 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     private List<LocationEntity> locationList = new ArrayList<>();
     private List<OperationInfo> operationInfosList = new ArrayList<>();
     private static final String TAG = "MainPresenter";
+    private MapEntity localMapEntity;
+    private MapEntity serverMapEntity;
+    private Handler mHandler;
+    private String softVersionId;
+    private String downloadUrl;
 
     /**
      * 检查hardware版本更新
@@ -96,6 +110,79 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             @Override
             public void onFailed(String e) {
                 LogUtils.e(TAG, "check version exception:" + e);
+            }
+        });
+    }
+
+    /**
+     * 检查app软件升级
+     */
+    public void checkSoftwareVersion(Context context) {
+        BusinessRequest.checkAppVersion(new MyStringCallback(new MyStringCallback.ResponseListener() {
+            @Override
+            public void onResponseString(String responseString) {
+                LogUtils.d(DEFAULT_LOG_TAG, "查询服务端最新软件是否更新成功::" + responseString);
+                try {
+                    JSONObject jsonObject = new JSONObject(responseString);
+                    String msg = jsonObject.getString("msg");
+                    if (!TextUtils.isEmpty(msg) && (msg.equals("成功"))) {
+                        String dataString = jsonObject.getString("data");
+                        if (!TextUtils.isEmpty(dataString)) {
+                            AppVersion appVersion = JSON.parseObject(dataString, AppVersion.class);
+                            LogUtils.json(DEFAULT_LOG_TAG, "appVersion:" + JSON.toJSONString(appVersion));
+                            LogUtils.d(DEFAULT_LOG_TAG, "软件新版本号:" + appVersion.getF_VersionNumber() + "  当前软件版本号,  " + AppVersionUtils.getSoftwareVersionNumber(context));
+                            if ((AppVersionUtils.getSoftwareVersionNumber(context) != 0) && appVersion.getF_VersionNumber() > AppVersionUtils.getSoftwareVersionNumber(context)) { //软件有新版本
+                                mView.foundAppNewVersion(appVersion);
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailureString(IOException e) {
+                LogUtils.e(DEFAULT_LOG_TAG, "查询服务端最新软件是否更新失败::" + e.getMessage());
+            }
+        }));
+    }
+
+    /**
+     * 下载app软件升级
+     */
+    public void downloadSoftwareInstall(Context context, AppVersion appVersion, Handler handler) {
+        DownloadUtils.download(appVersion.getF_FileUrl(), currentApkPath, false, new DownloadUtils.OnDownloadListener() {
+            @Override
+            public void onDownloadSuccess(String filePath) {
+                LogUtils.d(DEFAULT_LOG_TAG, "app安装包下载成功:" + filePath);
+                //安装升级包
+                ShellCmdUtils.execInstallCmd(filePath, (int code, String result) -> {
+                    if (code == 0 && result.contains("Success")) {
+                        LogUtils.d(DEFAULT_LOG_TAG, "---------app安装包安装成功----" + code + " result:" + result);
+                        FileUtils.deleteFile(filePath);
+                        handler.post(() -> {
+                            ToastUtils.showSmallToast("软件升级成功");
+                            ToastUtils.showSmallToast("软件启动中...");
+                        });
+                    } else {
+                        handler.post(() -> {
+                            ToastUtils.showSmallToast("软件安装失败");
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onDownloading(int progress) {
+                handler.post(() -> {
+                    mView.showDownloadAppProgress(progress);
+                });
+            }
+
+            @Override
+            public void onDownloadFailed(Exception e) {
+                LogUtils.e(DEFAULT_LOG_TAG, "app安装包下载失败:" + e.getMessage());
             }
         });
     }
@@ -158,7 +245,8 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     /**
      * 获取导航位置信息
      */
-    public void getLocationInfo() {
+    public void getLocationInfo(Handler handler) {
+        this.mHandler = handler;
         //获取地图信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
         LogUtils.json(DEFAULT_LOG_TAG, "机器人信息==>" + StringEscapeUtils.unescapeJava(JsonUtils.encode(robotInfo)));
@@ -323,30 +411,49 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
             }
             locationList.add(locationEntity);
         }
-        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(locationList));
-        //获取地图信息
-        String mapString = msgObj.getString("map");
-        LogUtils.d(DEFAULT_LOG_TAG, "地图信息:  " + mapString);
-        //缓存地图信息到本地
-        SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, mapString);
-        //解析获取地图信息
-        MapEntity mapEntity = JSON.parseObject(mapString, MapEntity.class);
+//        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(locationList));
+        //根据本地缓存地图信息和服务端地图信息对比判断是服务端地图是否更换
+        //本地缓存地图信息
+        String localMapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
+        //服务端地图信息
+        String serverMapInfoString = msgObj.getString("map");
+        if (localMapInfoString != null && (!TextUtils.isEmpty(serverMapInfoString))) {
+            //本地地图信息
+            localMapEntity = JSON.parseObject(localMapInfoString, MapEntity.class);
+            //服务端地图信息
+            serverMapEntity = JSON.parseObject(serverMapInfoString, MapEntity.class);
+            if (!serverMapEntity.getF_Id().equals(localMapEntity.getF_Id())) { //服务端地图已更新,更新本地地图数据信息
+                LogUtils.d(DEFAULT_LOG_TAG, "最新地图信息:  " + serverMapInfoString);
+                //更新本地地图信息
+                SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, serverMapInfoString);
+                //清空本地和地图有关的其他数据
+                clearDataWithMap();
+            }
+        } else if ((!TextUtils.isEmpty(serverMapInfoString))) {
+            //缓存地图信息到本地
+            SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, serverMapInfoString);
+        } else {
+            mHandler.post(() -> {
+                ToastUtils.showSmallToast("服务端请配置地图");
+            });
+            return;
+        }
         //下载地图文件到本地
         File parentFile = new File(basePath);
         if (!parentFile.exists()) {
             parentFile.mkdir();
         }
         //下载最新中文地图
-        downloadLatestMap(currentChineseMapPath, "中文地图下载: ", mapEntity.getF_MapFileUrl());
+        downloadLatestMap(currentChineseMapPath, "中文地图下载: ", serverMapEntity.getF_MapFileUrl());
         //下载英文地图
-        downloadLatestMap(currentEnglishMapPath, "英文地图下载: ", mapEntity.getF_EMapUrl());
+        downloadLatestMap(currentEnglishMapPath, "英文地图下载: ", serverMapEntity.getF_EMapUrl());
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
         //获取常见问题列表问题
-        if (!TextUtils.isEmpty(mapEntity.getF_Floor()) && (!TextUtils.isEmpty(RobotInfoUtils.getRobotInfo().getF_HospitalId()))) {
+        if (!TextUtils.isEmpty(serverMapEntity.getF_Floor()) && (!TextUtils.isEmpty(RobotInfoUtils.getRobotInfo().getF_HospitalId()))) {
             ConcurrentHashMap<String, String> info = new ConcurrentHashMap<>();
             info.put("hospitalId", RobotInfoUtils.getRobotInfo().getF_HospitalId());
-            info.put("floor", mapEntity.getF_Floor());
+            info.put("floor", serverMapEntity.getF_Floor());
             LogUtils.d(DEFAULT_LOG_TAG, "拼接参数:info=>" + JSON.toJSONString(info));
             BusinessRequest.getRequestWithParam(info, ApiRequestUrl.COMMON_PROBLEM_LIST, new Callback() {
                 @Override
@@ -380,6 +487,27 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     }
 
     /**
+     * 服务端切换地图时清空本地缓存数据
+     */
+    public void clearDataWithMap() {
+        //空闲时工作流
+        SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
+        //分别删除中英文版本地图
+        File chineseMapFile = new File(currentChineseMapPath);
+        if (chineseMapFile.exists()) {
+            chineseMapFile.delete();
+        }
+        File englishMapFile = new File(currentEnglishMapPath);
+        if (englishMapFile.exists()) {
+            englishMapFile.delete();
+        }
+        //清空导航点位置信息
+        SpUtils.putString(MyApp.getContext(), "locationList", null);
+        //清空常见问题数据信息
+        SpUtils.putString(MyApp.getContext(), "problemList", null);
+    }
+
+    /**
      * 下载最新地图到本地
      */
     private void downloadLatestMap(String currentMapPath, String s, String f_eMapUrl) {
@@ -387,7 +515,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         if (currentMapFile.exists()) {
             currentMapFile.delete();
         }
-        LogUtils.d(DEFAULT_LOG_TAG, s + f_eMapUrl);
+//        LogUtils.d(DEFAULT_LOG_TAG, s + f_eMapUrl);
         downloadMap(f_eMapUrl, currentMapPath);
     }
 
@@ -401,7 +529,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         DownloadUtils.download(downloadMapUrl, saveMapPath, false, new DownloadUtils.OnDownloadListener() {
             @Override
             public void onDownloadSuccess(String filePath) {
-                LogUtils.d(DEFAULT_LOG_TAG, "地图下载成功:" + filePath);
+//                LogUtils.d(DEFAULT_LOG_TAG, "地图下载成功:" + filePath);
             }
 
             @Override
@@ -410,10 +538,11 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
 
             @Override
             public void onDownloadFailed(Exception e) {
-                LogUtils.e(DEFAULT_LOG_TAG, "地图下载失败:" + e.getMessage());
+//                LogUtils.e(DEFAULT_LOG_TAG, "地图下载失败:" + e.getMessage());
             }
         });
     }
+
     /**
      * 验证设置模块密码
      */

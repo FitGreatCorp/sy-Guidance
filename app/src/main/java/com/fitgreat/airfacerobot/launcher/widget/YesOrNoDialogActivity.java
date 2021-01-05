@@ -3,6 +3,8 @@ package com.fitgreat.airfacerobot.launcher.widget;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager;
@@ -142,7 +144,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         sendBroadcast(new Intent(CLOSE_SELECT_NAVIGATION_PAGE));
         playShowText(getString(R.string.go_back_tip));
         //返回原点充电
-        OperationUtils.startSpecialWorkFlow(1);
+        OperationUtils.startSpecialWorkFlow(1,new Handler(Looper.myLooper()));
         timerTask.cancel();
         timerTask = null;
         timer = null;

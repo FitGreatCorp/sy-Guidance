@@ -1596,10 +1596,10 @@ public class RobotBrainService extends Service {
                             boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
                             if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && startIntroductionWorkflowTag) { //当前机器人语言为中文
                                 //重启院内介绍工作流程中文版
-                                OperationUtils.startSpecialWorkFlow(3);
+                                OperationUtils.startSpecialWorkFlow(3,handler);
                             } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && startIntroductionWorkflowTag) {
                                 //重启院内介绍工作流程英文版
-                                OperationUtils.startSpecialWorkFlow(2);
+                                OperationUtils.startSpecialWorkFlow(2,handler);
                             }
                         } else {
                             LogUtils.d(TAG, "taskVideoCall === " + taskVideoCall);

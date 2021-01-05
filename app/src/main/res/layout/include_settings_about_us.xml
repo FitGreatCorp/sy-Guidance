@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical|right"
-            android:text="TaiSon800"
+            android:text="DoctorFace-Huasan-100"
             android:textColor="@color/black"
             android:textSize="14sp" />
     </LinearLayout>
@@ -87,7 +87,7 @@
             android:ellipsize="end"
             android:gravity="center_vertical|right"
             android:maxLines="1"
-            android:text="AirFace智能移动远程医疗机器人"
+            android:text="DoctorFace智能移动医疗导诊机器人"
             android:textColor="@color/black"
             android:textSize="14sp" />
     </LinearLayout>

@@ -59,8 +59,8 @@
     <string name="auscaltation">远程听诊</string>
     <string name="home_go_title">我要去...</string>
     <string name="home_question_title">常见问题</string>
-    <string name="home_introduction_title">院内介绍</string>
-    <string name="setup_module_title">艾菲仕设置</string>
+    <string name="home_introduction_title">院区介绍</string>
+    <string name="setup_module_title">DoctorFace 设置</string>
     <string name="answer_yes">是</string>
     <string name="answer_no">否</string>
     <string name="switch_chinese_english">中英文切换</string>
@@ -76,7 +76,7 @@
     <string name="prompt_task_exception">当前任务出现异常。</string>
     <string name="ask_for_help_text">护士姐姐，请帮帮我。</string>
     <string name="start_chose_destination_tip_one">你现在要去\t</string>
-    <string name="start_chose_destination_tip_two">\t吗?\t点击"\是"\我会带你过去哦</string>
+    <string name="start_chose_destination_tip_two">\t吗?\t点击 \"是\ "我会带你过去哦</string>
     <string name="navigation_success_tip_one">我已到达\t</string>
     <string name="navigation_success_tip_two">\t是否还需要其他服务?</string>
     <string name="start_chose_destination_dialog_title">提示</string>
@@ -107,4 +107,5 @@
     <string name="prompt_enter_password">请输入机器人登录密码</string>
     <string name="prompt_password_wrong">密码错误,请重新输入.</string>
     <string name="prompt_password_title">请输入密码</string>
+    <string name="prompt_common_problem">我可以帮您解答问题哦.</string>
 </resources>

@@ -46,14 +46,12 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/common_problem_list"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/px0"
+            android:layout_height="@dimen/px189"
             android:layout_margin="@dimen/px20"
             android:visibility="gone"
-            android:gravity="center"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/common_problem_title"
-            app:layout_constraintVertical_weight="1" />
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/common_problem_title" />
 
         <LinearLayout
             android:id="@+id/linearLayout_no_data"
@@ -62,6 +60,7 @@
             android:layout_margin="@dimen/px20"
             android:gravity="center"
             android:orientation="vertical"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/common_problem_title"
             app:layout_constraintVertical_weight="1">
@@ -86,8 +85,8 @@
 
     <ImageView
         android:id="@+id/common_problem_robot_image"
-        android:layout_width="@dimen/px120"
-        android:layout_height="@dimen/px150"
+        android:layout_width="@dimen/px105"
+        android:layout_height="@dimen/px140"
         android:layout_marginLeft="@dimen/px20"
         android:layout_marginBottom="@dimen/px20"
         android:background="@drawable/wink_speak_animation"
@@ -103,10 +102,8 @@
         android:layout_marginLeft="@dimen/px20"
         android:layout_marginBottom="@dimen/px30"
         android:background="@drawable/home_msg_bg"
-        android:ellipsize="end"
         android:lineSpacingExtra="8dp"
         android:maxWidth="@dimen/px280"
-        android:maxLines="3"
         android:minWidth="@dimen/px280"
         android:padding="@dimen/px15"
         android:textColor="#FFFFFFFF"
