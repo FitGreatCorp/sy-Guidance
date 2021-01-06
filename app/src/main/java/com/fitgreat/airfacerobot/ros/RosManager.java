@@ -70,6 +70,7 @@ import std_msgs.Byte;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
@@ -182,6 +183,9 @@ public class RosManager {
     private Vector3 stopLinear = null;
     private Timer rosManagerInitTimer = null;
     private TimerTask rosManagerInitTimerTask = null;
+    private boolean mainPageShowTag;
+    //迎宾语播放次数限制一直有人时默认播放一次
+    private int playTipTime = 0;
 
     private Handler myHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -217,7 +221,6 @@ public class RosManager {
      */
     public void judgmentHasPerson(byte type) {
         try {
-            LogUtils.d(TAG, "judgmentHasPerson");
             if (null == clientHasPerson) {
                 try {
                     clientHasPerson = mConnectedNode.newServiceClient(RosInfo.JUDGMENT_HAS_PERSON, autopark._TYPE);
@@ -235,16 +238,20 @@ public class RosManager {
             clientHasPerson.call(msg, new ServiceResponseListener<autoparkResponse>() {
                 @Override
                 public void onSuccess(autoparkResponse setmodeResponse) {    //  getResult  为 false  机器附近有物体  true   没有物体
-                    LogUtils.d(TAG, "judgmentHasPerson success    getMsg   " + setmodeResponse.getMsg() + "   getResult      " + setmodeResponse.getResult());
+                    LogUtils.d(TAG, "judgmentHasPerson getMsg   " + setmodeResponse.getMsg() + " getResult      " + setmodeResponse.getResult());
                     if (!setmodeResponse.getResult()) {
+                        playTipTime++;
                         //是否播放迎宾语
                         broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
+                        //程序首页是否显示
+                        mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
                         string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");
-                        LogUtils.d(TAG, "机器人附近有障碍物,迎宾语播放开关 , " + broadcastGreetSwitchTag + "  迎宾语内容,  " + string_hello);
-                        if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello))) { //播放迎宾语开关打开
+                        LogUtils.d(TAG, "机器人附近有障碍物,迎宾语播放开关 , " + broadcastGreetSwitchTag + "  迎宾语内容,  " + string_hello + "  程序是否在首页,  " + mainPageShowTag+" 播放次数计数, "+playTipTime);
+                        if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello)) && mainPageShowTag && playTipTime == 1) { //播放迎宾语开关打开
                             playShowText(string_hello);
                         }
                     } else {
+                        playTipTime = 0;
                         LogUtils.d(TAG, "机器人附近没有障碍物");
                     }
                 }
@@ -906,6 +913,10 @@ public class RosManager {
         if (null != nodeMainExecutor) {
             nodeMainExecutor.shutdown();
             nodeMainExecutor = null;
+        }
+        if (rosManagerInitTimer != null) {
+            rosManagerInitTimer.cancel();
+            rosManagerInitTimer = null;
         }
         mConnect = false;
         myHandler.removeMessages(0);

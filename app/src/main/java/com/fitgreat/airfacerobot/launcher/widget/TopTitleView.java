@@ -2,6 +2,7 @@ package com.fitgreat.airfacerobot.launcher.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,20 +35,27 @@ public class TopTitleView extends ConstraintLayout {
     public void initializeView(Context context, AttributeSet attrs) {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.TopTitleView);
         String titleName = typedArray.getString(R.styleable.TopTitleView_titleName);
+        int titleColor = typedArray.getColor(R.styleable.TopTitleView_titleColor, Color.BLACK);
         View inflate = LayoutInflater.from(context).inflate(R.layout.view_base_title, this, true);
-        ImageView baseBack = inflate.findViewById(R.id.base_back);
-        baseBack.setOnClickListener((view) -> {
+        ConstraintLayout baseBackView = inflate.findViewById(R.id.container_base_back);
+        baseBackView.setOnClickListener((view) -> {
             if (mBaseBackListener != null) {
                 mBaseBackListener.back();
             }
         });
         baseTitleView = inflate.findViewById(R.id.base_title);
         baseTitleView.setText(titleName);
+        if (titleColor != 0) {
+            baseTitleView.setTextColor(titleColor);
+        }
         typedArray.recycle();
     }
 
     private BaseBackListener mBaseBackListener = null;
 
+    /**
+     * 左上角返回按钮点击事件
+     */
     public interface BaseBackListener {
         void back();
     }
@@ -58,6 +66,7 @@ public class TopTitleView extends ConstraintLayout {
 
     /**
      * 设置标题内容
+     *
      * @param baseTitleValue
      */
     public void setBaseTitle(String baseTitleValue) {

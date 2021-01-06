@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
@@ -18,6 +19,7 @@ import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
+import com.fitgreat.archmvp.base.util.SpUtils;
 import com.github.barteksc.pdfviewer.PDFView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -27,6 +29,7 @@ import java.io.File;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownload;
@@ -64,7 +67,11 @@ public class PdfPlayActivity extends MvpBaseActivity {
                     if (downloadingDialog.isShowing()) {
                         downloadingDialog.dismiss();
                     }
-                    url = DownloadUtils.DOWNLOAD_PATH + blob;
+                    if (currentLanguage.equals("zh")) { //当前机器人语言为中文
+                        url = DownloadUtils.DOWNLOAD_PATH + blob;
+                    } else if (currentLanguage.equals("en")) {
+                        url = DownloadUtils.DOWNLOAD_PATH + enBlob;
+                    }
                     initPdfView();
                     break;
                 case DownloadUtils.DOWNLOAD_FAILED://下载失败
@@ -75,6 +82,10 @@ public class PdfPlayActivity extends MvpBaseActivity {
             }
         }
     };
+    private String enBlob;
+    private String instructionEnName;
+    private String currentLanguage;
+    private File file;
 
     @Override
     public int getLayoutResource() {
@@ -143,7 +154,11 @@ public class PdfPlayActivity extends MvpBaseActivity {
 
     public void finishInstruction(String status) {
         LogUtils.d(TAG, "finishInstruction !!!!!!!!");
-        Canceldownload(ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, true);
+        if (currentLanguage.equals("zh")) { //当前机器人语言为中文
+            Canceldownload(ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, true);
+        } else if (currentLanguage.equals("en")) {
+            Canceldownload(ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + enBlob, true);
+        }
         if (status.equals("3")) {
             if (downloadingDialog != null) {
                 if (downloadingDialog.isShowing()) {
@@ -151,7 +166,7 @@ public class PdfPlayActivity extends MvpBaseActivity {
                 }
             }
         }
-        LogUtils.d("startSpecialWorkFlow", "pdf播放结束\t\t");
+        LogUtils.d(DEFAULT_LOG_TAG, "pdf播放结束\t\t");
         //更新任务完成状态
         SignalDataEvent instructEnd = new SignalDataEvent();
         instructEnd.setType(MSG_INSTRUCTION_STATUS_FINISHED);
@@ -184,17 +199,29 @@ public class PdfPlayActivity extends MvpBaseActivity {
         initUiEvent.setHideFloatBall(true);
         EventBus.getDefault().post(initUiEvent);
         //判断播放pdf文件本地是否已存在,不存在下载播放
-        File file = new File(DownloadUtils.DOWNLOAD_PATH + blob);
-        LogUtils.d(DEFAULT_LOG_TAG,"PDF文件路径::"+file.getPath());
+        if (currentLanguage.equals("zh")) { //当前机器人语言为中文
+            file = new File(DownloadUtils.DOWNLOAD_PATH + blob);
+        } else if (currentLanguage.equals("en")) {
+            file = new File(DownloadUtils.DOWNLOAD_PATH + enBlob);
+        }
+        LogUtils.d(DEFAULT_LOG_TAG, "PDF文件路径::" + file.getPath());
         if (!file.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(PdfPlayActivity.this);
             }
             downloadingDialog.show();
             downloadingDialog.setMessage("文件下载中...");
-            DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
+            if (currentLanguage.equals("zh")) { //当前机器人语言为中文
+                DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
+            } else if (currentLanguage.equals("en")) {
+                DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + enBlob, true, instructionEnName);
+            }
         } else {
-            url = DownloadUtils.DOWNLOAD_PATH + blob;
+            if (currentLanguage.equals("zh")) { //当前机器人语言为中文
+                url = DownloadUtils.DOWNLOAD_PATH + blob;
+            } else if (currentLanguage.equals("en")) {
+                url = DownloadUtils.DOWNLOAD_PATH + enBlob;
+            }
             initPdfView();
         }
     }
@@ -232,6 +259,9 @@ public class PdfPlayActivity extends MvpBaseActivity {
         if (null != getIntent().getStringExtra("blob") && !"".equals(getIntent().getStringExtra("blob")) && !"null".equals(getIntent().getStringExtra("blob"))) {
             blob = getIntent().getStringExtra("blob");
         }
+        if (null != getIntent().getStringExtra("enBlob") && !"".equals(getIntent().getStringExtra("enBlob")) && !"null".equals(getIntent().getStringExtra("enBlob"))) {
+            enBlob = getIntent().getStringExtra("enBlob");
+        }
         if (null != getIntent().getStringExtra("instructionId") && !"".equals(getIntent().getStringExtra("instructionId")) && !"null".equals(getIntent().getStringExtra("instructionId"))) {
             instructionId = getIntent().getStringExtra("instructionId");
         }
@@ -250,6 +280,10 @@ public class PdfPlayActivity extends MvpBaseActivity {
         if (null != getIntent().getStringExtra("instructionName") && !"".equals(getIntent().getStringExtra("instructionName")) && !"null".equals(getIntent().getStringExtra("instructionName"))) {
             instructionName = getIntent().getStringExtra("instructionName");
         }
+        if (null != getIntent().getStringExtra("instructionEnName") && !"".equals(getIntent().getStringExtra("instructionEnName")) && !"null".equals(getIntent().getStringExtra("instructionEnName"))) {
+            instructionEnName = getIntent().getStringExtra("instructionEnName");
+        }
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         initView();
     }
 

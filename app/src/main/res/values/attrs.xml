@@ -24,5 +24,13 @@
     <!--页面顶部公共标题-->
     <declare-styleable name="TopTitleView">
         <attr name="titleName" format="string" />
+        <attr name="titleColor" format="color" />
+    </declare-styleable>
+
+    <!--院内介绍列表条目view-->
+    <declare-styleable name="IntroductionView">
+        <attr name="introductionTitle" format="string" />
+        <attr name="introductionKindImage" format="reference" />
+        <attr name="introductionBackImage" format="reference" />
     </declare-styleable>
 </resources>

@@ -6,9 +6,7 @@
     android:id="@+id/text_introduction_constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".mediaplayer.PdfPlayActivity"
-    tools:ignore="MissingConstraints">
+    android:orientation="vertical">
 
     <com.fitgreat.airfacerobot.launcher.widget.TopTitleView
         android:id="@+id/text_introduction_title"
@@ -16,10 +14,18 @@
         android:layout_height="wrap_content"
         topTitle:titleName="新园区介绍" />
 
-    <TextView
-        android:id="@+id/text_introduction_content"
+    <ScrollView
+        android:id="@+id/scrollView_introduction_content"
         android:layout_width="match_parent"
         android:layout_height="@dimen/px0"
-        android:layout_weight="1"
-        android:padding="@dimen/px25" />
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/text_introduction_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/px25"
+            android:paddingRight="@dimen/px25"
+            android:paddingBottom="@dimen/px25" />
+    </ScrollView>
 </LinearLayout>

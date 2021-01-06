@@ -29,6 +29,7 @@ public class NextOperationData {
     private String F_Y;
     private String F_Z;
     private String F_FileUrl;
+    private String F_EFileUrl;
     private String F_InstructionName;
     private String F_Status;
     private String operationType;
@@ -130,5 +131,13 @@ public class NextOperationData {
 
     public void setF_InstructionEnName(String f_InstructionEnName) {
         F_InstructionEnName = f_InstructionEnName;
+    }
+
+    public String getF_EFileUrl() {
+        return F_EFileUrl;
+    }
+
+    public void setF_EFileUrl(String f_EFileUrl) {
+        F_EFileUrl = f_EFileUrl;
     }
 }

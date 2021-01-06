@@ -54,7 +54,6 @@ public class MyApp extends Application {
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-//                LogUtils.d(TAG, "-----------onActivityCreated------" + activity.getClass().getSimpleName());
                 if ("MainActivity".equals(activity.getClass().getSimpleName())) {
                     isMainActivityRunning = true;
                 }
@@ -69,7 +68,6 @@ public class MyApp extends Application {
             public void onActivityResumed(Activity activity) {
                 if ("MainActivity".equals(activity.getClass().getSimpleName())) {
                     lowBatteryPromptTag = true;
-//                    isMainActivityRunning = true;
                 }
             }
 
@@ -92,7 +90,6 @@ public class MyApp extends Application {
 
             @Override
             public void onActivityDestroyed(Activity activity) {
-//                LogUtils.d(TAG, "-----------onActivityDestroyed------" + activity.getLocalClassName());
                 if ("MainActivity".equals(activity.getClass().getSimpleName())) {
                     isMainActivityRunning = false;
                 }

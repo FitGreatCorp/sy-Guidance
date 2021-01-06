@@ -5,15 +5,13 @@
     android:layout_height="match_parent"
     android:background="@color/color_fff8f8f8"
     android:orientation="vertical">
-
     <include layout="@layout/include_title_bar" />
-
-
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/main_item_page"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">

@@ -6,6 +6,7 @@ import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
@@ -38,6 +39,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 
 
@@ -61,12 +63,11 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String stringResponse = response.body().string();
-                LogUtils.d(DEFAULT_LOG_TAG, "获取院内介绍任务列表数据成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
+                LogUtils.json(DEFAULT_LOG_TAG, "获取院内介绍任务列表数据成功-->" + StringEscapeUtils.unescapeJava(stringResponse));
                 try {
                     JSONObject msbObj = new JSONObject(stringResponse);
                     String type = msbObj.getString("type");
                     String msgString = msbObj.getString("msg");
-//                    LogUtils.json(DEFAULT_LOG_TAG, msgString);
                     if (type.equals("success")) {
                         handOperationCash(msgString);
                     }
@@ -81,58 +82,65 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
      * 获取处理医院操作任务信息,并缓存到本地
      */
     private void handOperationCash(String msg) throws JSONException {
-        JSONTokener arrayTokener = new JSONTokener(msg);
-        JSONArray msgArray = (JSONArray) arrayTokener.nextValue();
-        if (operationInfoList.size() > 0) {
-            operationInfoList.clear();
+        if (!TextUtils.isEmpty(msg)){
+            JSONTokener arrayTokener = new JSONTokener(msg);
+            JSONArray msgArray = (JSONArray) arrayTokener.nextValue();
+            if (operationInfoList.size() > 0) {
+                operationInfoList.clear();
+            }
+            for (int i = 0; i < msgArray.length(); i++) {
+                OperationInfo operationInfo = new OperationInfo();
+                JSONObject operationObj = msgArray.getJSONObject(i);
+                if (operationObj.has("F_Id")) {
+                    operationInfo.setF_id(operationObj.getString("F_Id"));
+                }
+                if (operationObj.has("F_Name")) {
+                    operationInfo.setF_Name(operationObj.getString("F_Name"));
+                }
+                if (operationObj.has("F_Type")) {
+                    operationInfo.setF_Type(operationObj.getString("F_Type"));
+                }
+                if (operationObj.has("F_FileUrl")) {
+                    operationInfo.setF_FileUrl(operationObj.getString("F_FileUrl"));
+                }
+                if (operationObj.has("F_HospitalId")) {
+                    operationInfo.setF_HospitalId(operationObj.getString("F_HospitalId"));
+                }
+                if (operationObj.has("F_Memo")) {
+                    operationInfo.setF_Memo(operationObj.getString("F_Memo"));
+                }
+                if (operationObj.has("F_IsBreak")) {
+                    operationInfo.setF_IsBreak(operationObj.getString("F_IsBreak"));
+                }
+                if (operationObj.has("F_EName")) {
+                    operationInfo.setF_EName(operationObj.getString("F_EName"));
+                }
+                if (operationObj.has("F_DescImg")) {
+                    operationInfo.setF_DescImg(operationObj.getString("F_DescImg"));
+                }
+                if (operationObj.has("F_EFileUrl")) {
+                    operationInfo.setF_EFileUrl(operationObj.getString("F_EFileUrl"));
+                }
+                if (operationObj.has("F_DescImg")) {
+                    operationInfo.setF_DescImg(operationObj.getString("F_DescImg"));
+                }
+                operationInfoList.add(operationInfo);
+            }
+            handler.post(() -> {
+                mView.showIntroductionOperationList(operationInfoList);
+            });
+        }else { //院内介绍操作没数据
+            handler.post(() -> {
+                mView.showIntroductionOperationList(null);
+            });
         }
-        for (int i = 0; i < msgArray.length(); i++) {
-            OperationInfo operationInfo = new OperationInfo();
-            JSONObject operationObj = msgArray.getJSONObject(i);
-            if (operationObj.has("F_Id")) {
-                operationInfo.setF_id(operationObj.getString("F_Id"));
-            }
-            if (operationObj.has("F_Name")) {
-                operationInfo.setF_Name(operationObj.getString("F_Name"));
-            }
-            if (operationObj.has("F_Type")) {
-                operationInfo.setF_Type(operationObj.getString("F_Type"));
-            }
-            if (operationObj.has("F_FileUrl")) {
-                operationInfo.setF_FileUrl(operationObj.getString("F_FileUrl"));
-            }
-            if (operationObj.has("F_HospitalId")) {
-                operationInfo.setF_HospitalId(operationObj.getString("F_HospitalId"));
-            }
-            if (operationObj.has("F_Memo")) {
-                operationInfo.setF_Memo(operationObj.getString("F_Memo"));
-            }
-            if (operationObj.has("F_IsBreak")) {
-                operationInfo.setF_IsBreak(operationObj.getString("F_IsBreak"));
-            }
-            if (operationObj.has("F_EName")) {
-                operationInfo.setF_EName(operationObj.getString("F_EName"));
-            }
-            if (operationObj.has("F_DescImg")) {
-                operationInfo.setF_DescImg(operationObj.getString("F_DescImg"));
-            }
-            if (operationObj.has("F_EFileUrl")) {
-                operationInfo.setF_EFileUrl(operationObj.getString("F_EFileUrl"));
-            }
-            if (operationObj.has("F_DescImg")) {
-                operationInfo.setF_DescImg(operationObj.getString("F_DescImg"));
-            }
-            operationInfoList.add(operationInfo);
-        }
-        handler.post(() -> {
-            mView.showIntroductionOperationList(operationInfoList);
-        });
     }
 
     /**
      * 发起操作任务
      */
     public void startOperationTask(OperationInfo operationInfo) {
+
         JSONArray operationList = new JSONArray();
         JSONArray instructionList = new JSONArray();
         //添加操作任务
@@ -246,7 +254,7 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
                         LogUtils.json(DEFAULT_LOG_TAG, msgString);
                         if (msgString != null) {
                             NextOperationData nextOperationData = JSON.parseObject(msgString, NextOperationData.class);
-                            LogUtils.d(DEFAULT_LOG_TAG, JSON.toJSONString(nextOperationData));
+                            LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(nextOperationData));
                             SignalDataEvent autoMoveEvent = new SignalDataEvent();
                             if (!nextOperationData.getF_Type().equals("End")) {
                                 autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
@@ -254,6 +262,7 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
                                 autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
                                 autoMoveEvent.setContainer(nextOperationData.getF_Container());
                                 autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
+                                autoMoveEvent.setEnFileUrl(nextOperationData.getF_EFileUrl());
                                 autoMoveEvent.setProduceId(actionId);
                                 autoMoveEvent.setOperationType(nextOperationData.getOperationType());
                                 autoMoveEvent.setX(nextOperationData.getF_X());
@@ -269,7 +278,6 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
                                         return;
                                     }
                                 }
-                                LogUtils.d(DEFAULT_LOG_TAG, "nextOperationData.getF_Type()=>" + nextOperationData.getF_Type());
                                 autoMoveEvent.setType(MSG_UPDATE_INSTARUCTION_STATUS);
                                 EventBus.getDefault().post(autoMoveEvent);
                             }

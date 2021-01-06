@@ -38,9 +38,9 @@ public class IntroductionProcessAdapter extends BaseQuickAdapter<OperationInfo, 
     protected void convert(@NotNull BaseViewHolder baseViewHolder, OperationInfo operationInfo) {
         //任务名字根据当前系统语言
         String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-        if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && !("null".equals(operationInfo.getF_Name()))) { //当前机器人语言为中文
+        if (currentLanguage.equals("zh") && !("null".equals(operationInfo.getF_Name()))) { //当前机器人语言为中文
             baseViewHolder.setText(R.id.item_introduction_process_title, operationInfo.getF_Name());
-        } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && !("null".equals(operationInfo.getF_EName()))) {
+        } else if (currentLanguage.equals("en") && !("null".equals(operationInfo.getF_EName()))) {
             baseViewHolder.setText(R.id.item_introduction_process_title, operationInfo.getF_EName());
         }
         //任务介绍logo
@@ -54,7 +54,9 @@ public class IntroductionProcessAdapter extends BaseQuickAdapter<OperationInfo, 
         ImageView introductionProcessKindImage = (ImageView) baseViewHolder.getView(R.id.introduction_process_kind_image);
         if (operationInfo.getF_Type().equals("2")) {
             introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_video));
-        } else {
+        } else if (operationInfo.getF_Type().equals("3")) {
+            introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_ppt));
+        } else if (operationInfo.getF_Type().equals("4")) {
             introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_word));
         }
         addChildClickViewIds(R.id.main_introduction_process_image);

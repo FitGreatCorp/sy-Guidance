@@ -138,6 +138,7 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     private List<WorkflowEntity> mWorkflowEntityList;
     private String currentFreeOperation;
     private WorkflowEntity workflowEntity;
+    private PopupWindow popupWindow;
 
     @Override
     public int getLayoutResource() {
@@ -283,7 +284,8 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             , R.id.settings_apps_layout, R.id.settings_date_time_layout, R.id.settings_language_layout,
             R.id.settings_inputmethod_layout, R.id.settings_develop_layout, R.id.settings_reboot_layout,
             R.id.settings_shutdown_layout, R.id.settings_robot_official_website_layout, R.id.settings_wifi_layout,
-            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio, R.id.drag_mode_radio, R.id.control_mode_radio, R.id.free_operation})
+            R.id.settings_device_id_layout, R.id.settings_app_list_layout, R.id.btn_save, R.id.test_domains_radio, R.id.product_domains_radio,
+            R.id.drag_mode_radio, R.id.control_mode_radio, R.id.free_operation, R.id.main_item_page})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.ll_info:
@@ -477,6 +479,12 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             case R.id.free_operation: //空闲操作选择
                 choseFreeOperation();
                 break;
+            case R.id.main_item_page:
+                if (popupWindow != null && popupWindow.isShowing()) {
+                    popupWindow.dismiss();
+                    popupWindow = null;
+                }
+                break;
             default:
                 break;
         }
@@ -488,7 +496,7 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     public void choseFreeOperation() {
         if (mWorkflowEntityList != null && mWorkflowEntityList.size() != 0) {
             View inflate = View.inflate(this, R.layout.free_operation_list, null);
-            PopupWindow popupWindow = new PopupWindow(this);
+            popupWindow = new PopupWindow(this);
             //设置PopupWindow属性显示
             popupWindow.setContentView(inflate);
             popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -501,7 +509,11 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             workFlowListAdapter.setOnItemClickListener((adapter, view, position) -> {
                 workflowEntity = (WorkflowEntity) adapter.getData().get(position);
                 //缓存当前选择空闲工作流
-                SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, JSON.toJSONString(workflowEntity));
+                if (workflowEntity.getF_Id().equals("")) {
+                    SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
+                } else {
+                    SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, JSON.toJSONString(workflowEntity));
+                }
                 //关闭popupWindow
                 popupWindow.dismiss();
                 //显示当前选择空闲工作流名字

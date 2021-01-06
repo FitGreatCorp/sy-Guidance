@@ -100,7 +100,7 @@ public class SpeechManager {
     /**
      * 文字语音播报
      */
-    public static void textTtsPlay(String textContent, String ttsId,TtsBroadcastListener ttsBroadcastListener) {
+    public static void textTtsPlay(String textContent, String ttsId, TtsBroadcastListener ttsBroadcastListener) {
         if (ddsInitializationTag) {
             ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
             try {
@@ -204,6 +204,7 @@ public class SpeechManager {
             e.printStackTrace();
         }
     }
+
     /**
      * 说话过程中asr监听回调
      */
@@ -247,18 +248,18 @@ public class SpeechManager {
 
                 @Override
                 public void partialResults(String s) {
-                    LogUtils.d(TAG, "用户说话中实时识别结果反馈 "+s);
+                    LogUtils.d(TAG, "用户说话中实时识别结果反馈 " + s);
                 }
 
                 @Override
                 public void finalResults(String s) {
-                    LogUtils.d(DEFAULT_LOG_TAG, "用户说话中最终识别结果反馈 "+s);
+                    LogUtils.d(DEFAULT_LOG_TAG, "用户说话中最终识别结果反馈 " + s);
                     asrVoiceListener.asrFinalResults(s);
                 }
 
                 @Override
                 public void error(String s) {
-                    LogUtils.d(DEFAULT_LOG_TAG, "识别过程中发生的错误 "+s);
+                    LogUtils.d(DEFAULT_LOG_TAG, "识别过程中发生的错误 " + s);
                 }
 
                 @Override
@@ -508,7 +509,7 @@ public class SpeechManager {
     private DDSInitListener mInitListener = new DDSInitListener() {
         @Override
         public void onInitComplete(boolean isFull) {
-            LogUtils.d("CommandTodo", "DDSInitListener:onInitComplete=>" + isFull + "==: " + DDS.getInstance().getInitStatus());
+            LogUtils.d(DEFAULT_LOG_TAG, "DDSInitListener:onInitComplete=>" + isFull + "==: " + DDS.getInstance().getInitStatus());
             if (isFull) { //DDS初始化成功
                 mContext.sendBroadcast(new Intent(DDS_INIT_COMPLETE));
                 ddsInitializationTag = true;

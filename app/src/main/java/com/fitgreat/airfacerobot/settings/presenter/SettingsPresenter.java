@@ -10,16 +10,20 @@ import com.fitgreat.airfacerobot.settings.view.SettingsView;
 import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 
@@ -59,9 +63,10 @@ public class SettingsPresenter extends BasePresenterImpl<SettingsView> {
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {
                             String msgString = jsonObject.getString("msg");
                             JSONArray jsonArray = new JSONArray(msgString);
+                            WorkflowEntity workflowEntity;
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject workFlowObj = jsonArray.getJSONObject(i);
-                                WorkflowEntity workflowEntity = new WorkflowEntity();
+                                workflowEntity = new WorkflowEntity();
                                 if (workFlowObj.has("F_Id")) {
                                     workflowEntity.setF_Id(workFlowObj.getString("F_Id"));
                                 }
@@ -70,6 +75,12 @@ public class SettingsPresenter extends BasePresenterImpl<SettingsView> {
                                 }
                                 workflowEntityList.add(workflowEntity);
                             }
+                            //添加空选项
+                            workflowEntity = new WorkflowEntity();
+                            workflowEntity.setF_Id("");
+                            workflowEntity.setF_Name("");
+                            workflowEntityList.add(0,workflowEntity);
+                            //更新页面显示
                             mView.showWorkflowList(workflowEntityList);
                             LogUtils.json(DEFAULT_LOG_TAG, "workflowEntityList::" + JSON.toJSONString(workflowEntityList));
                         }

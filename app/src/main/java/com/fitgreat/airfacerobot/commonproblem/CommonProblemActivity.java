@@ -94,7 +94,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         animationDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
         animationDrawable.start();
         //对话框默认显示 "我可以帮你解答问题哦"
-        mCommonProblemAnswer.setText(MyApp.getContext().getString(R.string.prompt_common_problem));
+        mCommonProblemAnswer.setText(MvpBaseActivity.getActivityContext().getString(R.string.prompt_common_problem));
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.SyncTimeCallback;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
@@ -41,9 +42,9 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
     public void startLocationTask(LocationEntity locationInfo) {
         //开始导航提示加载弹窗
         loadTipDialog = new MyTipDialog(MyApp.getContext());
-        loadTipDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
+        loadTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
         loadTipDialog.setTipLoadModel(true);
-        loadTipDialog.setTipDialogSelectListener(MyApp.getContext().getString(R.string.booting_title), null);
+        loadTipDialog.setTipDialogSelectListener(MvpBaseActivity.getActivityContext().getString(R.string.booting_title), null);
         loadTipDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         loadTipDialog.show();
         //发起单点导航任务

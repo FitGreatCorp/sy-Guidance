@@ -108,5 +108,6 @@
     <string name="prompt_password_wrong">Wrong password, please re-enter</string>
     <string name="prompt_password_title">Please enter password</string>
     <string name="prompt_common_problem">I can help you answer your questions.</string>
-
+    <string name="no_en_file_tip">Please configure English files on the server.</string>
+    <string name="end_play_video_bt">End screening</string>
 </resources>

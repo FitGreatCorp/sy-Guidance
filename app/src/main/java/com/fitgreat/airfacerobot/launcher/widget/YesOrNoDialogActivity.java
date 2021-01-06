@@ -112,7 +112,7 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
                 if (countDown == 30) { //导航到达终点30秒后语音提示
                     LogUtils.d(DEFAULT_LOG_TAG, "导航到达目的地30秒无操作后提示");
                     playShowText(MvpBaseActivity.getActivityContext().getString(R.string.arrive_destination_prompt_three));
-                } else if (countDown == 180) {
+                } else if (countDown == 60) {
                     LogUtils.d(DEFAULT_LOG_TAG, "导航到达目的3分钟无操作后,回到首页启动自动回充");
                     choseNoBt();
                 }
@@ -142,9 +142,9 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
     private void choseNoBt() {
         //关闭选择导航页面
         sendBroadcast(new Intent(CLOSE_SELECT_NAVIGATION_PAGE));
-        playShowText(getString(R.string.go_back_tip));
+//        playShowText(getString(R.string.go_back_tip));
         //返回原点充电
-        OperationUtils.startSpecialWorkFlow(1,new Handler(Looper.myLooper()));
+//        OperationUtils.startSpecialWorkFlow(1,new Handler(Looper.myLooper()));
         timerTask.cancel();
         timerTask = null;
         timer = null;

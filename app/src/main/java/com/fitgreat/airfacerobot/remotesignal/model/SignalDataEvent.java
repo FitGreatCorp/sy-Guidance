@@ -33,6 +33,7 @@ public class SignalDataEvent extends BaseEvent {
     private String targetUser;
     private int powerlock;
     private String fileUrl;
+    private String enFileUrl;
     private String direction;
     private int light_status;
     private String vertical;
@@ -244,5 +245,13 @@ public class SignalDataEvent extends BaseEvent {
 
     public void setF_InstructionEnName(String f_InstructionEnName) {
         F_InstructionEnName = f_InstructionEnName;
+    }
+
+    public String getEnFileUrl() {
+        return enFileUrl;
+    }
+
+    public void setEnFileUrl(String enFileUrl) {
+        this.enFileUrl = enFileUrl;
     }
 }

@@ -217,8 +217,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //设置全屏隐藏状态栏
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
-
-
     private class MainBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -352,7 +350,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 @Override
                 public void run() {
                     freeOperationCountdown++;
-                    if (freeOperationCountdown == 50) {
+                    if (freeOperationCountdown == 300) {
                         freeOperationCountdown = 0;
                         String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
                         if (!"null".equals(currentFreeOperation)) {
@@ -366,9 +364,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                             }
                         } else {
                             LogUtils.d(DEFAULT_LOG_TAG, "请配置空闲执行工作流 : ");
-                            handler.post(() -> {
-                                ToastUtils.showSmallToast("请配置空闲执行工作流");
-                            });
                         }
                     }
                 }
@@ -455,10 +450,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
-//                RouteUtils.goToActivity(getContext(), SettingActivity.class);
-                validationOrPromptDialog = new ValidationOrPromptDialog(this);
-                validationOrPromptDialog.show();
-                validationOrPromptDialog.setValidationFailListener(this);
+                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+//                validationOrPromptDialog = new ValidationOrPromptDialog(this);
+//                validationOrPromptDialog.show();
+//                validationOrPromptDialog.setValidationFailListener(this);
                 break;
             case R.id.constraintLayout_me_want_go: //我要去
                 goToChoseDestinationModel();
@@ -551,7 +546,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //如果急停按钮被按下语音提示
         boolean emergencyTag = SpUtils.getBoolean(MyApp.getContext(), CLICK_EMERGENCY_TAG, false);
         if (emergencyTag) {
-            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MyApp.getContext().getString(R.string.emergency_click_recharge_tip)));
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.emergency_click_recharge_tip)));
             return;
         }
         OperationUtils.startSpecialWorkFlow(1, handler);
@@ -565,11 +560,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             if (lowBatteryTipDialog == null) {
                 lowBatteryTipDialog = new NormalOrCountDownDialog(this);
             }
-            lowBatteryTipDialog.setDialogTitle(MyApp.getContext().getString(R.string.start_chose_destination_dialog_title));
-            lowBatteryTipDialog.setDialogContent(MyApp.getContext().getString(R.string.battery_low_tip));
+            lowBatteryTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
+            lowBatteryTipDialog.setDialogContent(MvpBaseActivity.getActivityContext().getString(R.string.battery_low_tip));
             lowBatteryTipDialog.setCountDownModel(true, handler);
-            lowBatteryTipDialog.setTipDialogYesNoListener(MyApp.getContext().getString(R.string.sure_bt_text),
-                    MyApp.getContext().getString(R.string.negative),
+            lowBatteryTipDialog.setTipDialogYesNoListener(MvpBaseActivity.getActivityContext().getString(R.string.sure_bt_text),
+                    MvpBaseActivity.getActivityContext().getString(R.string.negative),
                     new NormalOrCountDownDialog.TipDialogYesNoListener() {
                         @Override
                         public void tipProgressChoseYes() { //启动自动回充工作流
