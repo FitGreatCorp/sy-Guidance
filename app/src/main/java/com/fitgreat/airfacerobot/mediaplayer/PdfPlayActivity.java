@@ -10,6 +10,7 @@ import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.business.ApiDomainManager;
+import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -26,6 +27,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
@@ -36,7 +38,7 @@ import static com.fitgreat.airfacerobot.versionupdate.DownloadUtils.Canceldownlo
 
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 
-public class PdfPlayActivity extends MvpBaseActivity {
+public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.BaseBackListener {
     private static final String TAG = "PdfPlayActivity";
     private PDFView pdfView;
     private Handler handler;
@@ -50,6 +52,9 @@ public class PdfPlayActivity extends MvpBaseActivity {
     //任务视频播放结束提示次数
     private int playEndTipTime = 0;
     private DownloadingDialog downloadingDialog;
+
+    @BindView(R.id.pdf_introduction_title)
+    TopTitleView mPdfIntroductionTitle;
 
 
     private Handler handler1 = new Handler() {
@@ -201,8 +206,10 @@ public class PdfPlayActivity extends MvpBaseActivity {
         //判断播放pdf文件本地是否已存在,不存在下载播放
         if (currentLanguage.equals("zh")) { //当前机器人语言为中文
             file = new File(DownloadUtils.DOWNLOAD_PATH + blob);
+            mPdfIntroductionTitle.setBaseTitle(instructionName);
         } else if (currentLanguage.equals("en")) {
             file = new File(DownloadUtils.DOWNLOAD_PATH + enBlob);
+            mPdfIntroductionTitle.setBaseTitle(instructionEnName);
         }
         LogUtils.d(DEFAULT_LOG_TAG, "PDF文件路径::" + file.getPath());
         if (!file.exists()) {
@@ -234,25 +241,11 @@ public class PdfPlayActivity extends MvpBaseActivity {
         EventBus.getDefault().post(initUiEvent);
     }
 
-    @OnClick({R.id.main_view})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.main_view:  //返回首页,终止当前工作流执行
-                SignalDataEvent instruct = new SignalDataEvent();
-                instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
-                instruct.setInstructionId(instructionId);
-                instruct.setAction("-1");
-                EventBus.getDefault().post(instruct);
-                finish();
-                break;
-        }
-    }
-
-
     @Override
     public void initData() {
         instance = this;
         RobotInfoUtils.setRobotRunningStatus("3");
+        mPdfIntroductionTitle.setBackKListener(this);
         if (null != getIntent().getStringExtra("container") && !"".equals(getIntent().getStringExtra("container")) && !"null".equals(getIntent().getStringExtra("container"))) {
             container = getIntent().getStringExtra("container");
         }
@@ -318,5 +311,15 @@ public class PdfPlayActivity extends MvpBaseActivity {
     @Override
     public Object createPresenter() {
         return null;
+    }
+
+    @Override
+    public void back() {
+        SignalDataEvent instruct = new SignalDataEvent();
+        instruct.setType(MSG_INSTRUCTION_STATUS_FINISHED);
+        instruct.setInstructionId(instructionId);
+        instruct.setAction("-1");
+        EventBus.getDefault().post(instruct);
+        finish();
     }
 }
