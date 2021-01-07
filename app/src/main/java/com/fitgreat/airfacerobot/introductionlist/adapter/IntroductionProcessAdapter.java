@@ -43,21 +43,31 @@ public class IntroductionProcessAdapter extends BaseQuickAdapter<OperationInfo, 
         } else if (currentLanguage.equals("en") && !("null".equals(operationInfo.getF_EName()))) {
             baseViewHolder.setText(R.id.item_introduction_process_title, operationInfo.getF_EName());
         }
-        //任务介绍logo
+        //院内介绍logo
         ImageView mainIntroductionProcessImage = (ImageView) baseViewHolder.getView(R.id.main_introduction_process_image);
         if (!("null".equals(operationInfo.getF_DescImg()))) {
             Glide.with(mContext).load(operationInfo.getF_DescImg()).into(mainIntroductionProcessImage);
-        } else {
-            mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_introduction));
         }
-        //任务种类logo 视频  文字
+        //院内介绍默认logo,种类logo加载(种类分 视频  ppt  txt文本)
         ImageView introductionProcessKindImage = (ImageView) baseViewHolder.getView(R.id.introduction_process_kind_image);
         if (operationInfo.getF_Type().equals("2")) {
             introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_video));
+            //服务端没有配置院内介绍列表视频展示图片时,加载默认图片
+            if (("null".equals(operationInfo.getF_DescImg()))) {
+                mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_play_video));
+            }
         } else if (operationInfo.getF_Type().equals("3")) {
             introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_ppt));
+            //服务端没有配置院内介绍列表ppt展示图片时,加载默认图片
+            if (("null".equals(operationInfo.getF_DescImg()))) {
+                mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_play_ppt));
+            }
         } else if (operationInfo.getF_Type().equals("4")) {
             introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_word));
+            //服务端没有配置院内介绍列表ppt展示图片时,加载默认图片
+            if (("null".equals(operationInfo.getF_DescImg()))) {
+                mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_play_txt));
+            }
         }
         addChildClickViewIds(R.id.main_introduction_process_image);
     }

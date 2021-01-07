@@ -1523,8 +1523,6 @@ public class RobotBrainService extends Service {
                                         handler.postDelayed(() -> startActivity(pdfIntent), 2000);
                                         LogUtils.d(DEFAULT_LOG_TAG, "开始播放pdf资料任务\t\t");
                                     } else if (operationType.equals("4")) {
-                                        //发送关闭院内介绍工作流提示弹窗
-                                        sendBroadcast(new Intent(CLOSE_START_INTRODUCTION_DIALOG));
                                         if (TextUtils.isEmpty(fileUrl)) {
                                             instruction_status = "-1";
                                             BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);

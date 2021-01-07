@@ -5,6 +5,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/free_operation_recyclerView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:background="@drawable/free_operation_item_back"
         android:layout_height="wrap_content" />
 </RelativeLayout>

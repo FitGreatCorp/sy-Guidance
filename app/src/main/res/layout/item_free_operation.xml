@@ -9,12 +9,12 @@
         android:id="@+id/free_operation_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/edit_bg"
+        android:background="@drawable/free_operation_item_selector"
         android:gravity="top|left"
         android:paddingLeft="10dp"
         android:paddingTop="5dp"
         android:paddingRight="10dp"
         android:paddingBottom="5dp"
-        android:textColor="@android:color/white"
+        android:textColor="@android:color/black"
         android:textSize="14sp" />
 </LinearLayout>

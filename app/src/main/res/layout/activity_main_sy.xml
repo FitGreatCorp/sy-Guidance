@@ -247,23 +247,28 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout_me_want_go" />
 
-    <TextView
-        android:id="@+id/voice_msg"
+    <ScrollView
+        android:id="@+id/voice_msg_scrollView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/px100"
         android:layout_marginLeft="@dimen/px60"
-        android:background="@drawable/home_msg_bg"
-        android:ellipsize="end"
-        android:lineSpacingExtra="8dp"
-        android:maxWidth="@dimen/px280"
-        android:maxLines="2"
-        android:minWidth="@dimen/px280"
-        android:padding="@dimen/px15"
-        android:textColor="#FFFFFFFF"
-        android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/home_central_circle"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout_me_want_go" />
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout_me_want_go">
+
+        <TextView
+            android:id="@+id/voice_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/home_msg_bg"
+            android:ellipsize="end"
+            android:lineSpacingExtra="8dp"
+            android:maxWidth="@dimen/px280"
+            android:minWidth="@dimen/px280"
+            android:padding="@dimen/px15"
+            android:textColor="#FFFFFFFF"
+            android:textSize="15sp" />
+    </ScrollView>
 
     <Button
         android:id="@+id/auto_recharge_bt"
@@ -280,7 +285,7 @@
 
     <LinearLayout
         android:id="@+id/robot_language_linearLayout"
-        android:layout_width="@dimen/px120"
+        android:layout_width="@dimen/px130"
         android:layout_height="@dimen/px45"
         android:layout_marginRight="@dimen/px22"
         android:layout_marginBottom="@dimen/px28"
@@ -289,27 +294,35 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/bt_home_setting">
 
-        <Button
-            android:id="@+id/language_chinese"
+        <RelativeLayout
+            android:id="@+id/language_chinese_relativeLayout"
             android:layout_width="@dimen/px0"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/switch_language_selector"
-            android:button="@null"
-            android:gravity="center"
-            android:text="中"
-            android:textColor="@color/white" />
+            android:background="@drawable/switch_language_selector">
 
-        <Button
-            android:id="@+id/language_english"
+            <ImageView
+                android:layout_width="@dimen/px20"
+                android:layout_height="@dimen/px20"
+                android:layout_centerInParent="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_home_chinese" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/language_english_relativeLayout"
             android:layout_width="@dimen/px0"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@drawable/switch_language_selector"
-            android:button="@null"
-            android:gravity="center"
-            android:text="En"
-            android:textColor="@color/white" />
+            android:background="@drawable/switch_language_selector">
+
+            <ImageView
+                android:layout_width="@dimen/px20"
+                android:layout_height="@dimen/px20"
+                android:layout_centerInParent="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_home_english" />
+        </RelativeLayout>
     </LinearLayout>
 
     <ImageButton

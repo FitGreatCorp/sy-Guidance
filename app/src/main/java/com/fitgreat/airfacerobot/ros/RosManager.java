@@ -246,8 +246,8 @@ public class RosManager {
                         //程序首页是否显示
                         mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
                         string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");
-                        LogUtils.d(TAG, "机器人附近有障碍物,迎宾语播放开关 , " + broadcastGreetSwitchTag + "  迎宾语内容,  " + string_hello + "  程序是否在首页,  " + mainPageShowTag+" 播放次数计数, "+playTipTime);
                         if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello)) && mainPageShowTag && playTipTime == 1) { //播放迎宾语开关打开
+                            LogUtils.d(TAG, "机器人附近有障碍物, " + "  迎宾语,  " + string_hello);
                             playShowText(string_hello);
                         }
                     } else {

@@ -6,6 +6,7 @@ package com.fitgreat.airfacerobot.model;
 public class WorkflowEntity {
     public String F_Id;
     public String F_Name;
+    public boolean F_Select=false;
 
     public WorkflowEntity(String f_Id, String f_Name) {
         F_Id = f_Id;
@@ -29,5 +30,13 @@ public class WorkflowEntity {
 
     public void setF_Name(String f_Name) {
         F_Name = f_Name;
+    }
+
+    public boolean isF_Select() {
+        return F_Select;
+    }
+
+    public void setF_Select(boolean f_Select) {
+        F_Select = f_Select;
     }
 }

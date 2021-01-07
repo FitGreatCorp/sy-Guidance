@@ -264,29 +264,29 @@ public interface RobotConfig {
     String ANDROID_SYSTEM_BOOT_UP_TAG = "android.intent.action.BOOT_COMPLETED";
 
     /**
-     *程序首页是否显示
+     * 程序首页是否显示
      */
     String MAIN_PAGE_WHETHER_SHOW = "main_page_whether_show";
 
     /**
-     *单点导航任务开启标志
+     * 单点导航任务开启标志
      */
     String CURRENT_NAVIGATION_START_TAG = "current_navigation_start_tag";
     /**
-     *播放迎宾语开关
+     * 播放迎宾语开关
      */
     String BROADCAST_GREET_SWITCH_TAG = "broadcast_greet_switch_tag";
 
     /**
-     *当前空闲工作流数据
+     * 当前空闲工作流数据
      */
     String CURRENT_FREE_OPERATION = "current_free_operation";
     /**
-     *自动回充工作流活动id
+     * 自动回充工作流活动id
      */
     String AUTOMATIC_RECHARGE_ACTIVITY_ID = "automatic_recharge_activity_id";
     /**
-     *电量低于20%时弹窗提示
+     * 电量低于20%时弹窗提示
      */
     String PROMPT_ROBOT_RECHARGE = "prompt_robot_recharge";
 
@@ -294,5 +294,10 @@ public interface RobotConfig {
      * 取消自动回充工作流
      */
     String MSG_CANCEL_RECHARGE = "cancel_recharge";
+
+    /**
+     * 空闲操作工作流选中编号
+     */
+    String FREE_OPERATION_SELECT_POSITION = "free_operation_select_position";
 
 }

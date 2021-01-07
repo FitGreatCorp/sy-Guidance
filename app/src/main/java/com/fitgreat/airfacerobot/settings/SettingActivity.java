@@ -63,6 +63,7 @@ import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_SELECT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 
 /**
@@ -150,7 +151,7 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
         //获取工作流列表
         mPresenter.getWorkflowList();
         initImmersionBar(true);
-        titleBar.setText(getString(R.string.setup_module_title));
+        titleBar.setText(MvpBaseActivity.getActivityContext().getString(R.string.setup_module_title));
         inputDialog = new InputDialog(this);
         rebootLayout.setVisibility(View.VISIBLE);
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -164,7 +165,6 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
         robotSerialNumber.setText(RobotInfoUtils.getAirFaceDeviceId());
         robotAppVersion.setText("V " + VersionUtils.getVersionName(this));
         robotOsVersion.setText("Android " + PhoneInfoUtils.getSystemVersion());
-        LogUtils.d(TAG, "HARDVERSION = " + RobotInfoUtils.getHardwareVersion());
         robotHardwareVersion.setText("V " + RobotInfoUtils.getHardwareVersion().replace("v", "").replace("V", ""));
         if (TextUtils.equals(SpUtils.getString(MyApp.getContext(), ApiDomainManager.ENVIRONMENT_CONFIG_KEY, "debug"), "debug")) {
             Drawable selected = this.getDrawable(R.mipmap.btn_selected);
@@ -174,7 +174,6 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             testRb.setCompoundDrawables(selected, null, null, null);
             productRb.setCompoundDrawables(select, null, null, null);
             developLayout.setVisibility(View.VISIBLE);
-//            shutdownLayout.setVisibility(View.VISIBLE);
         } else {
             Drawable selected = this.getDrawable(R.mipmap.btn_selected);
             selected.setBounds(0, 0, selected.getMinimumWidth(), selected.getMinimumHeight());
@@ -499,16 +498,19 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             popupWindow = new PopupWindow(this);
             //设置PopupWindow属性显示
             popupWindow.setContentView(inflate);
-            popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+            popupWindow.setWidth(freeOperation.getWidth());
             popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            popupWindow.setBackgroundDrawable(getDrawable(R.drawable.white_back));
             //设置列表数据并显示
             RecyclerView freeOperationRecyclerView = inflate.findViewById(R.id.free_operation_recyclerView);
             WorkFlowListAdapter workFlowListAdapter = new WorkFlowListAdapter(mWorkflowEntityList);
             freeOperationRecyclerView.setAdapter(workFlowListAdapter);
             freeOperationRecyclerView.setLayoutManager(new LinearLayoutManager(this));
             workFlowListAdapter.setOnItemClickListener((adapter, view, position) -> {
-                workflowEntity = (WorkflowEntity) adapter.getData().get(position);
+                SpUtils.putInt(MyApp.getContext(), FREE_OPERATION_SELECT_POSITION, position);
+                workFlowListAdapter.notifyDataSetChanged();
                 //缓存当前选择空闲工作流
+                workflowEntity = (WorkflowEntity) adapter.getData().get(position);
                 if (workflowEntity.getF_Id().equals("")) {
                     SpUtils.putString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
                 } else {
@@ -521,8 +523,6 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             });
             //显示PopupWindow
             popupWindow.showAsDropDown(freeOperation);
-        } else {
-            ToastUtils.showSmallToast("空闲操作工作流数据没有,需要服务端配置");
         }
     }
 

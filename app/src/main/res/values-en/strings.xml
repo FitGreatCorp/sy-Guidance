@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Android-sy-Guidance</string>
-    <string name="robot_init">AirFace startup</string>
+    <string name="robot_init">DoctorFace startup</string>
     <string name="net_starting">Step 1:\nconnecting to the server...</string>
     <string name="net_success">Step 1:\nSuccessfully connected to server</string>
     <string name="net_fail">Step 1:\nFailed to connect to server</string>

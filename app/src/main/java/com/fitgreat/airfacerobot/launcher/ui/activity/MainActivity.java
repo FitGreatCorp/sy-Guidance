@@ -18,7 +18,10 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -140,10 +143,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @BindView(R.id.wink_speak_animation)
     ImageView mWinkSpeakAnimation;
 
-    @BindView(R.id.language_chinese)
-    Button mLanguageChinese;
-    @BindView(R.id.language_english)
-    Button mLanguageEnglish;
+    @BindView(R.id.language_chinese_relativeLayout)
+    RelativeLayout mLanguageChineseRelativeLayout;
+    @BindView(R.id.language_english_relativeLayout)
+    RelativeLayout mLanguageEnglishRelativeLayout;
+
+    @BindView(R.id.voice_msg_scrollView)
+    ScrollView mVoiceMsgScrollView;
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ALERT_CODE = 6666;
@@ -178,6 +184,109 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private ValidationOrPromptDialog validationOrPromptDialog;
     private RobotInfoData robotInfoData;
     private NormalOrCountDownDialog normalOrCountDownDialog;
+    //对话框内容最低高度
+    private int minDialogBoxHeight = 200;
+    //对话框内容滑动结束位置
+    private int endPositionHeight = 0;
+    //对话框内容滑动初始位置
+    private int startPositionHeight = minDialogBoxHeight;
+    private final int CONTENT_SLIDE_TAG = 2002;
+
+    private Handler handler = new Handler(Looper.getMainLooper()) {
+        @RequiresApi(api = Build.VERSION_CODES.M)
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case REQUEST_ALERT_CODE:
+                    if (Settings.canDrawOverlays(MainActivity.this)) {
+                        showFloatBall();
+                    } else {
+                        handler.sendEmptyMessageDelayed(REQUEST_ALERT_CODE, 1000);
+                    }
+                    break;
+                case CHECK_HARDWARE_VERSION_CODE:
+                    LogUtils.d(TAG, "CHECK_HARDWARE_VERSION_CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    if (mPresenter != null) {
+                        mPresenter.checkHardwareVersion();
+                    }
+                    break;
+                case CHECK_HDVC:
+                    LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus());
+                    if (RobotInfoUtils.getRobotRunningStatus().equals("5") || RobotInfoUtils.getRobotRunningStatus().equals("1")) {
+                        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+                        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+                        if (cn.getClassName().equals("com.fitgreat.airfacerobot.launcher.ui.activity.LauncherActivity")) {
+                            if (mPresenter != null) {
+                                mPresenter.checkHardwareVersion();
+                            }
+                        } else {
+                            handler.sendEmptyMessageDelayed(CHECK_HDVC, 60000);
+                        }
+                    } else {
+                        handler.sendEmptyMessageDelayed(CHECK_HDVC, 60000);
+                    }
+                    break;
+                case DownloadUtils.DOWNLOAD_FAILED: //TODO 硬件下载失败
+                    if (downloadingDialog != null && downloadingDialog.isShowing()) {
+                        downloadingDialog.dismiss();
+                    }
+                    if (mPresenter != null) {
+                        mPresenter.commitHardwareUpdateResult(msg.getData().getString("stepId"), "false", "硬件版本下载失败");
+                    }
+                    //硬件版本下载失败
+                    OperationUtils.saveSpecialLog("ROSDownloadFail", "硬件版本下载失败");
+                    ToastUtils.showSmallToast("硬件下载失败");
+                    upgrade_success = false;
+                    break;
+                case DownloadUtils.DOWNLOAD_SUCCESS:  //TODO 硬件下载成功
+                    if (fStepBean == null || msg.obj == null) {
+                        if (downloadingDialog != null && downloadingDialog.isShowing()) {
+                            downloadingDialog.dismiss();
+                        }
+                        return;
+                    }
+                    String filePath = msg.obj.toString();
+                    LogUtils.d(TAG, "DOWNLOAD_SUCCESS:" + filePath);
+                    handler.postDelayed(() -> {
+                        SignalDataEvent signalDataEvent = new SignalDataEvent();
+                        signalDataEvent.setType(RobotConfig.ROS_UPDATE_STATUS);
+                        signalDataEvent.setContainer(fStepBean.getF_FileName());
+                        signalDataEvent.setAction(fStepBean.getF_Command());
+                        signalDataEvent.setStep_id(fStepBean.getF_StepId());
+                        signalDataEvent.setRos_step(String.valueOf(currentStep));
+                        signalDataEvent.setFileUrl(filePath);
+                        signalDataEvent.setOperationType("transFile");
+                        EventBus.getDefault().post(signalDataEvent);
+                    }, 1000);
+                    break;
+                case DownloadUtils.DOWNLOADING:
+                    showDownloadingDialog(msg.arg1);
+                    break;
+                case CHECK_APP_VERSION_CODE:  //检查app软件升级
+                    mPresenter.checkSoftwareVersion(MainActivity.this);
+                    break;
+                case CONTENT_SLIDE_TAG:  //对话框内容滑动
+                    if (mVoiceMsg.getHeight() == minDialogBoxHeight) {
+                        mVoiceMsgScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                    } else {
+                        endPositionHeight = startPositionHeight + 3;
+                        if (endPositionHeight > mVoiceMsg.getHeight()) {
+                            mVoiceMsgScrollView.fullScroll(ScrollView.FOCUS_UP);
+                            startPositionHeight = minDialogBoxHeight;
+                            endPositionHeight = 0;
+                        } else {
+                            mVoiceMsgScrollView.smoothScrollTo(startPositionHeight, endPositionHeight);
+                            startPositionHeight = endPositionHeight;
+                        }
+                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG,500);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
 
     @Override
     public int getLayoutResource() {
@@ -187,19 +296,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void initData() {
-        //第一次安装语言默认为中文
-        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-        //ros初始化状态
-        SpUtils.putBoolean(getContext(), INIT_ROS_KEY_TAG, false);
-        //启动监听播放text文本时是否关闭提示弹窗
-        IntentFilter intentFilter = new IntentFilter(CLOSE_START_INTRODUCTION_DIALOG);
-        intentFilter.addAction(CLOSE_START_INTRODUCTION_DIALOG);
-        intentFilter.addAction(ANDROID_SYSTEM_REBOOT_TAG);
-        intentFilter.addAction(ANDROID_SYSTEM_BOOT_UP_TAG);
-        MainBroadcastReceiver mainBroadcastReceiver = new MainBroadcastReceiver();
-        registerReceiver(mainBroadcastReceiver, intentFilter);
         //注册EventBus
         EventBus.getDefault().register(this);
+        //信号格默认显示满信号
+        mSignalImg.setImageLevel(4);
+        //第一次安装语言默认为中文
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+        SpUtils.putBoolean(getContext(), INIT_ROS_KEY_TAG, false);
         SpUtils.putBoolean(getContext(), "isLock", true);
         commonTipDialog = new CommonTipDialog(this);
         downloadingDialog = new DownloadingDialog(this);
@@ -216,25 +319,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
         //设置全屏隐藏状态栏
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    }
-    private class MainBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            LogUtils.d(TAG, "CloseDialogBroadcastReceiver");
-            if (intent.getAction().equals(CLOSE_START_INTRODUCTION_DIALOG)) {
-                LogUtils.d(TAG, "关闭启动院内介绍工作流提示弹窗");
-                if (startIntroductionAlertDialog != null && startIntroductionAlertDialog.isShowing()) {
-                    startIntroductionAlertDialog.dismiss();
-                    startIntroductionAlertDialog = null;
-                }
-            } else if (intent.getAction().equals(ANDROID_SYSTEM_REBOOT_TAG)) {
-                LogUtils.d(TAG, "安卓系统重启");
-//                SpUtils.putBoolean(MyApp.getContext(), DELAY_CONNECT_INTERFACE_TAG, true);
-            } else if (intent.getAction().equals(ANDROID_SYSTEM_BOOT_UP_TAG)) {
-                LogUtils.d(TAG, "安卓系统开机");
-//                SpUtils.putBoolean(MyApp.getContext(), DELAY_CONNECT_INTERFACE_TAG, true);
-            }
-        }
     }
 
     /**
@@ -316,12 +400,17 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //切换当前机器显示语言选择状态
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         if (currentLanguage.equals("en")) {
-            mLanguageEnglish.setSelected(true);
-            mLanguageChinese.setSelected(false);
+            mLanguageEnglishRelativeLayout.setSelected(true);
+            mLanguageChineseRelativeLayout.setSelected(false);
         } else if (currentLanguage.equals("zh")) {
-            mLanguageChinese.setSelected(true);
-            mLanguageEnglish.setSelected(false);
+            mLanguageChineseRelativeLayout.setSelected(true);
+            mLanguageEnglishRelativeLayout.setSelected(false);
         }
+        mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
+        if (mVoiceMsg.getHeight() > minDialogBoxHeight) {
+            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG,500);
+        }
+        LogUtils.d(DEFAULT_LOG_TAG, "文本高度::::" + mVoiceMsg.getHeight() + " ,minDialogBoxHeight,    " + minDialogBoxHeight);
         //更新4g网络信号页面展示信息
         mPresenter.getNetSignalLevel(this);
         //机器人名字显示
@@ -337,8 +426,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             //自动回充工作流启动标志
             boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
             if (!startIntroductionWorkFlowTag && !startRechargeTag) {
-                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getResources().getString(R.string.home_prompt_text)));
-                mVoiceMsg.setText(getResources().getString(R.string.home_prompt_text));
+                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text)));
+//                mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
             }
             //dds对话Observer注册
             EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
@@ -385,11 +474,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
         //关闭dds语音播报
         EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
-        //关闭启动院内介绍工作流提示弹窗
-        if (startIntroductionAlertDialog != null && startIntroductionAlertDialog.isShowing()) {
-            startIntroductionAlertDialog.dismiss();
-            startIntroductionAlertDialog = null;
-        }
         SpeechManager.closeOneShotWakeup();
         //停止三分钟倒计时启动院内介绍工作流
         stopIntroductionTimer();
@@ -446,14 +530,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese, R.id.language_english, R.id.auto_recharge_bt})
+    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese_relativeLayout, R.id.language_english_relativeLayout, R.id.auto_recharge_bt})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
-                RouteUtils.goToActivity(getContext(), SettingActivity.class);
-//                validationOrPromptDialog = new ValidationOrPromptDialog(this);
-//                validationOrPromptDialog.show();
-//                validationOrPromptDialog.setValidationFailListener(this);
+//                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+                validationOrPromptDialog = new ValidationOrPromptDialog(this);
+                validationOrPromptDialog.show();
+                validationOrPromptDialog.setValidationFailListener(this);
                 break;
             case R.id.constraintLayout_me_want_go: //我要去
                 goToChoseDestinationModel();
@@ -464,10 +548,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case R.id.constraintLayout_hospital_introduction: //院内介绍
                 RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
                 break;
-            case R.id.language_chinese: //应用语言显示中文
-//                setLanguage("zh", mLanguageChinese, mLanguageEnglish);
-            case R.id.language_english: //应用语言显示英文
-//                setLanguage("en", mLanguageEnglish, mLanguageChinese);
+            case R.id.language_chinese_relativeLayout: //机器人中英文切换
+            case R.id.language_english_relativeLayout:
                 changeRobotLanguage();
                 break;
             case R.id.auto_recharge_bt: //自动回充安妮
@@ -501,10 +583,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     /**
      * 切换机器人显示语言
      */
-    public void setLanguage(String language, Button selectButton, Button normalButton) {
+    public void setLanguage(String language, RelativeLayout selectView, RelativeLayout normalButtonView) {
         SpUtils.putString(MyApp.getContext(), CURRENT_LANGUAGE, language);
-        selectButton.setSelected(true);
-        normalButton.setSelected(false);
+        selectView.setSelected(true);
+        normalButtonView.setSelected(false);
         LanguageUtil.changeAppLanguage(MainActivity.this);
         clearActivity();
         //重启app
@@ -519,9 +601,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             @Override
             public void tipProgressChoseYes() {
                 if (currentLanguage.equals("zh")) {
-                    setLanguage("en", mLanguageEnglish, mLanguageChinese);
+                    setLanguage("en", mLanguageEnglishRelativeLayout, mLanguageChineseRelativeLayout);
                 } else {
-                    setLanguage("zh", mLanguageChinese, mLanguageEnglish);
+                    setLanguage("zh", mLanguageChineseRelativeLayout, mLanguageEnglishRelativeLayout);
                 }
             }
 
@@ -765,85 +847,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         return MainActivity.this;
     }
 
-    private Handler handler = new Handler(Looper.getMainLooper()) {
-        @RequiresApi(api = Build.VERSION_CODES.M)
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case REQUEST_ALERT_CODE:
-                    if (Settings.canDrawOverlays(MainActivity.this)) {
-                        showFloatBall();
-                    } else {
-                        handler.sendEmptyMessageDelayed(REQUEST_ALERT_CODE, 1000);
-                    }
-                    break;
-                case CHECK_HARDWARE_VERSION_CODE:
-                    LogUtils.d(TAG, "CHECK_HARDWARE_VERSION_CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    if (mPresenter != null) {
-                        mPresenter.checkHardwareVersion();
-                    }
-                    break;
-                case CHECK_HDVC:
-                    LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus());
-                    if (RobotInfoUtils.getRobotRunningStatus().equals("5") || RobotInfoUtils.getRobotRunningStatus().equals("1")) {
-                        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-                        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-                        if (cn.getClassName().equals("com.fitgreat.airfacerobot.launcher.ui.activity.LauncherActivity")) {
-                            if (mPresenter != null) {
-                                mPresenter.checkHardwareVersion();
-                            }
-                        } else {
-                            handler.sendEmptyMessageDelayed(CHECK_HDVC, 60000);
-                        }
-                    } else {
-                        handler.sendEmptyMessageDelayed(CHECK_HDVC, 60000);
-                    }
-                    break;
-                case DownloadUtils.DOWNLOAD_FAILED: //TODO 硬件下载失败
-                    if (downloadingDialog != null && downloadingDialog.isShowing()) {
-                        downloadingDialog.dismiss();
-                    }
-                    if (mPresenter != null) {
-                        mPresenter.commitHardwareUpdateResult(msg.getData().getString("stepId"), "false", "硬件版本下载失败");
-                    }
-                    //硬件版本下载失败
-                    OperationUtils.saveSpecialLog("ROSDownloadFail", "硬件版本下载失败");
-                    ToastUtils.showSmallToast("硬件下载失败");
-                    upgrade_success = false;
-                    break;
-                case DownloadUtils.DOWNLOAD_SUCCESS:  //TODO 硬件下载成功
-                    if (fStepBean == null || msg.obj == null) {
-                        if (downloadingDialog != null && downloadingDialog.isShowing()) {
-                            downloadingDialog.dismiss();
-                        }
-                        return;
-                    }
-                    String filePath = msg.obj.toString();
-                    LogUtils.d(TAG, "DOWNLOAD_SUCCESS:" + filePath);
-                    handler.postDelayed(() -> {
-                        SignalDataEvent signalDataEvent = new SignalDataEvent();
-                        signalDataEvent.setType(RobotConfig.ROS_UPDATE_STATUS);
-                        signalDataEvent.setContainer(fStepBean.getF_FileName());
-                        signalDataEvent.setAction(fStepBean.getF_Command());
-                        signalDataEvent.setStep_id(fStepBean.getF_StepId());
-                        signalDataEvent.setRos_step(String.valueOf(currentStep));
-                        signalDataEvent.setFileUrl(filePath);
-                        signalDataEvent.setOperationType("transFile");
-                        EventBus.getDefault().post(signalDataEvent);
-                    }, 1000);
-                    break;
-                case DownloadUtils.DOWNLOADING:
-                    showDownloadingDialog(msg.arg1);
-                    break;
-                case CHECK_APP_VERSION_CODE:  //检查app软件升级
-                    mPresenter.checkSoftwareVersion(MainActivity.this);
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
 
     @Override
     public MainPresenter createPresenter() {
@@ -975,8 +978,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         switch (robotSignalEvent.type) {
             case RobotConfig.ROBOT_SIM_SIGNAL:
                 if (mSignalImg != null) {
-                    int level = Integer.parseInt(robotSignalEvent.action);
-                    mSignalImg.setImageLevel(level);
+//                    int level = Integer.parseInt(robotSignalEvent.action);
+                    mSignalImg.setImageLevel(4);
                 }
                 break;
             case RobotConfig.ROS_MSG_BATTERY: //TODO 机器人电量页面显示
