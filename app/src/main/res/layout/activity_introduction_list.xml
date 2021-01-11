@@ -49,6 +49,7 @@
             android:layout_marginLeft="@dimen/px20"
             android:layout_marginTop="@dimen/px25"
             android:layout_marginRight="@dimen/px20"
+            android:scrollbars="horizontal"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

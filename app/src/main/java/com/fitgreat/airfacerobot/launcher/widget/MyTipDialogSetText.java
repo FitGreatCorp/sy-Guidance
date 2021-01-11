@@ -50,7 +50,6 @@ public class MyTipDialogSetText extends AlertDialog {
         //设置弹窗宽高
         setDialogWidthHeight();
         setContentView(R.layout.my_tip_dialog_layout);
-        setCanceledOnTouchOutside(false);
         //初始化界面控件
         initView();
         //设置展示数据
@@ -65,7 +64,7 @@ public class MyTipDialogSetText extends AlertDialog {
         Point sizePoint = new Point();
         defaultDisplay.getSize(sizePoint);
         attributes.width = (int) ((sizePoint.x) * 0.4);
-        attributes.height = (int) ((sizePoint.y) * 0.3);
+        attributes.height = (int) ((sizePoint.y) * 0.4);
         getWindow().setAttributes(attributes);
     }
 

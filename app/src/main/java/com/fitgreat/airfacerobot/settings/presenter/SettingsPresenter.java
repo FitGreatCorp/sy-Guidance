@@ -2,6 +2,8 @@ package com.fitgreat.airfacerobot.settings.presenter;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
+import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
 import com.fitgreat.airfacerobot.model.MapEntity;
@@ -78,7 +80,7 @@ public class SettingsPresenter extends BasePresenterImpl<SettingsView> {
                             //添加空选项
                             workflowEntity = new WorkflowEntity();
                             workflowEntity.setF_Id("");
-                            workflowEntity.setF_Name("");
+                            workflowEntity.setF_Name(MvpBaseActivity.getActivityContext().getString(R.string.empty_free_operation));
                             workflowEntityList.add(0,workflowEntity);
                             //更新页面显示
                             mView.showWorkflowList(workflowEntityList);

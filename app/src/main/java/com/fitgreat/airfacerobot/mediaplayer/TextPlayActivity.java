@@ -1,10 +1,12 @@
 package com.fitgreat.airfacerobot.mediaplayer;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,8 +60,6 @@ import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.BaseBackListener {
     private static final String TAG = "TextPlayActivity";
     private PDFView pdfView;
-    private Handler handler;
-    private TextView textIntroductionContent;
     private static long pdf_trun_time = 4000;
     private String accessToken, container, blob, url, instructionId, status, F_Type, operationType, operationProcedureId, instructionName, instructionEnName;
     private int totalpage;
@@ -73,18 +73,30 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
     private MyDialog myDialog;
     private String currentLanguage;
     private String enBlob;
+    //对话框内容最低高度
+    private int minDialogBoxHeight = 0;
+    //对话框内容滑动结束位置
+    private int endPositionHeight = 0;
+    //对话框内容滑动初始位置
+    private int startPositionHeight = minDialogBoxHeight;
+    private final int CONTENT_SLIDE_TAG = 2002;
+    private File file;
 
     @BindView(R.id.text_introduction_title)
     TopTitleView mTextIntroductionTitle;
+    @BindView(R.id.scrollView_introduction_content)
+    ScrollView mScrollViewIntroductionContent;
+    @BindView(R.id.text_introduction_content)
+    TextView textIntroductionContent;
 
-    private Handler handler1 = new Handler() {
+    private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case DownloadUtils.DOWNLOADING: //下载中
                     if (msg.arg1 != progress) {
                         progress = msg.arg1;
-                        LogUtils.d(TAG, "DOWNLOADING !!!    progress = " + progress);
+                        LogUtils.d(DEFAULT_LOG_TAG, "DOWNLOADING !!!    progress = " + progress);
                         downloadingDialog.updateProgress(progress);
                     }
                     break;
@@ -97,6 +109,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
                     } else if (currentLanguage.equals("en")) {
                         url = DownloadUtils.DOWNLOAD_PATH + enBlob;
                     }
+                    LogUtils.d(DEFAULT_LOG_TAG, "DOWNLOAD_SUCCESS !!! = ");
                     playTts(instructionId);
                     break;
                 case DownloadUtils.DOWNLOAD_FAILED://下载失败
@@ -104,10 +117,24 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
                     OperationUtils.saveSpecialLog(instructionName + " FileDownloadFail", (String) msg.obj);
                     Toast.makeText(TextPlayActivity.this, "文件下载失败，请稍后重试！", Toast.LENGTH_SHORT).show();
                     break;
+                case CONTENT_SLIDE_TAG:  //对话框内容滑动
+                    LogUtils.d(DEFAULT_LOG_TAG, "CONTENT_SLIDE_TAG  内容总长度,  " + textIntroductionContent.getHeight() + "  ,endPositionHeight,   " + endPositionHeight + "  ,startPositionHeight,   " + startPositionHeight);
+                    endPositionHeight = startPositionHeight + 2;
+                    if (endPositionHeight > textIntroductionContent.getHeight()) {
+                        mScrollViewIntroductionContent.fullScroll(ScrollView.FOCUS_UP);
+                        startPositionHeight = minDialogBoxHeight;
+                        endPositionHeight = 0;
+                    } else {
+                        mScrollViewIntroductionContent.smoothScrollTo(startPositionHeight, endPositionHeight);
+                        startPositionHeight = endPositionHeight;
+                    }
+                    if (textIntroductionContent.getHeight() > minDialogBoxHeight) {
+                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 500);
+                    }
+                    break;
             }
         }
     };
-    private File file;
 
 
     @Override
@@ -127,6 +154,9 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         } else if (currentLanguage.equals("en")) {
             file = new File(DownloadUtils.DOWNLOAD_PATH + enBlob);
         }
+        if (file.exists()) {
+            file.delete();
+        }
         if (!file.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(TextPlayActivity.this);
@@ -134,9 +164,10 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
             downloadingDialog.show();
             downloadingDialog.setMessage("文件下载中...");
             if (currentLanguage.equals("zh")) { //当前机器人语言为中文
-                DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
+                DownloadUtils.downloadApp(handler, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
             } else if (currentLanguage.equals("en")) {
-                DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + enBlob, DownloadUtils.DOWNLOAD_PATH + enBlob, true, instructionEnName);
+                LogUtils.d(DEFAULT_LOG_TAG, "TextPlayActivity  enBlob     ," + enBlob + "    ,  instructionEnName, " + instructionEnName);
+                DownloadUtils.downloadApp(handler, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + enBlob, DownloadUtils.DOWNLOAD_PATH + enBlob, true, instructionEnName);
             }
         } else {
             if (currentLanguage.equals("zh")) { //当前机器人语言为中文
@@ -144,7 +175,15 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
             } else if (currentLanguage.equals("en")) {
                 url = DownloadUtils.DOWNLOAD_PATH + enBlob;
             }
+            playTts(instructionId);
         }
+        LogUtils.d(DEFAULT_LOG_TAG, "文本高度::::" + textIntroductionContent.getHeight() + " ,minDialogBoxHeight,    " + minDialogBoxHeight);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        handler.removeMessages(CONTENT_SLIDE_TAG);
     }
 
     @Override
@@ -156,6 +195,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         //关闭dds语音播报
         EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
     }
+
     @Override
     public void initData() {
         if (null != getIntent().getStringExtra("container") && !"".equals(getIntent().getStringExtra("container")) && !"null".equals(getIntent().getStringExtra("container"))) {
@@ -188,8 +228,6 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         if (null != getIntent().getStringExtra("instructionEnName") && !"".equals(getIntent().getStringExtra("instructionEnName")) && !"null".equals(getIntent().getStringExtra("instructionEnName"))) {
             instructionEnName = getIntent().getStringExtra("instructionEnName");
         }
-        //初始化view
-        textIntroductionContent = findViewById(R.id.text_introduction_content);
         instance = this;
         RobotInfoUtils.setRobotRunningStatus("3");
         //根据当前系统语言显示任务名称
@@ -201,24 +239,17 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         } else if (currentLanguage.equals("en") && !("null".equals(instructionEnName))) {
             mTextIntroductionTitle.setBaseTitle(instructionEnName);
             url = ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + enBlob;
-            localTxtPath = DownloadUtils.DOWNLOAD_PATH + blob.substring(enBlob.lastIndexOf("/") + 1);
-        }
-        File file = new File(localTxtPath);
-        LogUtils.d(DEFAULT_LOG_TAG, "TextPlayActivity:本地是否有文本文件 , " + (file.exists()) + "  文本本地路径localTxtPath, " + localTxtPath + "  文本下载路径url , " + url + " ,instructionEnName ," + instructionEnName + " ,instructionName , " + instructionName);
-        if (!file.exists()) {
-            DownloadUtils.downloadApp(handler, "", url, localTxtPath, true, null);
-        } else {
-            playTts(instructionId);
+            localTxtPath = DownloadUtils.DOWNLOAD_PATH + enBlob.substring(enBlob.lastIndexOf("/") + 1);
         }
         //左上角返回按钮点击事件设置
         mTextIntroductionTitle.setBackKListener(this);
     }
 
     private void playTts(String instructionId) {
-        LogUtils.d(DEFAULT_LOG_TAG, "filePath:" + localTxtPath);
         String playContent = FileUtils.readTxt(localTxtPath).trim();
         //页面展示播报文字text文件内容
         textIntroductionContent.setText(playContent);
+        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 3 * 1000);
         if (!TextUtils.isEmpty(playContent)) {
             LogUtils.d(TAG, "length:" + playContent.trim().length() + "\ncontent:" + playContent.trim());
             //语音播报监控标号

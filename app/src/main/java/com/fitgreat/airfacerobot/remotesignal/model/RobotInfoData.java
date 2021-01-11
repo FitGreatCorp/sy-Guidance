@@ -34,6 +34,7 @@ public class RobotInfoData {
     private String F_Id;
     private String F_HardwareId;
     private String F_Name;
+    private String F_EName;
     private String F_AppPower;
     private String F_Status;
     private String F_HospitalId;
@@ -201,5 +202,13 @@ public class RobotInfoData {
 
     public void setF_Setting(String F_Setting) {
         this.F_Setting = F_Setting;
+    }
+
+    public String getF_EName() {
+        return F_EName;
+    }
+
+    public void setF_EName(String f_EName) {
+        F_EName = f_EName;
     }
 }

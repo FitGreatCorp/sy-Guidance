@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fitgreat.airfacerobot.R;
+import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.archmvp.base.util.UIUtils;
 
@@ -68,7 +69,7 @@ public class ValidationOrPromptDialog extends AlertDialog {
         if (mFailPromptTag) { //密码验证不通过提示
             validationFailTip.setVisibility(View.VISIBLE);
             confirmPasswordContent.setVisibility(View.GONE);
-            validationPromptTitle.setText("提示:");
+            validationPromptTitle.setText(MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
         } else { //验证密码提示
             validationFailTip.setVisibility(View.GONE);
             confirmPasswordContent.setVisibility(View.VISIBLE);
@@ -83,7 +84,7 @@ public class ValidationOrPromptDialog extends AlertDialog {
                 if (!mFailPromptTag) {
                     if (mValidationFailListener != null) {
                         if (TextUtils.isEmpty(confirmPasswordContent.getText().toString())){
-                            ToastUtils.showSmallToast("请输入密码");
+                            ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.prompt_password_title));
                             return;
                         }
                         mValidationFailListener.validationPassword(confirmPasswordContent.getText().toString());

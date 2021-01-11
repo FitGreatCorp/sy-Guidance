@@ -108,6 +108,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
@@ -142,12 +143,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     TextView mVoiceMsg;
     @BindView(R.id.wink_speak_animation)
     ImageView mWinkSpeakAnimation;
-
     @BindView(R.id.language_chinese_relativeLayout)
     RelativeLayout mLanguageChineseRelativeLayout;
     @BindView(R.id.language_english_relativeLayout)
     RelativeLayout mLanguageEnglishRelativeLayout;
-
     @BindView(R.id.voice_msg_scrollView)
     ScrollView mVoiceMsgScrollView;
 
@@ -185,7 +184,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private RobotInfoData robotInfoData;
     private NormalOrCountDownDialog normalOrCountDownDialog;
     //对话框内容最低高度
-    private int minDialogBoxHeight = 200;
+    private int minDialogBoxHeight = 250;
     //对话框内容滑动结束位置
     private int endPositionHeight = 0;
     //对话框内容滑动初始位置
@@ -279,7 +278,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                             mVoiceMsgScrollView.smoothScrollTo(startPositionHeight, endPositionHeight);
                             startPositionHeight = endPositionHeight;
                         }
-                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG,500);
+                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 500);
                     }
                     break;
                 default:
@@ -408,7 +407,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
         mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
         if (mVoiceMsg.getHeight() > minDialogBoxHeight) {
-            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG,500);
+            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 500);
         }
         LogUtils.d(DEFAULT_LOG_TAG, "文本高度::::" + mVoiceMsg.getHeight() + " ,minDialogBoxHeight,    " + minDialogBoxHeight);
         //更新4g网络信号页面展示信息
@@ -419,7 +418,11 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             //更新本地导航位置,执行任务信息
             mPresenter.getLocationInfo(handler);
             //机器人名字信息
-            mRobotName.setText(robotInfoData.getF_Name());
+            if (currentLanguage.equals("en") && !TextUtils.isEmpty(robotInfoData.getF_EName())) {
+                mRobotName.setText(robotInfoData.getF_EName());
+            } else if (currentLanguage.equals("zh") && !TextUtils.isEmpty(robotInfoData.getF_Name())) {
+                mRobotName.setText(robotInfoData.getF_Name());
+            }
             LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
             //院内介绍流程没启动时进入首页,语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
             boolean startIntroductionWorkFlowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
@@ -477,6 +480,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         SpeechManager.closeOneShotWakeup();
         //停止三分钟倒计时启动院内介绍工作流
         stopIntroductionTimer();
+        //去除对话框内容滑动
+        handler.removeMessages(CONTENT_SLIDE_TAG);
     }
 
 
@@ -593,6 +598,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         RouteUtils.goHome(MainActivity.this);
     }
 
+    /**
+     * 弹窗提示切换机器人语言
+     */
     public void changeRobotLanguage() {
         normalOrCountDownDialog = new NormalOrCountDownDialog(this);
         normalOrCountDownDialog.setDialogTitle("提示/Messages");
@@ -600,6 +608,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         normalOrCountDownDialog.setTipDialogYesNoListener("继续/Continue", "取消/Cancel", new NormalOrCountDownDialog.TipDialogYesNoListener() {
             @Override
             public void tipProgressChoseYes() {
+                //首页是否有弹窗弹出
+                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                 if (currentLanguage.equals("zh")) {
                     setLanguage("en", mLanguageEnglishRelativeLayout, mLanguageChineseRelativeLayout);
                 } else {
@@ -619,6 +629,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         });
         normalOrCountDownDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         normalOrCountDownDialog.show();
+        //首页是否有弹窗弹出
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
     }
 
     /**
@@ -686,11 +698,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         String mapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
         //解析获取地图信息
         MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
-        if (TextUtils.isEmpty(mapEntity.getF_EMapUrl())) {
-            ToastUtils.showSmallToast("请配置英文地图");
+        LogUtils.d(DEFAULT_LOG_TAG,"-------goToChoseDestinationModel------");
+
+        LogUtils.json(DEFAULT_LOG_TAG,mapInfoString);
+        if (TextUtils.isEmpty(mapEntity.getF_EMapUrl()) && currentLanguage.equals("en")) {
+            ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.no_english_map_tip));
             return;
         }
-        if (TextUtils.isEmpty(mapEntity.getF_MapFileUrl())) {
+        if (TextUtils.isEmpty(mapEntity.getF_MapFileUrl()) && currentLanguage.equals("zh")) {
             ToastUtils.showSmallToast("请配置中文地图");
             return;
         }
@@ -1109,6 +1124,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         if (currenttime - lasttime >= 30 * 1000 * 60) {
             if (!isFinishing() && commonTipDialog != null) {
                 if (!commonTipDialog.isShowing()) {
+                    //首页是否有弹窗弹出
+                    SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
                     commonTipDialog.show();
                     commonTipDialog.setCancelVisible(true);
                     commonTipDialog.setCancelable(false);
@@ -1122,6 +1139,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                             show_svdialog = false;
                             handler.sendEmptyMessageDelayed(CHECK_HARDWARE_VERSION_CODE, 300);
                         }
+                        //首页是否有弹窗弹出
+                        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                     });
                 }
                 commonTipDialog.setTitleAndContent(appVersion.getF_UpdateTitle(), appVersion.getF_UpdateMsg());
@@ -1149,6 +1168,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 LogUtils.d(TAG, "versionInfo.getF_UpdateTitle() = " + versionInfo.getF_UpdateTitle() + ",versionInfo.getF_UpdateContent() = " + versionInfo.getF_UpdateContent());
                 if (!commonTipDialog.isShowing()) {
                     LogUtils.d(TAG, "----------show hardware version dialog--------");
+                    //首页是否有弹窗弹出
+                    SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
                     commonTipDialog.show();
                     commonTipDialog.setCancelVisible(true);
                     commonTipDialog.setCancelable(false);
@@ -1162,6 +1183,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                                 RobotInfoUtils.setRobotRunningStatus("1");
                             }
                         }
+                        //首页是否有弹窗弹出
+                        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                     });
                 }
                 commonTipDialog.setTitleAndContent(versionInfo.getF_UpdateTitle(), versionInfo.getF_UpdateContent());

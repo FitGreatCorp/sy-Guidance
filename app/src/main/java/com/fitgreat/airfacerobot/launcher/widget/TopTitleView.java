@@ -36,7 +36,9 @@ public class TopTitleView extends ConstraintLayout {
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.TopTitleView);
         String titleName = typedArray.getString(R.styleable.TopTitleView_titleName);
         int titleColor = typedArray.getColor(R.styleable.TopTitleView_titleColor, Color.BLACK);
+        int itemBackColor = typedArray.getColor(R.styleable.TopTitleView_itemBackColor, Color.WHITE);
         View inflate = LayoutInflater.from(context).inflate(R.layout.view_base_title, this, true);
+        ConstraintLayout itemViewBaseView = inflate.findViewById(R.id.item_view_base);
         ConstraintLayout baseBackView = inflate.findViewById(R.id.container_base_back);
         baseBackView.setOnClickListener((view) -> {
             if (mBaseBackListener != null) {
@@ -45,9 +47,8 @@ public class TopTitleView extends ConstraintLayout {
         });
         baseTitleView = inflate.findViewById(R.id.base_title);
         baseTitleView.setText(titleName);
-        if (titleColor != 0) {
-            baseTitleView.setTextColor(titleColor);
-        }
+        baseTitleView.setTextColor(titleColor);
+        itemViewBaseView.setBackgroundColor(itemBackColor);
         typedArray.recycle();
     }
 

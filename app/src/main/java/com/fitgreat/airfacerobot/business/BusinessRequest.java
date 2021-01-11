@@ -35,28 +35,16 @@ import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 public class BusinessRequest {
     private final static String TAG = BusinessRequest.class.getSimpleName();
 
-//    /**
-//     * check app version
-//     */
-//    public static void checkAppVersion(Callback callback) {
-//        HashMap<String, String> bodyStr = new HashMap<>();
-//        bodyStr.put("appCode", "");
-//        bodyStr.put("appType", "android control");
-//        bodyStr.put("versionCode", VersionUtils.getVersionName(MyApp.getContext()));
-//        RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
-//        LogUtils.d(TAG, "checkAppVersion body:" + JsonUtils.encode(bodyStr));
-//        RequestManager.startPost(ApiRequestUrl.CHECK_APP_VERSION, body, callback);
-//    }
-
     /**
      * check hardware version
      */
     public static void checkHardwareVersion(Callback callback) {
         HashMap<String, String> bodyStr = new HashMap<>();
-        bodyStr.put("appType", "android_airface_robot_hardware");
+        bodyStr.put("hardwareType", "android_doctorface_robot_hardware_sy");
         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
         RequestManager.startPost(ApiRequestUrl.CHECK_HARDWARE_VERSION, body, callback);
     }
+
     /**
      * check app version
      * 设备类型
@@ -75,6 +63,7 @@ public class BusinessRequest {
         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
         RequestManager.startPost(ApiRequestUrl.CHECK_APP_VERSION, body, callback);
     }
+
     /**
      * 硬件升级结果反馈
      */

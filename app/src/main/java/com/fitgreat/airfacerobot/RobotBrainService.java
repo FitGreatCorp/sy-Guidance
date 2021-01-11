@@ -26,6 +26,7 @@ import androidx.annotation.Nullable;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
+import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.speech.PlayTtsTask;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
@@ -106,14 +107,15 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CANCEL_RECHARGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_POWER_LOCK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
@@ -129,7 +131,6 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_SHOW_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_TASK_END;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_FAILURE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_SUCCESS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_CONNECTION_CHECK_FAILURE;
@@ -366,10 +367,14 @@ public class RobotBrainService extends Service {
                     }
                     //电量小于20%弹窗提示
                     int batteryInt = Integer.parseInt(getBattery());
-                    if (batteryInt != 0 && batteryInt < 20) {
+                    if (batteryInt != 0 && batteryInt < 88) {
                         checkBatteryTime++;
-                        LogUtils.d(DEFAULT_LOG_TAG, "  当前电量过低弹窗提示冲电,  " + batteryInt + "  时间次数,  " + checkBatteryTime);
-                        if (checkBatteryTime == 3600&&!RobotInfoUtils.getRobotRunningStatus().equals("5")) {
+//                        LogUtils.d(DEFAULT_LOG_TAG, "  当前电量过低弹窗提示冲电,  " + batteryInt + "  时间次数,  " + checkBatteryTime + " ,机器人状态, " + RobotInfoUtils.getRobotRunningStatus());
+//                        if (checkBatteryTime == 3600 && !RobotInfoUtils.getRobotRunningStatus().equals("5")) {
+//                            EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
+//                            checkBatteryTime = 0;
+//                        }
+                        if (checkBatteryTime == 60 && !RobotInfoUtils.getRobotRunningStatus().equals("5")) {
                             EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
                             checkBatteryTime = 0;
                         }
@@ -492,15 +497,20 @@ public class RobotBrainService extends Service {
                         boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
                         LogUtils.d(DEFAULT_LOG_TAG, "导航失败后,自动回充工作流状态状态:   " + startRechargeTag);
                         if (startRechargeTag) { //自动回充工作流启动时
+                            //关闭自动回充提示弹窗
+                            if (tipRechargingDialog != null) {
+                                tipRechargingDialog.dismiss();
+                                tipRechargingDialog = null;
+                            }
                             //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我"
-                            speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
                             handler.postDelayed(() -> {
                                 speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
-                            }, 5 * 1000);
-                            //单点导航任务结束
-                            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
+                            }, 1000);
+                            handler.postDelayed(() -> {
+                                speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
+                            }, 2000);
                         } else {
-                            //单点导航时,连续三次导航失败关闭引导弹窗,停在原地
+                            //关闭导航提示弹窗
                             if (navigationIngDialog != null) {
                                 navigationIngDialog.dismiss();
                                 navigationIngDialog = null;
@@ -526,8 +536,6 @@ public class RobotBrainService extends Service {
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                     //自动回充工作流启动后,导航到目的地后不弹窗提示
                     rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
-                    //单点导航任务结束
-                    SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                     //导航成功到达目的地,语音播报提示
                     StringBuffer startNavigationPrompt = new StringBuffer();
                     startNavigationPrompt.append(MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_one));
@@ -568,9 +576,17 @@ public class RobotBrainService extends Service {
                     break;
                 case "parking_timeout": //充电失败  TODO
                     LogUtils.d(DEFAULT_LOG_TAG, "parking_timeout !!!!!!!!!!!!!!!!!!");
+                    //语音提示冲电失败
                     handler.postDelayed(() -> {
                         playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.charge_failed_tip));
                     }, 500);
+                    //充电失败语音提示  护士姐姐帮帮我 两次
+                    handler.postDelayed(() -> {
+                        playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text));
+                    }, 500);
+                    handler.postDelayed(() -> {
+                        playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text));
+                    }, 1500);
                     //冲电失败,关闭自动回充提示弹窗
                     if (tipRechargingDialog != null) {
                         tipRechargingDialog.dismiss();
@@ -598,7 +614,6 @@ public class RobotBrainService extends Service {
                     headerActuatorManager.setInitListener((boolean isSuccess) -> {
                         if (isSuccess) {
                             if (jRos != null) {
-//                                handler.sendEmptyMessageDelayed(MSG_JROS_TIMEOUT, 15000);  TODO  初始化jros
                                 jrosInit();
                             }
                             if (rosManager != null) {
@@ -998,6 +1013,8 @@ public class RobotBrainService extends Service {
                 //导航失败重试标志默认为true
                 navigation_failed_retry_tag = true;
                 rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                //首页是否有弹窗弹出
+                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
                 if (rechargingStatus) {
                     //自动回充时,任务提示弹窗,可以终止
                     rechargingDialog();
@@ -1238,12 +1255,14 @@ public class RobotBrainService extends Service {
         if (currentLanguage.equals("zh")) {   //中文地点名字
             navigationIngDialog.setDialogContent("我正在前往\t\"" + instructionName + "\"中...");
         } else {  //英文地点名字
-            navigationIngDialog.setDialogContent("I am going\t\"" + instructionEnName + "\"中...");
+            navigationIngDialog.setDialogContent("I am Going\t\"" + instructionEnName + "\"...");
         }
         navigationIngDialog.setTipSingleSelectModel(true);
         navigationIngDialog.setTipDialogSelectListener(MvpBaseActivity.getActivityContext().getString(R.string.end_boot_bt), new MyTipDialog.TipDialogSelectListener() {
             @Override
             public void tipSelect() {
+                //首页是否有弹窗弹出
+                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                 //获取下一步标志(禁止查询下一步操作)
                 isTerminal = true;
                 //导航失败失败不重试
@@ -1252,8 +1271,6 @@ public class RobotBrainService extends Service {
                 //更新任务指令状态
                 instruction_status = "-1";
                 BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
-                //单点导航任务结束
-                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                 //终止移动
                 SignalDataEvent stopMoveEvent = new SignalDataEvent();
                 stopMoveEvent.setType(MSG_STOP_MOVE);
@@ -1276,6 +1293,8 @@ public class RobotBrainService extends Service {
             @Override
             public void tipSelect() {
                 LogUtils.d(DEFAULT_LOG_TAG, "终止自动回充任务");
+                //首页是否有弹窗弹出
+                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                 //获取下一步标志(禁止查询下一步操作)
                 isTerminal = true;
                 //导航失败失败不重试
@@ -1491,7 +1510,7 @@ public class RobotBrainService extends Service {
                                     break;
                                 case "Check":
                                     break;
-                                case "Operation":
+                                case "Operation":  //TODO 更新任务指令 执行操作
                                     if (operationType.equals("2")) {
                                         //点击宣教播放按钮后切换机器人为  操作中状态
                                         saveRobotstatus(3);
@@ -1584,7 +1603,7 @@ public class RobotBrainService extends Service {
         public void onResponse(Call call, Response response) throws IOException {
             String result = response.body().string();
             try {
-                JSONObject baseResObj = new JSONObject(result);
+                JSONObject baseResObj = new JSONObject(result);  //TODO 获取下一步操作任务 执行操作
                 if (baseResObj.has("type")) {
                     String type = baseResObj.getString("type");
                     if (type.equals("success")) {
@@ -1597,6 +1616,8 @@ public class RobotBrainService extends Service {
                         container = nextOperationData.getF_Container();
                         operationType = nextOperationData.getOperationType();
                         fileUrl = nextOperationData.getF_FileUrl();
+                        instructionEnName = nextOperationData.getF_InstructionEnName();
+                        enFileUrl = nextOperationData.getF_EFileUrl();
                         isTerminal = false;
                         LogUtils.d(DEFAULT_LOG_TAG, "下一步任务获取成功  instructionType  " + instructionType);
                         if (!instructionType.equals("End")) {
@@ -1607,9 +1628,6 @@ public class RobotBrainService extends Service {
                                 nextNavigationDestination = currentNavigationDestination;
                                 //本次导航目的地
                                 currentNavigationDestination = instructionName;
-                                speechManager.textTtsPlay(nextNavigationDestination + "已讲完啦,我将去" + currentNavigationDestination + "啦", "0", null);
-                                //更新显示语音数据到首页
-                                EventBus.getDefault().post(new NavigationTip(nextNavigationDestination + "已讲完啦,我将去" + currentNavigationDestination + "啦"));
                                 //记录当前导航目的地信息
                                 currentNavigationX = nextOperationData.getF_X();
                                 currentNavigationY = nextOperationData.getF_Y();
@@ -1622,16 +1640,17 @@ public class RobotBrainService extends Service {
                                 BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                             }
                         } else if (instructionType.equals("End")) {
-                            //根据当前机器人语言,再次发起院内介绍工作流
-                            String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-                            //院内介绍工作流启动标志
-                            boolean startIntroductionWorkflowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-                            if (!(currentLanguage.equals("null")) && currentLanguage.equals("zh") && startIntroductionWorkflowTag) { //当前机器人语言为中文
-                                //重启院内介绍工作流程中文版
-                                OperationUtils.startSpecialWorkFlow(3, handler);
-                            } else if (!(currentLanguage.equals("null")) && currentLanguage.equals("en") && startIntroductionWorkflowTag) {
-                                //重启院内介绍工作流程英文版
-                                OperationUtils.startSpecialWorkFlow(2, handler);
+                            String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
+                            if (!"null".equals(currentFreeOperation)) {
+                                WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
+                                LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + " currentLanguage  " + currentLanguage + "   " + JSON.toJSONString(workflowEntity));
+                                if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
+                                    return;
+                                } else {
+                                    OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
+                                }
+                            } else {
+                                LogUtils.d(DEFAULT_LOG_TAG, "请配置空闲执行工作流 : ");
                             }
                         } else {
                             if (!taskVideoCall) {
@@ -1706,8 +1725,6 @@ public class RobotBrainService extends Service {
                         SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                         LogUtils.d(DEFAULT_LOG_TAG, "自动回充工作流取消----stopTaskCallback-------");
                     }
-                    //单点导航任务结束
-                    SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
                     //取消dds语音播报
                     speechManager.cancelTtsPlay();
                 }

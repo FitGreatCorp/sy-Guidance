@@ -29,7 +29,6 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinationView> {
@@ -64,8 +63,6 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             operationList.put(operationObj);
         } catch (JSONException e) {
             e.printStackTrace();
-            //单点导航任务结束
-            SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         }
         //获取机器人信息
         RobotInfoData robotInfo = RobotInfoUtils.getRobotInfo();
@@ -143,8 +140,6 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             @Override
             public void onFailure(Call call, IOException e) {
                 LogUtils.e(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
-                //单点导航任务结束
-                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
 
             @Override
@@ -205,7 +200,5 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
             loadTipDialog.dismiss();
             loadTipDialog = null;
         }
-        //单点导航任务结束
-        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
     }
 }

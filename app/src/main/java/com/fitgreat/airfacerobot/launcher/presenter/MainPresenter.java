@@ -7,6 +7,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -269,6 +270,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         String type = jsonObject.getString("type");
                         String msg = jsonObject.getString("msg");
+//                        LogUtils.json(DEFAULT_LOG_TAG, msg);
                         if (type.equals("success")) {
                             JSONObject msgObj = new JSONObject(msg);
                             if (msgObj.has("locationLists")) {
@@ -415,38 +417,53 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         //根据本地缓存地图信息和服务端地图信息对比判断是服务端地图是否更换
         //本地缓存地图信息
         String localMapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
+        LogUtils.d(DEFAULT_LOG_TAG, "本地地图信息:::localMapInfoString");
+//        LogUtils.json(DEFAULT_LOG_TAG, localMapInfoString);
         //服务端地图信息
         String serverMapInfoString = msgObj.getString("map");
+        LogUtils.d(DEFAULT_LOG_TAG, "服务端最新地图信息:::serverMapInfoString");
+//        LogUtils.json(DEFAULT_LOG_TAG, serverMapInfoString);
+        //下载地图到本地
+        File parentMapFile = new File(basePath);
+        if (!parentMapFile.exists()) {
+            parentMapFile.mkdir();
+        }
         if (localMapInfoString != null && (!TextUtils.isEmpty(serverMapInfoString))) {
+            LogUtils.d(DEFAULT_LOG_TAG, "本地有地图,服务端也有地图");
             //本地地图信息
             localMapEntity = JSON.parseObject(localMapInfoString, MapEntity.class);
             //服务端地图信息
             serverMapEntity = JSON.parseObject(serverMapInfoString, MapEntity.class);
             if (!serverMapEntity.getF_Id().equals(localMapEntity.getF_Id())) { //服务端地图已更新,更新本地地图数据信息
-                LogUtils.d(DEFAULT_LOG_TAG, "最新地图信息:  " + serverMapInfoString);
-                //更新本地地图信息
-                SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, serverMapInfoString);
+                LogUtils.d(DEFAULT_LOG_TAG, "本地地图,服务端地图不一样");
                 //清空本地和地图有关的其他数据
                 clearDataWithMap();
+            } else { //同一张地图切换地图展示文件
+                LogUtils.d(DEFAULT_LOG_TAG, "本地地图,服务端地图一样没有变化,删除本地中英文展示文件");
+                //分别删除中英文版本地图
+                File chineseMapFile = new File(currentChineseMapPath);
+                if (chineseMapFile.exists()) {
+                    chineseMapFile.delete();
+                }
+                File englishMapFile = new File(currentEnglishMapPath);
+                if (englishMapFile.exists()) {
+                    englishMapFile.delete();
+                }
             }
-        } else if ((!TextUtils.isEmpty(serverMapInfoString))) {
+            downloadMapImage();
+        } else if (localMapInfoString == null && (!TextUtils.isEmpty(serverMapInfoString))) {
+            LogUtils.d(DEFAULT_LOG_TAG, "本地没有地图,服务端有地图第一次下载中英文地图展示文件到本地");
             //缓存地图信息到本地
             SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, serverMapInfoString);
+            downloadMapImage();
         } else {
             mHandler.post(() -> {
                 ToastUtils.showSmallToast("服务端请配置地图");
             });
             return;
         }
-        //下载地图文件到本地
-        File parentFile = new File(basePath);
-        if (!parentFile.exists()) {
-            parentFile.mkdir();
-        }
-        //下载最新中文地图
-        downloadLatestMap(currentChineseMapPath, "中文地图下载: ", serverMapEntity.getF_MapFileUrl());
-        //下载英文地图
-        downloadLatestMap(currentEnglishMapPath, "英文地图下载: ", serverMapEntity.getF_EMapUrl());
+        //更新本地地图信息
+        SpUtils.putString(MyApp.getContext(), MAP_INFO_CASH, serverMapInfoString);
         //缓存导航地点信息以json的形式到本地
         SpUtils.putString(MyApp.getContext(), "locationList", JSON.toJSONString(locationList));
         //获取常见问题列表问题
@@ -487,6 +504,18 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
     }
 
     /**
+     * 下载最新中英文地图
+     */
+    private void downloadMapImage() {
+        //下载最新中文地图
+        LogUtils.d(DEFAULT_LOG_TAG, "下载中文地图,  " + serverMapEntity.getF_MapFileUrl());
+        downloadMap(serverMapEntity.getF_MapFileUrl(), currentChineseMapPath);
+        //下载英文地图
+        LogUtils.d(DEFAULT_LOG_TAG, "下载英文地图,  " + serverMapEntity.getF_EMapUrl());
+        downloadMap(serverMapEntity.getF_EMapUrl(), currentEnglishMapPath);
+    }
+
+    /**
      * 服务端切换地图时清空本地缓存数据
      */
     public void clearDataWithMap() {
@@ -505,18 +534,6 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         SpUtils.putString(MyApp.getContext(), "locationList", null);
         //清空常见问题数据信息
         SpUtils.putString(MyApp.getContext(), "problemList", null);
-    }
-
-    /**
-     * 下载最新地图到本地
-     */
-    private void downloadLatestMap(String currentMapPath, String s, String f_eMapUrl) {
-        File currentMapFile = new File(currentMapPath);
-        if (currentMapFile.exists()) {
-            currentMapFile.delete();
-        }
-//        LogUtils.d(DEFAULT_LOG_TAG, s + f_eMapUrl);
-        downloadMap(f_eMapUrl, currentMapPath);
     }
 
     /**

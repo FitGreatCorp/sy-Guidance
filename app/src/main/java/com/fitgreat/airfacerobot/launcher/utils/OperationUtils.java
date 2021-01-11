@@ -219,6 +219,7 @@ public class OperationUtils {
                                                         autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());
                                                         autoMoveEvent.setContainer(nextOperationData.getF_Container());
                                                         autoMoveEvent.setFileUrl(nextOperationData.getF_FileUrl());
+                                                        autoMoveEvent.setEnFileUrl(nextOperationData.getF_EFileUrl());
                                                         autoMoveEvent.setProduceId(actionId);
                                                         autoMoveEvent.setOperationType(nextOperationData.getOperationType());
                                                         autoMoveEvent.setX(nextOperationData.getF_X());

@@ -25,6 +25,7 @@
     <declare-styleable name="TopTitleView">
         <attr name="titleName" format="string" />
         <attr name="titleColor" format="color" />
+        <attr name="itemBackColor" format="color" />
     </declare-styleable>
 
     <!--院内介绍列表条目view-->

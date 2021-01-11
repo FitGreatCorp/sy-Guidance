@@ -7,13 +7,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RadioButton;
@@ -37,7 +36,6 @@ import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.utils.WebPageUtils;
 import com.fitgreat.airfacerobot.launcher.widget.InputDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
-import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -61,7 +59,6 @@ import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_SELECT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
@@ -125,6 +122,8 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     RadioButton broadcastGreetNo;
     @BindView(R.id.free_operation)
     TextView freeOperation;
+    @BindView(R.id.switch_free_operation_log)
+    ImageView switchFreeOperationLog;
 
     LinearLayout info;
     LinearLayout hello;
@@ -480,6 +479,8 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
                 break;
             case R.id.main_item_page:
                 if (popupWindow != null && popupWindow.isShowing()) {
+                    //选择空闲操作logo切换朝下
+                    switchFreeOperationLog.setImageDrawable(getDrawable(R.drawable.ic_triangle_down));
                     popupWindow.dismiss();
                     popupWindow = null;
                 }
@@ -518,9 +519,13 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
                 }
                 //关闭popupWindow
                 popupWindow.dismiss();
+                //选择空闲操作logo切换朝下
+                switchFreeOperationLog.setImageDrawable(getDrawable(R.drawable.ic_triangle_down));
                 //显示当前选择空闲工作流名字
                 freeOperation.setText(workflowEntity.getF_Name());
             });
+            //选择空闲操作logo切换朝上
+            switchFreeOperationLog.setImageDrawable(getDrawable(R.drawable.ic_triangle_top));
             //显示PopupWindow
             popupWindow.showAsDropDown(freeOperation);
         }

@@ -70,6 +70,7 @@ import std_msgs.Byte;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
@@ -184,6 +185,7 @@ public class RosManager {
     private Timer rosManagerInitTimer = null;
     private TimerTask rosManagerInitTimerTask = null;
     private boolean mainPageShowTag;
+    private boolean mainPageDialogShowTag;
     //迎宾语播放次数限制一直有人时默认播放一次
     private int playTipTime = 0;
 
@@ -245,9 +247,12 @@ public class RosManager {
                         broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
                         //程序首页是否显示
                         mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
+                        //程序首页是否有弹窗弹出
+                        mainPageDialogShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
+                        //迎宾语内容
                         string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");
-                        if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello)) && mainPageShowTag && playTipTime == 1) { //播放迎宾语开关打开
-                            LogUtils.d(TAG, "机器人附近有障碍物, " + "  迎宾语,  " + string_hello);
+                        LogUtils.d(TAG, "机器人附近有障碍物, " + " string_hello, " + string_hello+ " mainPageShowTag, " + mainPageShowTag+ " playTipTime, " + playTipTime+ " mainPageDialogShowTag, " + mainPageDialogShowTag);
+                        if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello)) && mainPageShowTag && playTipTime == 1&&!mainPageDialogShowTag) { //播放迎宾语开关打开
                             playShowText(string_hello);
                         }
                     } else {

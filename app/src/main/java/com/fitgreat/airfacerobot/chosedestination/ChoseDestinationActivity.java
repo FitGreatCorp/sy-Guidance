@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -35,6 +36,7 @@ import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
+import com.fitgreat.archmvp.base.util.BitmapUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
@@ -58,7 +60,6 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIG
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_START_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 
@@ -81,7 +82,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     private String currentLanguage;
     private CloseBroadcastReceiver closeBroadcastReceiver;
     private MyTipDialogSetText startNavigationDialog;
-    private int clickPosition = 00;
 
     @Override
     public ChoseDestinationPresenter createPresenter() {
@@ -93,14 +93,17 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         return R.layout.activity_chose_destination;
     }
 
+    @Override
+    protected void onResume() {
+        LogUtils.d(DEFAULT_LOG_TAG,"onResume---------------ChoseDestinationActivity------------------");
+        super.onResume();
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         //解绑EventBus
         EventBus.getDefault().unregister(this);
-        //单点导航任务结束
-        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         //解绑关闭页面广播
         unregisterReceiver(closeBroadcastReceiver);
     }
@@ -122,8 +125,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         EventBus.getDefault().register(this);
         //根据当前语言加载展示地图
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-        //单点导航任务结束
-        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
         //显示悬浮窗
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
@@ -136,12 +137,19 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             LocationEntity locationEntity = (LocationEntity) bundle.getSerializable("LocationEntity");
             LogUtils.d(DEFAULT_LOG_TAG, "指令跳转选择导航页面: tipContent " + getNavigationTip(locationEntity) + " currentLanguage " + currentLanguage);
             //单点导航提示弹窗
-            showDialogNavigation(true, getNavigationTip(locationEntity), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
+            showDialogNavigation(true, getNavigationTip(locationEntity), MvpBaseActivity.getActivityContext().getString(R.string.answer_yes), MvpBaseActivity.getActivityContext().getString(R.string.answer_no), locationEntity);
         }
-
         //添加导航点按钮位置
         locationList = CashUtils.getLocationList();
+        //去除不配置S_Y  S_X的位置信息
+        for (int i = 0; i < locationList.size(); i++) {
+            LocationEntity locationEntity = locationList.get(i);
+            if ("null".equals(locationEntity.getS_Y()) || "null".equals(locationEntity.getS_X())) {
+                locationList.remove(i);
+            }
+        }
         LogUtils.d(DEFAULT_LOG_TAG, "locationList:  " + JSON.toJSONString(locationList));
+        //绘制页面,添加页面位置信息
         if (locationList != null && locationList.size() != 0) {
             flashView();
         }
@@ -157,40 +165,20 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     public void flashView() {
         //加载中英文地图
         if (currentLanguage.equals("zh")) {  //加载展示中文地图
-            Glide.with(this).load(new File(currentChineseMapPath)).into(mChoseDestinationMapBack);
+            mChoseDestinationMapBack.setImageBitmap(BitmapUtils.getBitmapFromPath(currentChineseMapPath));
         } else {  //加载展示英文地图
-            Glide.with(this).load(new File(currentEnglishMapPath)).into(mChoseDestinationMapBack);
+            mChoseDestinationMapBack.setImageBitmap(BitmapUtils.getBitmapFromPath(currentEnglishMapPath));
         }
         for (int i = 0; i < locationList.size(); i++) {
             LocationEntity locationEntity = locationList.get(i);
             ImageButton imageButton = new ImageButton(this);
             imageButton.setBackgroundColor(getResources().getColor(R.color.transparent));
-//            if (i == clickPosition) {
-//                imageButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_map_location_select));
-//            } else {
-//                imageButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_map_location_nor));
-//            }
             imageButton.setImageDrawable(getResources().getDrawable(R.mipmap.ic_map_location_nor));
             //单点位置按钮添加点击事件
-            int finalI = i;
             imageButton.setOnClickListener(v -> {
-                clickPosition = finalI;
-                //单点导航任务启动标志
-                boolean navigationStartTag = SpUtils.getBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
-                if (!navigationStartTag) { //当前没有单点导航任务启动时,可以再次启动单点导航任务
-                    //单点导航任务点击位置按钮后默认为启动
-                    SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, true);
-                    showDialogNavigation(true, getNavigationTip(locationEntity), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
-                    //自动回充工作流结束
-                    SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
-//                    mChoseDestinationContainer.removeAllViews();
-//                    flashView();
-                    //地点按钮添加点击放大并恢复动画效果
-//                        ScaleAnimation scaleAnimation = (ScaleAnimation) AnimationUtils.loadAnimation(this, R.anim.anim_location_scale);
-//                        imageButton.startAnimation(scaleAnimation);
-                } else { //机器人忙碌中,已经发起单点导航任务
-                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, getString(R.string.prompt_while_busy)));
-                }
+                showDialogNavigation(true, getNavigationTip(locationEntity), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
+                //自动回充工作流结束
+                SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
             });
             //设置导航点按钮位置
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -251,7 +239,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
     @Override
     public void navigationSuccess() {
-
     }
 
     /**
@@ -324,8 +311,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
             @Override
             public void tipProgressChoseNo() {
-                //单点导航任务结束
-                SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_START_TAG, false);
             }
         });
         startNavigationDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);

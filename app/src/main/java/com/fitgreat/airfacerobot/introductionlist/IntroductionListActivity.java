@@ -269,15 +269,28 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
         }
         if (operationInfo.getF_Type().equals("2")) {
             kindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_video));
+            //加载介绍图片,如果服务端没有设置显示默认图片
+            if (("null".equals(operationInfo.getF_DescImg()))) {
+                backImageView.setImageDrawable(getDrawable(R.drawable.img_play_video));
+            } else {
+                Glide.with(this).load(operationInfo.getF_DescImg()).into(backImageView);
+            }
         } else if (operationInfo.getF_Type().equals("3")) {
             kindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_ppt));
+            //加载介绍图片,如果服务端没有设置显示默认图片
+            if (("null".equals(operationInfo.getF_DescImg()))) {
+                backImageView.setImageDrawable(getDrawable(R.drawable.img_play_ppt));
+            } else {
+                Glide.with(this).load(operationInfo.getF_DescImg()).into(backImageView);
+            }
         } else if (operationInfo.getF_Type().equals("4")) {
             kindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_word));
-        }
-        if (!("null".equals(operationInfo.getF_DescImg()))) {
-            Glide.with(this).load(operationInfo.getF_DescImg()).into(backImageView);
-        } else {
-            backImageView.setImageDrawable(getDrawable(R.drawable.img_introduction));
+            //加载介绍图片,如果服务端没有设置显示默认图片
+            if (("null".equals(operationInfo.getF_DescImg()))) {
+                backImageView.setImageDrawable(getDrawable(R.drawable.img_play_txt));
+            } else {
+                Glide.with(this).load(operationInfo.getF_DescImg()).into(backImageView);
+            }
         }
     }
 

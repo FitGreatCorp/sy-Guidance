@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Android-sy-Guidance</string>
-    <string name="robot_init">DoctorFace startup</string>
+    <string name="robot_init">DoctorFace Startup</string>
     <string name="net_starting">Step 1:\nconnecting to the server...</string>
     <string name="net_success">Step 1:\nSuccessfully connected to server</string>
     <string name="net_fail">Step 1:\nFailed to connect to server</string>
@@ -18,7 +18,7 @@
     <string name="voice_fail">Step 3:\nFailed to connect to voice platform</string>
     <string name="retry_bt_text">Retry</string>
     <string name="register_bt_text">Entourage registration</string>
-    <string name="ic_signal">SIGNAL</string>
+    <string name="ic_signal">Signal</string>
     <string name="battery_60">10%</string>
     <string name="version">VERSION V1.0.0</string>
     <string name="version_first">V</string>
@@ -52,7 +52,7 @@
     <string name="chargereminder">The current battery is too low, I am going to charge</string>
     <string name="battery_low_tip">The current battery level is less than 20%, and it will automatically</string>
     <string name="title_note">note</string>
-    <string name="auto_recharge">Automatic recharge</string>
+    <string name="auto_recharge">Automatic Recharge</string>
     <string name="auto_mission">Autonomous mission</string>
     <string name="prompt_no_navigation">The location is not in the location I set. I can tell you a location I know and take you there.</string>
     <string name="prompt_no_task">I can’t do this task, please contact the administrator to configure it for me</string>
@@ -60,7 +60,7 @@
     <string name="bluetooth_connection_device">Bluetooth connection device</string>
     <string name="auscaltation">Remote auscultation</string>
     <string name="home_go_title">I\'m going...</string>
-    <string name="home_question_title">common problem</string>
+    <string name="home_question_title">Common Problem</string>
     <string name="home_introduction_title">Introduction</string>
     <string name="register_prompt_text">Move the face into the frame completely, and after confirming\n, click the "Confirm" button.</string>
     <string name="answer_yes">Yes</string>
@@ -76,11 +76,11 @@
     <string name="prompt_problem_has_no">sorry，I don\'t know the question,can you change the question？</string>
     <string name="prompt_task_exception">The current task is abnormal。</string>
     <string name="ask_for_help_text">Nurse sister, please help me。</string>
-    <string name="start_chose_destination_tip_one">Are you going to \t</string>
-    <string name="start_chose_destination_tip_two">\t?\tClick "Yes" and I will take you there</string>
+    <string name="start_chose_destination_tip_one">Are you going to\t</string>
+    <string name="start_chose_destination_tip_two">\t?\tClick\t\"Yes\"\tand I will take you there</string>
     <string name="start_chose_destination_dialog_title">Prompt</string>
     <string name="task_terminated_title">Task terminated</string>
-    <string name="navigation_success_tip_one">I have arrived\t</string>
+    <string name="navigation_success_tip_one">I have arrived \t\t</string>
     <string name="navigation_success_tip_two">\tDo you need other services?</string>
     <string name="need_yes_title">YES</string>
     <string name="need_no_title">NO</string>
@@ -110,4 +110,6 @@
     <string name="prompt_common_problem">I can help you answer your questions.</string>
     <string name="no_en_file_tip">Please configure English files on the server.</string>
     <string name="end_play_video_bt">End screening</string>
+    <string name="empty_free_operation">please choose</string>
+    <string name="no_english_map_tip">Please configure English map</string>
 </resources>

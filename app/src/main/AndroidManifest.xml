@@ -126,8 +126,7 @@
             android:screenOrientation="landscape" />
         <activity
             android:name=".commonproblem.CommonProblemActivity"
-            android:screenOrientation="landscape"
-            android:theme="@style/MyTranslucentTheme" />
+            android:screenOrientation="landscape" />
         <activity
             android:name=".introductionlist.IntroductionListActivity"
             android:screenOrientation="landscape"
@@ -141,14 +140,14 @@
             android:name=".RobotBrainService"
             android:exported="false" />
 
-<!--        <receiver-->
-<!--            android:name=".launcher.receiver.HeartBeatBroadcast"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="com.fitgreat.action.HEART_BEAT" />-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <!--        <receiver-->
+        <!--            android:name=".launcher.receiver.HeartBeatBroadcast"-->
+        <!--            android:enabled="true"-->
+        <!--            android:exported="true">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="com.fitgreat.action.HEART_BEAT" />-->
+        <!--            </intent-filter>-->
+        <!--        </receiver>-->
 
         <provider
             android:name="androidx.core.content.FileProvider"

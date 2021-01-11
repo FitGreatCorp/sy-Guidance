@@ -52,6 +52,10 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
     //任务视频播放结束提示次数
     private int playEndTipTime = 0;
     private DownloadingDialog downloadingDialog;
+    private String enBlob;
+    private String instructionEnName;
+    private String currentLanguage;
+    private File file;
 
     @BindView(R.id.pdf_introduction_title)
     TopTitleView mPdfIntroductionTitle;
@@ -87,10 +91,7 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             }
         }
     };
-    private String enBlob;
-    private String instructionEnName;
-    private String currentLanguage;
-    private File file;
+
 
     @Override
     public int getLayoutResource() {
@@ -212,6 +213,9 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             mPdfIntroductionTitle.setBaseTitle(instructionEnName);
         }
         LogUtils.d(DEFAULT_LOG_TAG, "PDF文件路径::" + file.getPath());
+        if (file.exists()) {
+            file.delete();
+        }
         if (!file.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(PdfPlayActivity.this);
@@ -221,7 +225,7 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             if (currentLanguage.equals("zh")) { //当前机器人语言为中文
                 DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + blob, true, instructionName);
             } else if (currentLanguage.equals("en")) {
-                DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + blob, DownloadUtils.DOWNLOAD_PATH + enBlob, true, instructionEnName);
+                DownloadUtils.downloadApp(handler1, "", ApiDomainManager.getFitgreatDomain() + "/api/airface/blob/download?containerName=" + container + "&blobName=" + enBlob, DownloadUtils.DOWNLOAD_PATH + enBlob, true, instructionEnName);
             }
         } else {
             if (currentLanguage.equals("zh")) { //当前机器人语言为中文
