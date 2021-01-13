@@ -70,7 +70,7 @@
                 android:layout_height="@dimen/px200"
                 tools:ignore="MissingConstraints">
 
-                <ImageView
+                <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
                     android:id="@+id/introduction_list_one_item_one_back_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -89,6 +89,14 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/px80"
+                    android:alpha="0.3"
+                    android:background="@drawable/circle_black_bottom_left_right_15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent" />
+
                 <TextView
                     android:id="@+id/introduction_list_one_item_one_title"
                     android:layout_width="wrap_content"
@@ -100,6 +108,7 @@
                     android:text="段文字播放"
                     android:textColor="@android:color/white"
                     android:textSize="@dimen/textSize15"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent" />
@@ -121,7 +130,7 @@
                 android:layout_height="@dimen/px200"
                 tools:ignore="MissingConstraints">
 
-                <ImageView
+                <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
                     android:id="@+id/introduction_list_two_item_one_back_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -139,6 +148,14 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/px80"
+                    android:alpha="0.3"
+                    android:background="@drawable/circle_black_bottom_left_right_15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent" />
 
                 <TextView
                     android:id="@+id/introduction_list_two_item_one_title"
@@ -163,7 +180,7 @@
                 android:layout_marginLeft="@dimen/px30"
                 tools:ignore="MissingConstraints">
 
-                <ImageView
+                <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
                     android:id="@+id/introduction_list_two_item_two_back_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -181,6 +198,14 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/px80"
+                    android:alpha="0.3"
+                    android:background="@drawable/circle_black_bottom_left_right_15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent" />
 
                 <TextView
                     android:id="@+id/introduction_list_two_item_two_title"
@@ -204,8 +229,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/px25"
-            android:visibility="gone"
             android:gravity="center"
+            android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@+id/introduction_list_title">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -214,7 +239,7 @@
                 android:layout_height="@dimen/px200"
                 tools:ignore="MissingConstraints">
 
-                <ImageView
+                <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
                     android:id="@+id/introduction_list_three_item_one_back_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -232,6 +257,14 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/px80"
+                    android:alpha="0.3"
+                    android:background="@drawable/circle_black_bottom_left_right_15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent" />
 
                 <TextView
                     android:id="@+id/introduction_list_three_item_one_title"
@@ -256,7 +289,7 @@
                 android:layout_marginLeft="@dimen/px30"
                 tools:ignore="MissingConstraints">
 
-                <ImageView
+                <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
                     android:id="@+id/introduction_list_three_item_two_back_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -274,6 +307,14 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/px80"
+                    android:alpha="0.3"
+                    android:background="@drawable/circle_black_bottom_left_right_15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent" />
 
                 <TextView
                     android:id="@+id/introduction_list_three_item_two_title"
@@ -298,7 +339,7 @@
                 android:layout_marginLeft="@dimen/px30"
                 tools:ignore="MissingConstraints">
 
-                <ImageView
+                <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
                     android:id="@+id/introduction_list_three_item_three_back_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -316,6 +357,13 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/px80"
+                    android:alpha="0.3"
+                    android:background="@drawable/circle_black_bottom_left_right_15"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent" />
 
                 <TextView
                     android:id="@+id/introduction_list_three_item_three_title"

@@ -4,6 +4,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Spannable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,11 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson.JSON;
+import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.entity.node.BaseNode;
+import com.chad.library.adapter.base.listener.OnItemChildClickListener;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
+import com.fitgreat.airfacerobot.commonproblem.adapter.CommonProblemAdapter;
 import com.fitgreat.airfacerobot.commonproblem.adapter.CommonProblemNodeAdapter;
 import com.fitgreat.airfacerobot.commonproblem.node.CommonProblemFirstNode;
 import com.fitgreat.airfacerobot.commonproblem.node.CommonProblemSecondNode;
@@ -32,24 +36,21 @@ import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
-import com.fitgreat.airfacerobot.speech.model.ShowContent;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.OnClick;
-
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DEFAULT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
@@ -67,12 +68,16 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     TopTitleView mCommonProblemTitle;
     @BindView(R.id.linearLayout_no_data)
     LinearLayout mLinearLayoutNoData;
+
     private AnimationDrawable animationDrawable;
     private CommonProblemEntity mCommonProblemEntity;
     private CommonProblemNodeAdapter commonProblemNodeAdapter;
     private CommonProblemSecondNode commonProblemSecondNode;
     private List<BaseNode> secondNodeList;
     private CommonProblemFirstNode commonProblemFirstNode;
+    private String currentLanguage;
+    private List<BaseNode> currentData;
+    private CommonProblemAdapter commonProblemAdapter;
 
     @Override
     public CommonProblemPresenter createPresenter() {
@@ -86,6 +91,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void initData() {
+        //获取当前机器人语言
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //注册EventBus
         EventBus.getDefault().register(this);
         //获取常见问题列表
@@ -110,6 +117,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         super.onPause();
         //退出常见问题模块
         SpUtils.putBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, false);
+        //常见问题条目选中编号回复原始值
+        SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, DEFAULT_POSITION);
     }
 
     @Override
@@ -166,26 +175,31 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             mLinearLayoutNoData.setVisibility(View.GONE);
             mCommonProblemList.setVisibility(View.VISIBLE);
             //设置常见问题列表数据
-            commonProblemNodeAdapter = new CommonProblemNodeAdapter(this);
+            commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities, this);
             mCommonProblemList.setLayoutManager(new LinearLayoutManager(this));
-            mCommonProblemList.setAdapter(commonProblemNodeAdapter);
-            commonProblemNodeAdapter.setList(getEntity(commonProblemEntities));
+            commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
+                LogUtils.d(DEFAULT_LOG_TAG, " commonProblemAdapter  position    " + position);
+                //保存当前条目编号
+                SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, position);
+                //更新适配器数据并刷新
+                adapter.notifyDataSetChanged();
+                mCommonProblemEntity = (CommonProblemEntity) adapter.getData().get(position);
+                //关闭dds语音播报
+                EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
+                //语音播报当前问题答案
+                if (currentLanguage.equals("zh")) {
+                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, mCommonProblemEntity.getF_Answer()));
+                } else {
+                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, mCommonProblemEntity.getF_EAnswer()));
+                }
+            });
+            mCommonProblemList.setAdapter(commonProblemAdapter);
             //通过指令从首页跳转到常见问题页面
             if (getIntent().hasExtra("bundle")) {
                 Bundle bundle = getIntent().getBundleExtra("bundle");
                 mCommonProblemEntity = (CommonProblemEntity) bundle.getSerializable("CommonProblemEntity");
-                //更新当前播报问题选中状态
-                int itemPosition = CashUtils.getProblemPosition(mCommonProblemEntity.getF_QId());
-                List<BaseNode> data = commonProblemNodeAdapter.getData();
-                commonProblemFirstNode = (CommonProblemFirstNode)commonProblemNodeAdapter.getData().get(itemPosition);
-                commonProblemFirstNode.setExpanded(true);
-                commonProblemNodeAdapter.expandOrCollapse(itemPosition);
-                data.set(itemPosition,commonProblemFirstNode);
-                commonProblemNodeAdapter.notifyItemChanged(itemPosition);
-                //更新页面问题答案显示
-                playProblem(mCommonProblemEntity);
+                reFreshListData(mCommonProblemEntity);
                 LogUtils.d(DEFAULT_LOG_TAG, "----getIntent().hasExtra(\"bundle\")---CommonProblemActivity-----");
-
             }
         } else { //服务端常见问题没有数据
             mLinearLayoutNoData.setVisibility(View.VISIBLE);
@@ -193,19 +207,33 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         }
     }
 
-    private List<BaseNode> getEntity(List<CommonProblemEntity> commonProblemEntities) {
-        List<BaseNode> dataList = new ArrayList<>();
-        for (int i = 0; i < commonProblemEntities.size(); i++) {
-            mCommonProblemEntity = commonProblemEntities.get(i);
-            secondNodeList = new ArrayList<>();
-            commonProblemSecondNode = new CommonProblemSecondNode(mCommonProblemEntity.getF_Answer(), mCommonProblemEntity.getF_EAnswer());
-            secondNodeList.add(commonProblemSecondNode);
-
-            commonProblemFirstNode = new CommonProblemFirstNode(secondNodeList, mCommonProblemEntity);
-            dataList.add(commonProblemFirstNode);
+    public void reFreshListData(CommonProblemEntity commonProblemEntity) {
+        //更新当前播报问题选中状态
+        int itemPosition = CashUtils.getProblemPosition(commonProblemEntity.getF_QId());
+        //保存当前条目编号
+        SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, itemPosition);
+        //更新适配器数据并刷新
+        commonProblemAdapter.notifyDataSetChanged();
+        if (currentLanguage.equals("zh")) {
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_Answer()));
+        } else {
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_EAnswer()));
         }
-        return dataList;
     }
+
+//    private List<BaseNode> getEntity(List<CommonProblemEntity> commonProblemEntities) {
+//        List<BaseNode> dataList = new ArrayList<>();
+//        for (int i = 0; i < commonProblemEntities.size(); i++) {
+//            mCommonProblemEntity = commonProblemEntities.get(i);
+//            secondNodeList = new ArrayList<>();
+//            commonProblemSecondNode = new CommonProblemSecondNode(mCommonProblemEntity.getF_Answer(), mCommonProblemEntity.getF_EAnswer());
+//            secondNodeList.add(commonProblemSecondNode);
+//
+//            commonProblemFirstNode = new CommonProblemFirstNode(secondNodeList, mCommonProblemEntity);
+//            dataList.add(commonProblemFirstNode);
+//        }
+//        return dataList;
+//    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(AskAnswerDataEvent askAnswerDataEvent) {
@@ -213,50 +241,16 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             case COMMON_PROBLEM_TAG:
                 LogUtils.d(DEFAULT_LOG_TAG, "----COMMON_PROBLEM_TAG---CommonProblemActivity-----");
                 mCommonProblemEntity = askAnswerDataEvent.getCommonProblemEntity();
-                //更新当前播报问题选中状态
-                int itemPosition = CashUtils.getProblemPosition(mCommonProblemEntity.getF_QId());
-//                commonProblemAdapter.notifyDataSetChanged();
-                //更新页面问题答案显示
-                playProblem(mCommonProblemEntity);
+                reFreshListData(mCommonProblemEntity);
                 break;
             default:
                 break;
         }
     }
 
-    /**
-     * 更新页面问题答案显示
-     */
-    private void playProblem(CommonProblemEntity commonProblemEntity) {
-        String currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-        if (currentLanguage != null && currentLanguage.equals("zh")) {
-            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_Answer()));
-        } else {
-            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_EAnswer()));
-        }
-    }
 
     @Override
     public void back() {
         finish();
-    }
-
-    /**
-     * 常见问题列表条目添加边距
-     */
-    public class MyItemDecoration extends RecyclerView.ItemDecoration {
-        private int mSpace;
-
-        public MyItemDecoration(int space) {
-            this.mSpace = space;
-        }
-
-        @Override
-        public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.bottom = mSpace;
-            outRect.top = mSpace;
-            outRect.left = mSpace;
-            outRect.right = mSpace;
-        }
     }
 }

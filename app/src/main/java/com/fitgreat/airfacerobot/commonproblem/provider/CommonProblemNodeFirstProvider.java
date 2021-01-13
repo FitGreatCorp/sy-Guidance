@@ -26,6 +26,7 @@ import java.util.List;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 
 public class CommonProblemNodeFirstProvider extends BaseNodeProvider {
@@ -35,6 +36,7 @@ public class CommonProblemNodeFirstProvider extends BaseNodeProvider {
     private Context mContext;
     private String currentLanguage;
     private CommonProblemEntity commonProblemEntity;
+    private CommonProblemNodeAdapter commonProblemNodeAdapter;
 
     public CommonProblemNodeFirstProvider(Context context) {
         this.mContext = context;
@@ -75,11 +77,19 @@ public class CommonProblemNodeFirstProvider extends BaseNodeProvider {
 
     @Override
     public void onClick(@NotNull BaseViewHolder helper, @NotNull View view, BaseNode baseNode, int position) {
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
+        //根据当前机器语言播报问题答案
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
-        //自动展开折叠
-        CommonProblemNodeAdapter commonProblemNodeAdapter = (CommonProblemNodeAdapter) getAdapter();
-        commonProblemNodeAdapter.expandAndCollapseOther(position);
-        getAdapter().notifyItemChanged(position);
+        commonProblemNodeAdapter = (CommonProblemNodeAdapter) getAdapter();
+        commonProblemFirstNode = (CommonProblemFirstNode) baseNode;
+        if (commonProblemFirstNode.isExpanded()){ //当前处展开状态,点击后折叠
+//            commonProblemNodeAdapter.c
+            commonProblemNodeAdapter.collapse(position);
+        }else {  //当前处折叠状态,点击后打开
+            commonProblemNodeAdapter.expand(position);
+        }
+        getAdapter().notifyDataSetChanged();
         //语音播报常见问题答案
         commonProblemFirstNode = (CommonProblemFirstNode) baseNode;
         commonProblemEntity = commonProblemFirstNode.getCommonProblemEntity();

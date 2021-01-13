@@ -195,7 +195,8 @@ public class RobotBrainService extends Service {
     private static final int MSG_JROS_TIMEOUT = 10102;
     //导航失败,重试标志(默认导航任务失败后,再次发起导航任务,连续重试三次)
     private boolean navigation_failed_retry_tag = true;
-
+    //终止自动回充提示标志
+    private boolean stop_charging_no_tip = true;
     private AlarmManager alarmManager;
     private PendingIntent pendingIntentPower;
     private PendingIntent pendingIntentEmergency;
@@ -502,13 +503,15 @@ public class RobotBrainService extends Service {
                                 tipRechargingDialog.dismiss();
                                 tipRechargingDialog = null;
                             }
-                            //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我"
-                            handler.postDelayed(() -> {
-                                speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
-                            }, 1000);
-                            handler.postDelayed(() -> {
-                                speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
-                            }, 2000);
+                            if (stop_charging_no_tip) {
+                                //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我"
+                                handler.postDelayed(() -> {
+                                    speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
+                                }, 1000);
+                                handler.postDelayed(() -> {
+                                    speechManager.textTtsPlay(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text), "0", null);
+                                }, 2000);
+                            }
                         } else {
                             //关闭导航提示弹窗
                             if (navigationIngDialog != null) {
@@ -586,6 +589,10 @@ public class RobotBrainService extends Service {
                     }, 500);
                     handler.postDelayed(() -> {
                         playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.ask_for_help_text));
+                    }, 1500);
+                    //语音提示
+                    handler.postDelayed(() -> {
+                        playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.take_charge_tip));
                     }, 1500);
                     //冲电失败,关闭自动回充提示弹窗
                     if (tipRechargingDialog != null) {
@@ -1297,8 +1304,10 @@ public class RobotBrainService extends Service {
                 SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                 //获取下一步标志(禁止查询下一步操作)
                 isTerminal = true;
-                //导航失败失败不重试
+                //终止自动回充,导航失败失败不重试导航
                 navigation_failed_retry_tag = false;
+                //终止自动回充不在提示  "护士姐姐请帮帮我"
+                stop_charging_no_tip = false;
                 //更新任务指令状态
                 instruction_status = "-1";
                 BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);

@@ -34,4 +34,9 @@
         <attr name="introductionKindImage" format="reference" />
         <attr name="introductionBackImage" format="reference" />
     </declare-styleable>
+
+    <declare-styleable name="RoundImageView">
+        <attr name="roundWidth" format="dimension" />
+        <attr name="roundHeight" format="dimension" />
+    </declare-styleable>
 </resources>

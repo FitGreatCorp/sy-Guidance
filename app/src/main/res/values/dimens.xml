@@ -8,8 +8,8 @@
     <dimen name="firstline_gap">24dp</dimen>
 
 
-
     <dimen name="px0">0.0dp</dimen>
+    <dimen name="px0.5">0.50dp</dimen>
     <dimen name="px1">1.0dp</dimen>
     <dimen name="px2">2.0dp</dimen>
     <dimen name="px3">3.0dp</dimen>

@@ -52,7 +52,7 @@
     <string name="chargereminder">The current battery is too low, I am going to charge</string>
     <string name="battery_low_tip">The current battery level is less than 20%, and it will automatically</string>
     <string name="title_note">note</string>
-    <string name="auto_recharge">Automatic Recharge</string>
+    <string name="auto_recharge">Auto-charging</string>
     <string name="auto_mission">Autonomous mission</string>
     <string name="prompt_no_navigation">The location is not in the location I set. I can tell you a location I know and take you there.</string>
     <string name="prompt_no_task">I can’t do this task, please contact the administrator to configure it for me</string>
@@ -81,7 +81,7 @@
     <string name="start_chose_destination_dialog_title">Prompt</string>
     <string name="task_terminated_title">Task terminated</string>
     <string name="navigation_success_tip_one">I have arrived \t\t</string>
-    <string name="navigation_success_tip_two">\tDo you need other services?</string>
+    <string name="navigation_success_tip_two">\t\tDo you need other services?</string>
     <string name="need_yes_title">YES</string>
     <string name="need_no_title">NO</string>
     <string name="arrive_destination_prompt_one">Arrived</string>
@@ -112,4 +112,6 @@
     <string name="end_play_video_bt">End screening</string>
     <string name="empty_free_operation">please choose</string>
     <string name="no_english_map_tip">Please configure English map</string>
+    <string name="take_charge_tip">Nurse sister, please help me and take me to charge。</string>
+    <string name="english_navigation_tip">Please add English navigation point information。</string>
 </resources>

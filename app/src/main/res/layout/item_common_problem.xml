@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_item_common_problem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    tools:ignore="MissingConstraints">
+
+    <TextView
+        android:id="@+id/item_common_problem_title"
+        android:layout_width="@dimen/px0"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px28"
+        android:layout_marginRight="@dimen/px40"
+        android:paddingTop="@dimen/px16"
+        android:gravity="center|left"
+        android:lineSpacingExtra="@dimen/px10"
+        android:textColor="@color/black"
+        android:textSize="@dimen/textSize15"
+        android:textStyle="bold"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/item_common_problem_logo"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/item_common_problem_logo"
+        android:layout_width="@dimen/px12"
+        android:layout_height="@dimen/px12"
+        android:layout_marginRight="@dimen/px28"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_triangle_down"
+        app:layout_constraintBottom_toTopOf="@+id/middle_line"
+        app:layout_constraintLeft_toRightOf="@+id/item_common_problem_first_title"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/middle_line"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px0.5"
+        android:layout_marginTop="@dimen/px16"
+        android:layout_marginLeft="@dimen/px28"
+        android:background="#DEDEDE"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_common_problem_title" />
+
+    <TextView
+        android:id="@+id/item_common_problem_answer"
+        android:layout_width="@dimen/px0"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/px28"
+        android:layout_marginTop="@dimen/px16"
+        android:layout_marginRight="@dimen/px68"
+        android:gravity="center|left"
+        android:lineSpacingExtra="@dimen/px10"
+        android:padding="@dimen/px5"
+        android:textColor="#333333"
+        android:textSize="@dimen/textSize14"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/middle_line" />
+
+    <View
+        android:id="@+id/bottom_line"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/px0.5"
+        android:layout_marginLeft="@dimen/px30"
+        android:layout_marginTop="@dimen/px16"
+        android:background="#DEDEDE"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/item_common_problem_answer" />
+</androidx.constraintlayout.widget.ConstraintLayout>

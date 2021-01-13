@@ -30,6 +30,7 @@ import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.IntroductionView;
+import com.fitgreat.airfacerobot.launcher.widget.RoundImageView;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
@@ -55,68 +56,54 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
     RecyclerView introductionListRecyclerView;
     @BindView(R.id.linearLayout_no_data)
     LinearLayout mLinearLayoutNoData;
-
     @BindView(R.id.introduction_list_one_linearLayout)
     LinearLayout introductionListOneLinearLayout;
     @BindView(R.id.introduction_list_one_item_one_back_image)
-    ImageView introduction_list_one_item_one_back_image;
+    RoundImageView introduction_list_one_item_one_back_image;
     @BindView(R.id.introduction_list_one_item_one_kind_image)
     ImageView introduction_list_one_item_one_kind_image;
     @BindView(R.id.introduction_list_one_item_one_title)
     TextView introduction_list_one_item_one_title;
-
-
     @BindView(R.id.introduction_list_two_linearLayout)
     LinearLayout introduction_list_two_linearLayout;
     @BindView(R.id.introduction_list_two_item_one_back_image)
-    ImageView introduction_list_two_item_one_back_image;
+    RoundImageView introduction_list_two_item_one_back_image;
     @BindView(R.id.introduction_list_two_item_one_kind_image)
     ImageView introduction_list_two_item_one_kind_image;
     @BindView(R.id.introduction_list_two_item_one_title)
     TextView introduction_list_two_item_one_title;
     @BindView(R.id.introduction_list_two_item_two_back_image)
-    ImageView introduction_list_two_item_two_back_image;
+    RoundImageView introduction_list_two_item_two_back_image;
     @BindView(R.id.introduction_list_two_item_two_kind_image)
     ImageView introduction_list_two_item_two_kind_image;
     @BindView(R.id.introduction_list_two_item_two_title)
     TextView introduction_list_two_item_two_title;
-
-
     @BindView(R.id.introduction_list_three_linearLayout)
     LinearLayout introduction_list_three_linearLayout;
-
     @BindView(R.id.introduction_list_three_item_one_back_image)
-    ImageView introduction_list_three_item_one_back_image;
+    RoundImageView introduction_list_three_item_one_back_image;
     @BindView(R.id.introduction_list_three_item_one_kind_image)
     ImageView introduction_list_three_item_one_kind_image;
     @BindView(R.id.introduction_list_three_item_one_title)
     TextView introduction_list_three_item_one_title;
-
     @BindView(R.id.introduction_list_three_item_two_back_image)
-    ImageView introduction_list_three_item_two_back_image;
+    RoundImageView introduction_list_three_item_two_back_image;
     @BindView(R.id.introduction_list_three_item_two_kind_image)
     ImageView introduction_list_three_item_two_kind_image;
     @BindView(R.id.introduction_list_three_item_two_title)
     TextView introduction_list_three_item_two_title;
-
     @BindView(R.id.introduction_list_three_item_three_back_image)
-    ImageView introduction_list_three_item_three_back_image;
+    RoundImageView introduction_list_three_item_three_back_image;
     @BindView(R.id.introduction_list_three_item_three_kind_image)
     ImageView introduction_list_three_item_three_kind_image;
     @BindView(R.id.introduction_list_three_item_three_title)
     TextView introduction_list_three_item_three_title;
-
-
     @BindView(R.id.introduction_list_one_constraintLayout)
     ConstraintLayout introduction_list_one_constraintLayout;
-
-
     @BindView(R.id.introduction_list_two_item_one_constraintLayout)
     ConstraintLayout introduction_list_two_item_one_constraintLayout;
     @BindView(R.id.introduction_list_two_item_two_constraintLayout)
     ConstraintLayout introduction_list_two_item_two_constraintLayout;
-
-
     @BindView(R.id.introduction_list_three_item_one_constraintLayout)
     ConstraintLayout introduction_list_three_item_one_constraintLayout;
     @BindView(R.id.introduction_list_three_item_two_constraintLayout)
@@ -195,7 +182,7 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                     LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(operationInfo));
                 });
                 introductionListRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-                introductionListRecyclerView.addItemDecoration(new SpacesItemDecoration(10));
+                introductionListRecyclerView.addItemDecoration(new SpacesItemDecoration(20));
                 introductionListRecyclerView.setAdapter(introductionProcessAdapter);
             } else if (operationInfoList.size() == 1) {
                 introductionListOneLinearLayout.setVisibility(View.VISIBLE);
@@ -262,9 +249,9 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
      * 加载数据 (数据只有1条 2条  3条时加载显示)
      */
     private void loadIntroductionData(OperationInfo operationInfo, ImageView backImageView, ImageView kindImageView, TextView titleView) {
-        if (currentLanguage.equals("zh")) {
+        if (currentLanguage.equals("zh") && !("null".equals(operationInfo.getF_Name()))) {
             titleView.setText(operationInfo.getF_Name());
-        } else {
+        } else if (currentLanguage.equals("en") && !("null".equals(operationInfo.getF_EName()))) {
             titleView.setText(operationInfo.getF_EName());
         }
         if (operationInfo.getF_Type().equals("2")) {

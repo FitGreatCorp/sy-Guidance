@@ -13,16 +13,19 @@ public class CommonProblemEntity implements Serializable {
     private String F_EQuestion;
     //英文题目答案
     private String F_EAnswer;
+    //常见问题模块答案是否显示
+    private boolean showAnswerTag = false;
 
     public CommonProblemEntity() {
     }
 
-    public CommonProblemEntity(String f_QId, String f_Question, String f_Answer, String f_EQuestion, String f_EAnswer) {
+    public CommonProblemEntity(String f_QId, String f_Question, String f_Answer, String f_EQuestion, String f_EAnswer, boolean showAnswerTag) {
         F_QId = f_QId;
         F_Question = f_Question;
         F_Answer = f_Answer;
         F_EQuestion = f_EQuestion;
         F_EAnswer = f_EAnswer;
+        this.showAnswerTag = showAnswerTag;
     }
 
 
@@ -76,5 +79,13 @@ public class CommonProblemEntity implements Serializable {
                 ", F_EQuestion='" + F_EQuestion + '\'' +
                 ", F_EAnswer='" + F_EAnswer + '\'' +
                 '}';
+    }
+
+    public boolean isShowAnswerTag() {
+        return showAnswerTag;
+    }
+
+    public void setShowAnswerTag(boolean showAnswerTag) {
+        this.showAnswerTag = showAnswerTag;
     }
 }

@@ -184,7 +184,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private RobotInfoData robotInfoData;
     private NormalOrCountDownDialog normalOrCountDownDialog;
     //对话框内容最低高度
-    private int minDialogBoxHeight = 250;
+    private int minDialogBoxHeight = 0;
     //对话框内容滑动结束位置
     private int endPositionHeight = 0;
     //对话框内容滑动初始位置
@@ -263,13 +263,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     showDownloadingDialog(msg.arg1);
                     break;
                 case CHECK_APP_VERSION_CODE:  //检查app软件升级
-                    mPresenter.checkSoftwareVersion(MainActivity.this);
+//                    mPresenter.checkSoftwareVersion(MainActivity.this);
                     break;
                 case CONTENT_SLIDE_TAG:  //对话框内容滑动
                     if (mVoiceMsg.getHeight() == minDialogBoxHeight) {
                         mVoiceMsgScrollView.fullScroll(ScrollView.FOCUS_DOWN);
                     } else {
-                        endPositionHeight = startPositionHeight + 3;
+                        endPositionHeight = startPositionHeight + 1;
                         if (endPositionHeight > mVoiceMsg.getHeight()) {
                             mVoiceMsgScrollView.fullScroll(ScrollView.FOCUS_UP);
                             startPositionHeight = minDialogBoxHeight;
@@ -407,7 +407,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
         mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
         if (mVoiceMsg.getHeight() > minDialogBoxHeight) {
-            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 500);
+            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 2000);
         }
         LogUtils.d(DEFAULT_LOG_TAG, "文本高度::::" + mVoiceMsg.getHeight() + " ,minDialogBoxHeight,    " + minDialogBoxHeight);
         //更新4g网络信号页面展示信息
@@ -473,6 +473,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         isResume = false;
         //首页是否显示标志
         SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
+        //首页是否有弹窗弹出
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
         //关闭语音唤醒,关闭one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(CLOSE_DDS_WAKE_TAG, ""));
         //关闭dds语音播报
@@ -681,6 +683,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
 
                         @Override
                         public void endOfCountdown() {
+                            OperationUtils.startSpecialWorkFlow(1, handler);
                             lowBatteryTipDialog = null;
                         }
                     });
@@ -698,9 +701,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         String mapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
         //解析获取地图信息
         MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
-        LogUtils.d(DEFAULT_LOG_TAG,"-------goToChoseDestinationModel------");
+        LogUtils.d(DEFAULT_LOG_TAG, "-------goToChoseDestinationModel------");
 
-        LogUtils.json(DEFAULT_LOG_TAG,mapInfoString);
+        LogUtils.json(DEFAULT_LOG_TAG, mapInfoString);
         if (TextUtils.isEmpty(mapEntity.getF_EMapUrl()) && currentLanguage.equals("en")) {
             ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.no_english_map_tip));
             return;

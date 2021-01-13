@@ -9,7 +9,7 @@ import android.widget.TextView;
 import android.widget.Button;
 
 import com.fitgreat.airfacerobot.R;
-import com.fitgreat.airfacerobot.launcher.utils.BitmapUtils;
+import com.fitgreat.airfacerobot.launcher.utils.MyBitmapUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 
 import butterknife.BindView;
@@ -41,7 +41,7 @@ public class VisitRegisterResultActivity extends MvpBaseActivity {
     public void initData() {
         String imagePath = getIntent().getStringExtra("imagePath");
         Bitmap retBitmap = BitmapFactory.decodeFile(imagePath);
-        Bitmap showBitmap = BitmapUtils.setTakePicktrueOrientation(Camera.CameraInfo.CAMERA_FACING_BACK, retBitmap);
+        Bitmap showBitmap = MyBitmapUtils.setTakePicktrueOrientation(Camera.CameraInfo.CAMERA_FACING_BACK, retBitmap);
         mRegisterUploadResultImage.setImageBitmap(showBitmap);
     }
 

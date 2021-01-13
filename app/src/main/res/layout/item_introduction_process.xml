@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:roundImage="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_item_introduction_list"
     android:layout_width="@dimen/px200"
-    android:layout_height="@dimen/px200"
+    android:layout_height="wrap_content"
     tools:ignore="MissingConstraints">
 
-    <ImageView
+    <com.fitgreat.airfacerobot.launcher.widget.RoundImageView
         android:id="@+id/main_introduction_process_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/px200"
+        android:layout_height="@dimen/px193"
+        android:background="@drawable/circle_back_white_10"
         android:scaleType="fitCenter"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        roundImage:roundHeight="@dimen/px15"
+        roundImage:roundWidth="@dimen/px15" />
 
     <ImageView
         android:id="@+id/introduction_process_kind_image"
@@ -23,6 +27,14 @@
         android:scaleType="fitCenter"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/px80"
+        android:alpha="0.2"
+        android:background="@drawable/circle_black_bottom_left_right_15"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <TextView
         android:id="@+id/item_introduction_process_title"
@@ -34,6 +46,7 @@
         android:maxLines="1"
         android:textColor="@android:color/white"
         android:textSize="@dimen/textSize15"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />

@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.camera.CameraPreview;
-import com.fitgreat.airfacerobot.launcher.utils.BitmapUtils;
+import com.fitgreat.airfacerobot.launcher.utils.MyBitmapUtils;
 import com.fitgreat.airfacerobot.launcher.widget.DialogProgressActivity;
 import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 import com.fitgreat.airfacerobot.visitregister.result.VisitRegisterResultActivity;
@@ -133,7 +133,7 @@ public class VisitRegisterActivity extends MvpBaseActivity implements TopTitleVi
                     try {
                         fos.close();
                         Bitmap retBitmap = BitmapFactory.decodeFile(imagePath);
-                        showBitmap = BitmapUtils.setTakePicktrueOrientation(Camera.CameraInfo.CAMERA_FACING_BACK, retBitmap);
+                        showBitmap = MyBitmapUtils.setTakePicktrueOrientation(Camera.CameraInfo.CAMERA_FACING_BACK, retBitmap);
                         mRegisterImageShow.setImageBitmap(showBitmap);
                     } catch (IOException e) {
                         setResult(RESULT_FIRST_USER);

@@ -11,6 +11,7 @@ import com.fitgreat.airfacerobot.SyncTimeCallback;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.business.ApiRequestUrl;
 import com.fitgreat.airfacerobot.business.BusinessRequest;
+import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.NextOperationData;
@@ -29,11 +30,13 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.remotesignal.SignalConfig.OPERATION_TYPE_AUTO_MOVE;
 
 public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinationView> {
     private static final String TAG = "ChoseDestinationPresent";
     private MyTipDialog loadTipDialog;
+    private String currentLanguage;
 
     /**
      * 发起操作任务
@@ -156,6 +159,12 @@ public class ChoseDestinationPresenter extends BasePresenterImpl<ChoseDestinatio
                             LogUtils.d(DEFAULT_LOG_TAG, JSON.toJSONString(nextOperationData));
                             SignalDataEvent autoMoveEvent = new SignalDataEvent();
                             if (!nextOperationData.getF_Type().equals("End")) {
+                                //根据当前语言加载展示地图
+                                currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+//                                if (nextOperationData.getF_InstructionEnName().equals("null") && currentLanguage.equals("en")) {
+//                                    ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.english_navigation_tip));
+//                                    return;
+//                                }
                                 autoMoveEvent.setInstructionId(nextOperationData.getF_Id());
                                 autoMoveEvent.setInstructionType(nextOperationData.getF_Type());
                                 autoMoveEvent.setF_InstructionName(nextOperationData.getF_InstructionName());

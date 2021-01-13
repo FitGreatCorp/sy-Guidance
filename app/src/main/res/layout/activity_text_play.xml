@@ -18,6 +18,7 @@
         android:id="@+id/scrollView_introduction_content"
         android:layout_width="match_parent"
         android:layout_height="@dimen/px0"
+        android:layout_marginTop="@dimen/px20"
         android:layout_weight="1">
 
         <TextView

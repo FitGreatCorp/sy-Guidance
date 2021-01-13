@@ -176,9 +176,9 @@ public interface RobotConfig {
      */
     String GUIDE_WORK_FLOW_ACTION_ID = "guide.work.flow.action.id";
     /**
-     * SP存储默认编码
+     * SP int默认存储编码
      */
-    int DEFAULT_POSITION = 00;
+    int DEFAULT_POSITION =888888888;
     /**
      * 音量键显示
      */
@@ -300,5 +300,9 @@ public interface RobotConfig {
      * 首页是否有弹窗弹出(有弹窗时,不播报迎宾语)
      */
     String MAIN_PAGE_DIALOG_SHOW_TAG = "main_page_dialog_show_tag";
+    /**
+     * 常见问题选择题目编号
+     */
+    String CHOOSE_COMMON_PROBLEM_POSITION = "choose_common_problem_position";
 
 }

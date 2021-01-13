@@ -129,7 +129,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
                         startPositionHeight = endPositionHeight;
                     }
                     if (textIntroductionContent.getHeight() > minDialogBoxHeight) {
-                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 500);
+                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 2000);
                     }
                     break;
             }
@@ -249,7 +249,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         String playContent = FileUtils.readTxt(localTxtPath).trim();
         //页面展示播报文字text文件内容
         textIntroductionContent.setText(playContent);
-        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 3 * 1000);
+        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 8 * 1000);
         if (!TextUtils.isEmpty(playContent)) {
             LogUtils.d(TAG, "length:" + playContent.trim().length() + "\ncontent:" + playContent.trim());
             //语音播报监控标号

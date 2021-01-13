@@ -77,8 +77,8 @@
     <string name="ask_for_help_text">护士姐姐，请帮帮我。</string>
     <string name="start_chose_destination_tip_one">你现在要去\t</string>
     <string name="start_chose_destination_tip_two">\t吗?\t点击\t\"是\"\t我会带你过去哦</string>
-    <string name="navigation_success_tip_one">我已到达 \t\t</string>
-    <string name="navigation_success_tip_two">\t是否还需要其他服务?</string>
+    <string name="navigation_success_tip_one">我已到达\t\t</string>
+    <string name="navigation_success_tip_two">\t\t是否还需要其他服务?</string>
     <string name="start_chose_destination_dialog_title">提示</string>
     <string name="task_terminated_title">任务已终止</string>
     <string name="need_yes_title">需要</string>
@@ -112,4 +112,6 @@
     <string name="end_play_video_bt">结束放映</string>
     <string name="empty_free_operation">请选择</string>
     <string name="no_english_map_tip">请配置英文地图</string>
+    <string name="take_charge_tip">护士姐姐，请帮帮我，带我去充电。</string>
+    <string name="english_navigation_tip">请补充英文导航点信息。</string>
 </resources>

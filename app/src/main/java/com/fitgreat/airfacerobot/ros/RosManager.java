@@ -242,6 +242,7 @@ public class RosManager {
                 public void onSuccess(autoparkResponse setmodeResponse) {    //  getResult  为 false  机器附近有物体  true   没有物体
                     LogUtils.d(TAG, "judgmentHasPerson getMsg   " + setmodeResponse.getMsg() + " getResult      " + setmodeResponse.getResult());
                     if (!setmodeResponse.getResult()) {
+                        playTipTime = 0;
                         playTipTime++;
                         //是否播放迎宾语
                         broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);

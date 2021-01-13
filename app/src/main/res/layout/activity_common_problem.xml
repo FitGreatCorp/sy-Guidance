@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/common_problem_list"
         app:layout_constraintTop_toTopOf="parent"
-        topTitle:titleName="新园区介绍" />
+        topTitle:titleName="@string/home_question_title" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/common_problem_list"
@@ -64,7 +64,7 @@
         android:id="@+id/common_problem_robot_image"
         android:layout_width="@dimen/px90"
         android:layout_height="@dimen/px120"
-        android:layout_marginRight="@dimen/px20"
+        android:layout_marginRight="@dimen/px10"
         android:layout_marginBottom="@dimen/px20"
         android:background="@drawable/wink_speak_animation"
         android:scaleType="fitCenter"
