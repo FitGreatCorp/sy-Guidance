@@ -17,8 +17,6 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -35,7 +33,6 @@ import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.chosedestination.ChoseDestinationActivity;
 import com.fitgreat.airfacerobot.commonproblem.CommonProblemActivity;
-import com.fitgreat.airfacerobot.constants.Constants;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.floatball.AccessibilityConstant;
 import com.fitgreat.airfacerobot.floatball.DelayOnClickListener;
@@ -96,18 +93,17 @@ import butterknife.OnClick;
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_BOOT_UP_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.ANDROID_SYSTEM_REBOOT_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_ACTIVITY_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLICK_EMERGENCY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_DDS_WAKE_TAG;
-import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTRODUCTION_DIALOG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_RECHARGING_TIP_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
@@ -119,8 +115,10 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_LIGHT_ON;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_NEXT_STEP;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PROMPT_ROBOT_RECHARGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_BLINK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_SPEAK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.TYPE_CHECK_STATE_DONE;
 
 
@@ -155,6 +153,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private static final int CHECK_HARDWARE_VERSION_CODE = 6667;
     private static final int CHECK_HDVC = 6668;
     private static final int CHECK_APP_VERSION_CODE = 6669;
+    //机器人默认眨眼动画
+    private static final int START_BLINK_ANIMATION_TAG = 8888;
+    //机器人默认眨眼动画
+    private static final int STOP_BLINK_ANIMATION_TAG = 7777;
+    //机器人说话动画
+    private static final int START_SPEAK_ANIMATION_TAG = 9999;
     private CommonTipDialog commonTipDialog;
     private FloatWindow floatWindow;
     private boolean isResume;
@@ -171,26 +175,29 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private Future hdvScheduledFuture;
     private static final int REQUEST_CODE_WRITE_SETTINGS = 1001;
     private WarnningDialog warnningDialog;
-    //院内介绍提示加载框
-    private AlertDialog startIntroductionAlertDialog;
     private String currentLanguage;
     private TimerTask introductionTimerTask;
     private Timer introductionTimer;
     //空闲操作倒计时5分钟
     private int freeOperationCountdown;
-    private MyTipDialog tipRechargeDialog;
     private NormalOrCountDownDialog lowBatteryTipDialog;
     private ValidationOrPromptDialog validationOrPromptDialog;
     private RobotInfoData robotInfoData;
     private NormalOrCountDownDialog normalOrCountDownDialog;
     //对话框内容最低高度
     private int minDialogBoxHeight = 0;
-    //对话框内容滑动结束位置
-    private int endPositionHeight = 0;
-    //对话框内容滑动初始位置
-    private int startPositionHeight = minDialogBoxHeight;
+    //对话框内容滑动位置x
+    private int scrollPositionX = 0;
+    //对话框内容滑动位置Y
+    private int scrollPositionY = 0;
     private final int CONTENT_SLIDE_TAG = 2002;
+    //首页自动回充提示弹窗弹出前,加载提示弹窗(防止多次点击自动回充)
+    private MyTipDialog rechargeTipDialog;
+    private String string_hello, en_string_hello;
+    private CloseBroadcastReceiver closeBroadcastReceiver;
+    private AnimationDrawable blinkDrawable;
 
+    private AnimationDrawable speakDrawable;
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
@@ -205,17 +212,17 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     }
                     break;
                 case CHECK_HARDWARE_VERSION_CODE:
-                    LogUtils.d(TAG, "CHECK_HARDWARE_VERSION_CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    LogUtils.d("checkHardwareVersion", "CHECK_HARDWARE_VERSION_CODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     if (mPresenter != null) {
                         mPresenter.checkHardwareVersion();
                     }
                     break;
                 case CHECK_HDVC:
-                    LogUtils.d(TAG, "robotstatus = " + RobotInfoUtils.getRobotRunningStatus());
+                    LogUtils.d("checkHardwareVersion", "robotstatus = " + RobotInfoUtils.getRobotRunningStatus());
                     if (RobotInfoUtils.getRobotRunningStatus().equals("5") || RobotInfoUtils.getRobotRunningStatus().equals("1")) {
                         ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
                         ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-                        if (cn.getClassName().equals("com.fitgreat.airfacerobot.launcher.ui.activity.LauncherActivity")) {
+                        if (cn.getClassName().equals("com.fitgreat.airfacerobot.launcher.ui.activity.MainActivity")) {
                             if (mPresenter != null) {
                                 mPresenter.checkHardwareVersion();
                             }
@@ -263,29 +270,70 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     showDownloadingDialog(msg.arg1);
                     break;
                 case CHECK_APP_VERSION_CODE:  //检查app软件升级
-//                    mPresenter.checkSoftwareVersion(MainActivity.this);
+                    mPresenter.checkSoftwareVersion(MainActivity.this);
                     break;
                 case CONTENT_SLIDE_TAG:  //对话框内容滑动
                     if (mVoiceMsg.getHeight() == minDialogBoxHeight) {
                         mVoiceMsgScrollView.fullScroll(ScrollView.FOCUS_DOWN);
                     } else {
-                        endPositionHeight = startPositionHeight + 1;
-                        if (endPositionHeight > mVoiceMsg.getHeight()) {
+                        scrollPositionY = scrollPositionX + 1;
+                        if (scrollPositionY > mVoiceMsg.getHeight()) {
                             mVoiceMsgScrollView.fullScroll(ScrollView.FOCUS_UP);
-                            startPositionHeight = minDialogBoxHeight;
-                            endPositionHeight = 0;
+                            scrollPositionX = minDialogBoxHeight;
+                            scrollPositionY = 0;
                         } else {
-                            mVoiceMsgScrollView.smoothScrollTo(startPositionHeight, endPositionHeight);
-                            startPositionHeight = endPositionHeight;
+                            mVoiceMsgScrollView.smoothScrollTo(scrollPositionX, scrollPositionY);
+                            scrollPositionX = scrollPositionY;
                         }
-                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 500);
+                        handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 1000);
                     }
+//                    startPositionHeight++;
+//                    scrollPositionY++;
+//                    mVoiceMsgScrollView.smoothScrollTo(0, scrollPositionY);
+//                    int[] end = new int[2];
+//                    mVoiceMsg.getLocationOnScreen(end);
+//                    LogUtils.d("mVoiceMsgScrollView", "滑动一次结束  mVoiceMsg x坐标::::" +end[0] + " ,mVoiceMsg y坐标,    " + end[1]);
+//                    LogUtils.d("mVoiceMsgScrollView", "滑动一次结束文本高度::::" + mVoiceMsg.getMeasuredHeight() + " ,mVoiceMsgScrollView测量高度,    " + mVoiceMsgScrollView.getMeasuredHeight()+"  scrollPositionY   "+scrollPositionY);
+//                    handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 1000);
+                    break;
+                case START_BLINK_ANIMATION_TAG:  //眨眼动画连续播放
+                    //移除机器人说话动画消息
+                    if (handler.hasMessages(START_SPEAK_ANIMATION_TAG)) {
+                        handler.removeMessages(START_SPEAK_ANIMATION_TAG);
+                    }
+                    //终止机器人说话动画
+                    if (speakDrawable != null && speakDrawable.isRunning()) {
+                        speakDrawable.stop();
+                    }
+                    //启动机器人说话动画
+                    mWinkSpeakAnimation.setBackgroundResource(R.drawable.blink_animation);
+                    blinkDrawable = (AnimationDrawable) mWinkSpeakAnimation.getBackground();
+                    if (blinkDrawable.isRunning()) {
+                        blinkDrawable.stop();
+                    }
+                    blinkDrawable.start();
+                    //眨眼动画暂停5秒后在播放
+                    handler.sendEmptyMessageDelayed(START_BLINK_ANIMATION_TAG, 5 * 1000);
+                    break;
+                case START_SPEAK_ANIMATION_TAG:  //说话动画启动
+                    //移除机器人眨眼动画消息
+                    if (handler.hasMessages(START_BLINK_ANIMATION_TAG)) {
+                        handler.removeMessages(START_BLINK_ANIMATION_TAG);
+                    }
+                    //终止机器人眨眼动画
+                    if (blinkDrawable != null && blinkDrawable.isRunning()) {
+                        blinkDrawable.stop();
+                    }
+                    mWinkSpeakAnimation.setBackgroundResource(R.drawable.speak_animation);
+                    speakDrawable = (AnimationDrawable) mWinkSpeakAnimation.getBackground();
+                    speakDrawable.start();
                     break;
                 default:
                     break;
             }
         }
     };
+
 
     @Override
     public int getLayoutResource() {
@@ -295,6 +343,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void initData() {
+        //首页是否有弹窗弹出
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
         //注册EventBus
         EventBus.getDefault().register(this);
         //信号格默认显示满信号
@@ -308,10 +358,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         showFloatBall();
         requestSettingPermission();
         warnningDialog = new WarnningDialog(this);
-        //启动机器人说话动画
-        mWinkSpeakAnimation.setBackgroundResource(R.drawable.wink_speak_animation);
-        AnimationDrawable animationDrawable = (AnimationDrawable) mWinkSpeakAnimation.getBackground();
-        animationDrawable.start();
         //院内介绍工作流启动标志默认为false
         SpUtils.putBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
         //自动回充工作流启动标志默认为false
@@ -390,6 +436,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         handler.sendEmptyMessageDelayed(REQUEST_ALERT_CODE, 1000);
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -405,11 +452,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             mLanguageChineseRelativeLayout.setSelected(true);
             mLanguageEnglishRelativeLayout.setSelected(false);
         }
-        mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
+        //滑动首页文本框
         if (mVoiceMsg.getHeight() > minDialogBoxHeight) {
-            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 2000);
+            scrollPositionX = 0;
+//            scrollPositionY = mVoiceMsg.getHeight();
+            handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 4000);
         }
-        LogUtils.d(DEFAULT_LOG_TAG, "文本高度::::" + mVoiceMsg.getHeight() + " ,minDialogBoxHeight,    " + minDialogBoxHeight);
         //更新4g网络信号页面展示信息
         mPresenter.getNetSignalLevel(this);
         //机器人名字显示
@@ -417,21 +465,26 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         if (robotInfoData != null) {
             //更新本地导航位置,执行任务信息
             mPresenter.getLocationInfo(handler);
+            //中英文迎宾语内容
+            string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", null);
+            en_string_hello = SpUtils.getString(MyApp.getContext(), "en_hello_string", null);
             //机器人名字信息
             if (currentLanguage.equals("en") && !TextUtils.isEmpty(robotInfoData.getF_EName())) {
                 mRobotName.setText(robotInfoData.getF_EName());
+                //没有配置英文迎宾语,播放默认迎宾语
+                if (en_string_hello == null) {
+                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text)));
+                    mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
+                }
             } else if (currentLanguage.equals("zh") && !TextUtils.isEmpty(robotInfoData.getF_Name())) {
                 mRobotName.setText(robotInfoData.getF_Name());
+                //没有配置中文迎宾语,播放默认迎宾语
+                if (string_hello == null) {
+                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text)));
+                    mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
+                }
             }
             LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
-            //院内介绍流程没启动时进入首页,语音播报  "您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。"
-            boolean startIntroductionWorkFlowTag = SpUtils.getBoolean(MyApp.getContext(), START_INTRODUCTION_WORK_FLOW_TAG, false);
-            //自动回充工作流启动标志
-            boolean startRechargeTag = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
-            if (!startIntroductionWorkFlowTag && !startRechargeTag) {
-                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text)));
-//                mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
-            }
             //dds对话Observer注册
             EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
             //启动语音唤醒,打开one shot模式
@@ -447,10 +500,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
                         if (!"null".equals(currentFreeOperation)) {
                             WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
-                            LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " currentLanguage  " + currentLanguage + "   " + JSON.toJSONString(workflowEntity));
-                            if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
+                            //首页是否有弹窗
+                            boolean mainPageDialogShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
+                            LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " ,currentLanguage,  " + currentLanguage + " ,mainPageDialogShowTag,  " + mainPageDialogShowTag + ",  机器人状态, " + RobotInfoUtils.getRobotRunningStatus() + "   " + JSON.toJSONString(workflowEntity));
+                            if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("1")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
                                 return;
-                            } else {
+                            } else if (!mainPageDialogShowTag && RobotInfoUtils.getRobotRunningStatus().equals("1")) { //首页没有弹窗时执行空闲操作
                                 OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
                                 stopIntroductionTimer();
                             }
@@ -464,6 +519,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             introductionTimer.schedule(introductionTimerTask, 0, 1000);
             //检查app软件更新
             mPresenter.checkSoftwareVersion(this);
+            handler.sendEmptyMessage(START_BLINK_ANIMATION_TAG);
         }
     }
 
@@ -484,6 +540,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         stopIntroductionTimer();
         //去除对话框内容滑动
         handler.removeMessages(CONTENT_SLIDE_TAG);
+        //自动回充加载提示弹窗关闭
+        if (rechargeTipDialog != null) {
+            rechargeTipDialog.dismiss();
+            rechargeTipDialog = null;
+        }
+        handler.removeCallbacksAndMessages(null);
     }
 
 
@@ -541,19 +603,16 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
-//                RouteUtils.goToActivity(getContext(), SettingActivity.class);
-                validationOrPromptDialog = new ValidationOrPromptDialog(this);
-                validationOrPromptDialog.show();
-                validationOrPromptDialog.setValidationFailListener(this);
+                jumpSystemSettingModel();
                 break;
             case R.id.constraintLayout_me_want_go: //我要去
                 goToChoseDestinationModel();
                 break;
             case R.id.constraintLayout_common_problem: //常见问题
-                RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
+                jumpCommonProblemModel();
                 break;
             case R.id.constraintLayout_hospital_introduction: //院内介绍
-                RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
+                jumpIntroductionListModel();
                 break;
             case R.id.language_chinese_relativeLayout: //机器人中英文切换
             case R.id.language_english_relativeLayout:
@@ -579,11 +638,15 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             validationOrPromptDialog = new ValidationOrPromptDialog(this);
             validationOrPromptDialog.setFailPrompt(true);
             validationOrPromptDialog.show();
+            //首页是否有弹窗弹出
+            SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
         });
     }
 
     @Override
     public void verifySuccess() {
+        //首页是否有弹窗弹出
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
         RouteUtils.goToActivity(getContext(), SettingActivity.class);
     }
 
@@ -639,13 +702,53 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 首页按钮自动化回充
      */
     private void rechargeToDo() {
+        //自动回充提示弹窗关闭监听
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(CLOSE_RECHARGING_TIP_DIALOG);
+        closeBroadcastReceiver = new CloseBroadcastReceiver();
+        registerReceiver(closeBroadcastReceiver, intentFilter);
+        //自动回充提示弹窗弹出前,加载提示弹窗
+        rechargeTipDialog = new MyTipDialog(this);
+        rechargeTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.loading_title));
+        rechargeTipDialog.setTipLoadModel(true);
+        rechargeTipDialog.show();
         //如果急停按钮被按下语音提示
         boolean emergencyTag = SpUtils.getBoolean(MyApp.getContext(), CLICK_EMERGENCY_TAG, false);
         if (emergencyTag) {
             EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.emergency_click_recharge_tip)));
             return;
         }
+        if (RobotInfoUtils.getRobotRunningStatus().equals("5")) {
+            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.charging_tip)));
+            return;
+        }
+        //机器人工作模式状态是否为控制模式
+        boolean isControlModel = SpUtils.getBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
+        if (!isControlModel) { //当前不为控制模式则切换为控制模式
+            SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, true);
+            //机器人切换为控制模式
+            SignalDataEvent moveMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
+            moveMode.setPowerlock(1);
+            EventBus.getDefault().post(moveMode);
+        }
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
+        //开启自动回充工作流
         OperationUtils.startSpecialWorkFlow(1, handler);
+    }
+
+    private class CloseBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LogUtils.d(TAG, "CloseBroadcastReceiver");
+            if (intent.getAction().equals(CLOSE_RECHARGING_TIP_DIALOG)) {
+                LogUtils.d(TAG, "关闭自动回充工作流加载提示框");
+                if (rechargeTipDialog != null) {
+                    rechargeTipDialog.dismiss();
+                    rechargeTipDialog = null;
+                }
+            }
+        }
     }
 
     /**
@@ -666,10 +769,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         public void tipProgressChoseYes() { //启动自动回充工作流
                             OperationUtils.startSpecialWorkFlow(1, handler);
                             lowBatteryTipDialog = null;
+                            //首页是否有弹窗弹出
+                            SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                         }
 
                         @Override
                         public void tipProgressChoseNo() {
+                            //首页是否有弹窗弹出
+                            SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                             String rechargeActivityId = SpUtils.getString(MyApp.getContext(), AUTOMATIC_RECHARGE_ACTIVITY_ID, null);
                             if (!TextUtils.isEmpty(rechargeActivityId)) { //自动回充工作流已启动,终止自动回充工作流
                                 SignalDataEvent instruct = new SignalDataEvent();
@@ -685,25 +792,56 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         public void endOfCountdown() {
                             OperationUtils.startSpecialWorkFlow(1, handler);
                             lowBatteryTipDialog = null;
+                            //首页是否有弹窗弹出
+                            SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                         }
                     });
             lowBatteryTipDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
             if (lowBatteryTipDialog != null && (!downloadingDialog.isShowing())) {
                 lowBatteryTipDialog.show();
+                //首页是否有弹窗弹出
+                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
             }
         }
+    }
+
+    /**
+     * 跳转软件设置页面
+     */
+    public void jumpSystemSettingModel() {
+        validationOrPromptDialog = new ValidationOrPromptDialog(this);
+        validationOrPromptDialog.show();
+        validationOrPromptDialog.setValidationFailListener(this);
+        //首页是否有弹窗弹出
+        SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
+        //                RouteUtils.goToActivity(getContext(), SettingActivity.class);
+    }
+
+    /**
+     * 跳转院内介绍列表汇总页面
+     */
+    public void jumpIntroductionListModel() {
+        RouteUtils.goToActivity(getContext(), IntroductionListActivity.class);
+        //暂停空闲操作首页计时器
+        stopIntroductionTimer();
+    }
+
+    /**
+     * 跳转常见问题模块
+     */
+    public void jumpCommonProblemModel() {
+        RouteUtils.goToActivity(getContext(), CommonProblemActivity.class);
+        //暂停空闲操作首页计时器
+        stopIntroductionTimer();
     }
 
     /**
      * 跳转我要去模块
      */
     private void goToChoseDestinationModel() {
-        String mapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
         //解析获取地图信息
+        String mapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
         MapEntity mapEntity = JSON.parseObject(mapInfoString, MapEntity.class);
-        LogUtils.d(DEFAULT_LOG_TAG, "-------goToChoseDestinationModel------");
-
-        LogUtils.json(DEFAULT_LOG_TAG, mapInfoString);
         if (TextUtils.isEmpty(mapEntity.getF_EMapUrl()) && currentLanguage.equals("en")) {
             ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.no_english_map_tip));
             return;
@@ -714,7 +852,18 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
         //下载最新中英文地图
         OperationUtils.downLoadMap(mapEntity);
-        RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
+        //添加加载提示框
+        rechargeTipDialog = new MyTipDialog(this);
+        rechargeTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.loading_title));
+        rechargeTipDialog.setTipLoadModel(true);
+        rechargeTipDialog.show();
+        handler.postDelayed(() -> {
+            rechargeTipDialog.dismiss();
+            rechargeTipDialog=null;
+            RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
+        }, 1* 1000);
+        //暂停空闲操作首页计时器
+        stopIntroductionTimer();
     }
 
     /**
@@ -924,11 +1073,20 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case PROMPT_ROBOT_RECHARGE: //电量低于20%时弹窗提示
                 lowBatteryPrompt();
                 break;
+            case START_SPEAK_ANIMATION_MSG: //启动说话动画
+                handler.sendEmptyMessage(START_SPEAK_ANIMATION_TAG);
+                break;
+            case START_BLINK_ANIMATION_MSG: //启动眨眼动画
+                handler.sendEmptyMessage(START_BLINK_ANIMATION_TAG);
+                break;
             default:
                 break;
         }
     }
 
+    public void initEndBackTodo() {
+
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(DaemonEvent daemonEvent) {

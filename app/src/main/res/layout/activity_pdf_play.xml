@@ -21,16 +21,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         topTitle:titleColor="@color/black"
+        topTitle:itemBackColor="@color/transparent"
         topTitle:titleName="新园区介绍" />
 
     <Button
         android:id="@+id/btn_finish"
-        android:layout_width="160dp"
-        android:layout_height="48dp"
-        android:layout_marginRight="32dp"
-        android:background="@drawable/btn_bg_normal"
-        android:text="结束放映"
-        android:textSize="19sp"
+        android:layout_width="@dimen/px120"
+        android:layout_height="@dimen/px36"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/round_gray_50"
+        android:text="@string/end_play_video_bt"
+        android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

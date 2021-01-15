@@ -21,7 +21,7 @@
         app:layout_constraintRight_toLeftOf="@+id/constraintLayout_robot_information"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/constraintLayout_robot_information"
         android:layout_width="@dimen/px472"
         android:layout_height="@dimen/px80"
@@ -29,7 +29,7 @@
         android:layout_marginTop="@dimen/px10"
         android:layout_marginRight="@dimen/px25"
         android:background="@mipmap/img_home_infobox"
-        android:padding="@dimen/px10"
+        android:gravity="center"
         app:layout_constraintLeft_toRightOf="@+id/sy_hospital_logo"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -38,81 +38,58 @@
             android:id="@+id/logo_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/px20"
             android:scaleType="fitCenter"
-            android:src="@mipmap/ic_home_location"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:src="@mipmap/ic_home_location" />
 
         <TextView
             android:id="@+id/robot_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/px15"
+            android:layout_marginLeft="@dimen/px10"
             android:ellipsize="end"
             android:marqueeRepeatLimit="marquee_forever"
             android:scrollHorizontally="true"
             android:singleLine="true"
             android:text="机器人**号"
             android:textColor="#ffff"
-            android:textSize="@dimen/textSize15"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/logo_location"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textSize="@dimen/textSize15" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/linearLayoutCompat_signal"
+        <ImageView
+            android:id="@+id/signal_img"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/px20"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/robot_name"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_marginLeft="@dimen/px25"
+            android:scaleType="fitCenter"
+            android:src="@drawable/home_signal" />
 
-            <ImageView
-                android:id="@+id/signal_img"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleType="fitCenter"
-                android:src="@drawable/home_signal" />
-
-            <TextView
-                android:id="@+id/text_signal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/px15"
-                android:gravity="center"
-                android:text="@string/ic_signal"
-                android:textColor="#ffff"
-                android:textSize="@dimen/textSize15" />
-        </androidx.appcompat.widget.LinearLayoutCompat>
+        <TextView
+            android:id="@+id/text_signal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/px10"
+            android:gravity="center"
+            android:text="@string/ic_signal"
+            android:textColor="#ffff"
+            android:textSize="@dimen/textSize15" />
 
         <ImageView
             android:id="@+id/battery_img"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/px20"
+            android:layout_marginLeft="@dimen/px25"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_home_battery_list"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/linearLayoutCompat_signal"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:src="@drawable/ic_home_battery_list" />
 
         <TextView
             android:id="@+id/text_battery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/px15"
             android:gravity="center"
+            android:layout_marginLeft="@dimen/px10"
             android:text="@string/battery_60"
             android:textColor="#ffff"
-            android:textSize="@dimen/textSize15"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/battery_img"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:textSize="@dimen/textSize15" />
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout_me_want_go"

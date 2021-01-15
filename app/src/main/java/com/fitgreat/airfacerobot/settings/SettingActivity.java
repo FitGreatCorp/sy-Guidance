@@ -108,6 +108,8 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     LinearLayout ll_voice;
     @BindView(R.id.btn_save)
     Button btn_save;
+    @BindView(R.id.en_et_hello)
+    EditText en_et_hello;
     @BindView(R.id.et_hello)
     EditText et_hello;
     @BindView(R.id.drag_mode_radio)
@@ -130,7 +132,7 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     InputMethodManager inputMethodManager;
     private InputDialog inputDialog;
     private MyDialog myDialog;
-    private String STRING_HELLO;
+    private String STRING_HELLO,EN_STRING_HELLO;
     private static final String TAG = "SettingActivity";
     private Drawable selectedDrawable;
     private Drawable normalDrawable;
@@ -181,8 +183,11 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             testRb.setCompoundDrawables(select, null, null, null);
             productRb.setCompoundDrawables(selected, null, null, null);
         }
+        //中英文迎宾语默认显示值
         STRING_HELLO = SpUtils.getString(getContext(), "hello_string", "");
+        EN_STRING_HELLO = SpUtils.getString(getContext(), "en_hello_string", "");
         et_hello.setText(STRING_HELLO);
+        en_et_hello.setText(EN_STRING_HELLO);
         if (SpUtils.getInt(getContext(), "de_time", 10) != 10) {
 //            de_time.setText(String.valueOf(SpUtils.getInt(getContext(), "de_time", 10)));
         } else {
@@ -371,6 +376,7 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             case R.id.btn_save:
                 LogUtils.d(TAG, "btn_save !!!!!!!");
                 SpUtils.putString(getContext(), "hello_string", et_hello.getText().toString());
+                SpUtils.putString(getContext(), "en_hello_string", en_et_hello.getText().toString());
                 inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 ToastUtils.showSmallToast("设置成功");
                 break;

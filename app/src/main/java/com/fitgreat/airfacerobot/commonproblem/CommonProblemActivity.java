@@ -4,6 +4,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.view.View;
 import android.widget.ImageView;
@@ -29,12 +32,15 @@ import com.fitgreat.airfacerobot.commonproblem.node.CommonProblemFirstNode;
 import com.fitgreat.airfacerobot.commonproblem.node.CommonProblemSecondNode;
 import com.fitgreat.airfacerobot.commonproblem.presenter.CommonProblemPresenter;
 import com.fitgreat.airfacerobot.commonproblem.view.CommonProblemView;
+import com.fitgreat.airfacerobot.constants.RobotConfig;
+import com.fitgreat.airfacerobot.launcher.ui.activity.MainActivity;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.launcher.widget.TopTitleView;
 import com.fitgreat.airfacerobot.model.ActionDdsEvent;
 import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
@@ -53,7 +59,9 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CAN
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DEFAULT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_BLINK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_SPEAK_ANIMATION_MSG;
 
 /**
  * 常见问题展示选择页面
@@ -78,7 +86,65 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     private String currentLanguage;
     private List<BaseNode> currentData;
     private CommonProblemAdapter commonProblemAdapter;
+    //机器人默认眨眼动画
+    private static final int START_BLINK_ANIMATION_TAG = 8888;
+    //机器人说话动画
+    private static final int START_SPEAK_ANIMATION_TAG = 9999;
+    private AnimationDrawable blinkDrawable, speakDrawable;
 
+    private Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case START_BLINK_ANIMATION_TAG:  //眨眼动画连续播放
+                    //移除机器人说话动画消息
+                    if (handler.hasMessages(START_SPEAK_ANIMATION_TAG)) {
+                        handler.removeMessages(START_SPEAK_ANIMATION_TAG);
+                    }
+                    //终止机器人说话动画
+                    if (speakDrawable != null && speakDrawable.isRunning()) {
+                        speakDrawable.stop();
+                    }
+                    //启动机器人说话动画
+                    commonProblemRobotImage.setBackgroundResource(R.drawable.blink_animation);
+                    blinkDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
+                    if (blinkDrawable.isRunning()) {
+                        blinkDrawable.stop();
+                    }
+                    blinkDrawable.start();
+                    //眨眼动画暂停5秒后在播放
+                    handler.sendEmptyMessageDelayed(START_BLINK_ANIMATION_TAG, 5 * 1000);
+                    break;
+                case START_SPEAK_ANIMATION_TAG:  //说话动画启动
+                    //移除机器人眨眼动画消息
+                    if (handler.hasMessages(START_BLINK_ANIMATION_TAG)) {
+                        handler.removeMessages(START_BLINK_ANIMATION_TAG);
+                    }
+                    //终止机器人眨眼动画
+                    if (blinkDrawable != null && blinkDrawable.isRunning()) {
+                        blinkDrawable.stop();
+                    }
+                    commonProblemRobotImage.setBackgroundResource(R.drawable.speak_animation);
+                    speakDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
+                    speakDrawable.start();
+                    break;
+            }
+        }
+    };
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMsg(InitEvent initEvent) {
+        switch (initEvent.type) {
+            case START_SPEAK_ANIMATION_MSG: //启动说话动画
+                handler.sendEmptyMessage(START_SPEAK_ANIMATION_TAG);
+                break;
+            case START_BLINK_ANIMATION_MSG: //启动眨眼动画
+                handler.sendEmptyMessage(START_BLINK_ANIMATION_TAG);
+                break;
+            default:
+                break;
+        }
+    }
     @Override
     public CommonProblemPresenter createPresenter() {
         return new CommonProblemPresenter();
@@ -100,14 +166,16 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         //启动语音唤醒,打开one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
         //启动机器人动画
-        animationDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
-        animationDrawable.start();
-        mCommonProblemTitle.setBackKListener(this);
+//        animationDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
+//        animationDrawable.start();
+//        mCommonProblemTitle.setBackKListener(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        //启动机器人眨眼动画
+        handler.sendEmptyMessage(START_BLINK_ANIMATION_TAG);
         //进入常见问题模块
         SpUtils.putBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, true);
     }
@@ -119,6 +187,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         SpUtils.putBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, false);
         //常见问题条目选中编号回复原始值
         SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, DEFAULT_POSITION);
+        handler.removeCallbacksAndMessages(null);
     }
 
     @Override

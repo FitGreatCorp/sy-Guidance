@@ -21,7 +21,8 @@
         android:id="@+id/video_introduction_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        topTitle:titleColor="@color/white"
+        topTitle:titleColor="@color/black"
+        topTitle:itemBackColor="@color/transparent"
         topTitle:titleName="新园区介绍" />
 
     <Button

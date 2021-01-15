@@ -1,5 +1,6 @@
 package com.fitgreat.airfacerobot.launcher.utils;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -47,6 +48,8 @@ import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPat
 import static com.fitgreat.airfacerobot.constants.Constants.currentEnglishMapPath;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_ACTIVITY_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_RECHARGING_TIP_DIALOG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIGATION_PAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_UPDATE_INSTARUCTION_STATUS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
@@ -106,6 +109,10 @@ public class OperationUtils {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     LogUtils.e(DEFAULT_LOG_TAG, "获取特定工作流失败: " + e.toString());
+                    //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                    if (workFlowTypeInt==1){
+                        MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
+                    }
                 }
 
                 @Override
@@ -130,6 +137,8 @@ public class OperationUtils {
                                     });
                                     //自动回充工作流后台没有配置,可再次启动自动回充工作流
                                     SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                                    //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                                    MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
                                 }
                             }
                         } else {
@@ -140,6 +149,8 @@ public class OperationUtils {
                                 });
                                 //自动回充工作流后台没有配置,可再次启动自动回充工作流
                                 SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                                //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                                MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
                             } else {
                                 playShowText("抱歉，当前引导讲解下没有具体内容，请联系管理员配置.");
                                 mHandler.post(() -> {
@@ -173,6 +184,10 @@ public class OperationUtils {
         BusinessRequest.postStringRequest(JSON.toJSONString(param), ApiRequestUrl.INITIATE_ACTION, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                if (workFlowTypeInt==1){
+                    MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
+                }
                 LogUtils.e(DEFAULT_LOG_TAG, "发起活动流程失败: " + e.toString());
             }
 
@@ -196,6 +211,10 @@ public class OperationUtils {
                             BusinessRequest.getNextStep(actionId, new Callback() {
                                 @Override
                                 public void onFailure(Call call, IOException e) {
+                                    //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                                    if (workFlowTypeInt==1){
+                                        MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
+                                    }
                                     LogUtils.e(DEFAULT_LOG_TAG, "MSG_TYPE_TASK:onFailure=>" + e.toString());
                                 }
 
@@ -237,6 +256,10 @@ public class OperationUtils {
                                                     }
                                                 }
                                             }
+                                            //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                                            if (workFlowTypeInt==1){
+                                                MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
+                                            }
                                         }
                                     } catch (JSONException e) {
                                         e.printStackTrace();
@@ -244,8 +267,14 @@ public class OperationUtils {
                                 }
                             });
                         }
+                        //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                        if (workFlowTypeInt==1){
+                            MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
+                        }
                     } else {
                         if (workFlowTypeInt == 1) {
+                            //关闭自动回充启动加载提示弹窗(没有按钮只有进度条)
+                            MyApp.getContext().sendBroadcast(new Intent(CLOSE_RECHARGING_TIP_DIALOG));
                             playShowText("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");
                             new Handler(Looper.getMainLooper()).post(() -> {
                                 ToastUtils.showSmallToast("抱歉，当前自动回充下没有具体内容，请联系管理员配置.");

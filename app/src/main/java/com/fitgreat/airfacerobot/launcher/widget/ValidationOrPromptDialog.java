@@ -14,14 +14,18 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 
+import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
+import com.fitgreat.archmvp.base.util.SpUtils;
 import com.fitgreat.archmvp.base.util.UIUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 
 
 /**
@@ -80,6 +84,8 @@ public class ValidationOrPromptDialog extends AlertDialog {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.validation_prompt_bt:
+                //首页是否有弹窗弹出
+                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                 dismiss();
                 if (!mFailPromptTag) {
                     if (mValidationFailListener != null) {

@@ -40,7 +40,7 @@ public class BusinessRequest {
      */
     public static void checkHardwareVersion(Callback callback) {
         HashMap<String, String> bodyStr = new HashMap<>();
-        bodyStr.put("hardwareType", "android_doctorface_robot_hardware_sy");
+        bodyStr.put("appType", "android_doctorface_robot_hardware_sy");
         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), JsonUtils.encode(bodyStr));
         RequestManager.startPost(ApiRequestUrl.CHECK_HARDWARE_VERSION, body, callback);
     }

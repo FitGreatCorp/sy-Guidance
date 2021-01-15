@@ -114,4 +114,7 @@
     <string name="no_english_map_tip">Please configure English map</string>
     <string name="take_charge_tip">Nurse sister, please help me and take me to charge。</string>
     <string name="english_navigation_tip">Please add English navigation point information。</string>
+    <string name="charging_tip">Charging</string>
+    <string name="loading_title">Loading</string>
+
 </resources>

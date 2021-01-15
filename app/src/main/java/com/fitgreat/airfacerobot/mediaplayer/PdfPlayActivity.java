@@ -213,9 +213,6 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             mPdfIntroductionTitle.setBaseTitle(instructionEnName);
         }
         LogUtils.d(DEFAULT_LOG_TAG, "PDF文件路径::" + file.getPath());
-        if (file.exists()) {
-            file.delete();
-        }
         if (!file.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(PdfPlayActivity.this);

@@ -263,6 +263,10 @@ public interface RobotConfig {
      * 程序首页是否显示
      */
     String MAIN_PAGE_WHETHER_SHOW = "main_page_whether_show";
+    /**
+     * 选择导航页面是否显示
+     */
+    String NAVIGATION_PAGE_WHETHER_SHOW = "navigation_page_whether_show";
 
     /**
      * 单点导航任务开启标志
@@ -297,12 +301,24 @@ public interface RobotConfig {
     String FREE_OPERATION_SELECT_POSITION = "free_operation_select_position";
 
     /**
-     * 首页是否有弹窗弹出(有弹窗时,不播报迎宾语)
+     * 首页是否有弹窗弹出(有弹窗时,不播报迎宾语,不执行空闲操作)
      */
     String MAIN_PAGE_DIALOG_SHOW_TAG = "main_page_dialog_show_tag";
     /**
      * 常见问题选择题目编号
      */
     String CHOOSE_COMMON_PROBLEM_POSITION = "choose_common_problem_position";
+    /**
+     * 关闭自动回充工作流加载提示框
+     */
+    String CLOSE_RECHARGING_TIP_DIALOG = "close_recharging_tip_dialog";
 
+    /**
+     * 启动首页说话动画
+     */
+    String START_SPEAK_ANIMATION_MSG = "start_speak_animation_msg";
+    /**
+     * 启动首页眨眼动画
+     */
+    String START_BLINK_ANIMATION_MSG = "start_blink_animation_msg";
 }

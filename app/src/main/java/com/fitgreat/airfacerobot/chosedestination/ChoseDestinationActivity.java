@@ -39,6 +39,7 @@ import com.fitgreat.airfacerobot.model.AskAnswerDataEvent;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
+import com.fitgreat.airfacerobot.model.MapEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.BitmapUtils;
@@ -65,7 +66,10 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_SELECT_NAVIG
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.NAVIGATION_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 
@@ -89,6 +93,9 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     private CloseBroadcastReceiver closeBroadcastReceiver;
     private MyTipDialogSetText startNavigationDialog;
     private Bitmap showMapBitmap;
+    private String localMapInfoString;
+    private MapEntity mapEntity;
+    private String f_showMapFileUrl;
 
     @Override
     public ChoseDestinationPresenter createPresenter() {
@@ -111,24 +118,37 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
      * 加载展示地图
      */
     private void loadShowMap() {
+        //选择导航页面是否显示标志
+        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_PAGE_WHETHER_SHOW, true);
         //获取屏幕宽高
         WindowManager systemService = (WindowManager) getSystemService(WINDOW_SERVICE);
         Point point = new Point();
         systemService.getDefaultDisplay().getSize(point);
         //加载中英文地图
-        if (currentLanguage.equals("zh")) {  //加载展示中文地图
+        if (currentLanguage.equals("zh")&&mapEntity!=null) {  //加载展示中文地图
             showMapBitmap = MyBitmapUtils.decodeSampledBitmapFromFile(currentChineseMapPath, point.x, point.y);
-        } else {  //加载展示英文地图
+            f_showMapFileUrl = mapEntity.getF_MapFileUrl();
+        } else  if (currentLanguage.equals("en")&&mapEntity!=null){  //加载展示英文地图
             showMapBitmap = MyBitmapUtils.decodeSampledBitmapFromFile(currentEnglishMapPath, point.x, point.y);
+            f_showMapFileUrl = mapEntity.getF_EMapUrl();
         }
-//        mChoseDestinationMapBack.setImageBitmap(showMapBitmap);
-        Glide.with(this).load(showMapBitmap).into(mChoseDestinationMapBack);
+        mChoseDestinationMapBack.setImageBitmap(showMapBitmap);
+//        Glide.with(this).load(showMapBitmap).into(mChoseDestinationMapBack);
+//        Glide.with(this).load(f_showMapFileUrl).into(mChoseDestinationMapBack);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (showMapBitmap != null) {
+        //选择导航页面是否显示标志
+        SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_PAGE_WHETHER_SHOW, false);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mChoseDestinationMapBack.setImageBitmap(null);
+        if (showMapBitmap!=null){
             showMapBitmap.recycle();
             showMapBitmap = null;
         }
@@ -160,6 +180,11 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         EventBus.getDefault().register(this);
         //根据当前语言加载展示地图
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+        //地图信息
+        localMapInfoString = SpUtils.getString(MyApp.getContext(), MAP_INFO_CASH, null);
+        if (localMapInfoString!=null){
+            mapEntity = JSON.parseObject(localMapInfoString, MapEntity.class);
+        }
         //显示悬浮窗
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
@@ -176,7 +201,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         }
         //添加导航点按钮位置
         locationList = CashUtils.getLocationList();
-//        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(locationList));
         //去除不配置S_Y  S_X的位置信息
         for (int i = 0; i < locationList.size(); i++) {
             LocationEntity locationEntity = locationList.get(i);
@@ -184,7 +208,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
                 locationList.remove(i);
             }
         }
-//        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(locationList));
         //绘制页面,添加页面位置信息
         if (locationList != null && locationList.size() != 0) {
             flashView();
@@ -198,6 +221,9 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         mChoseDestinationTopTitle.setBackKListener(this);
     }
 
+    /**
+     * 添加导航点位置信息
+     */
     public void flashView() {
         for (int i = 0; i < locationList.size(); i++) {
             LocationEntity locationEntity = locationList.get(i);
@@ -215,11 +241,9 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             });
             //设置导航点按钮位置
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            if (!"null".equals(locationEntity.getS_Y()) && !"null".equals(locationEntity.getS_X())) {
-                layoutParams.topMargin = Integer.parseInt(locationEntity.getS_Y()) - 85;
-                layoutParams.leftMargin = Integer.parseInt(locationEntity.getS_X()) - 30;
-                mChoseDestinationContainer.addView(imageButton, layoutParams);
-            }
+            layoutParams.topMargin = Integer.parseInt(locationEntity.getS_Y()) - 85;
+            layoutParams.leftMargin = Integer.parseInt(locationEntity.getS_X()) - 30;
+            mChoseDestinationContainer.addView(imageButton, layoutParams);
         }
     }
 

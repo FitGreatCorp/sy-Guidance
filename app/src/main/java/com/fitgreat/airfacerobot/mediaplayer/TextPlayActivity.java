@@ -154,9 +154,6 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         } else if (currentLanguage.equals("en")) {
             file = new File(DownloadUtils.DOWNLOAD_PATH + enBlob);
         }
-        if (file.exists()) {
-            file.delete();
-        }
         if (!file.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(TextPlayActivity.this);

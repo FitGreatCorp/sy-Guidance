@@ -53,7 +53,7 @@
     <string name="title_note">注意</string>
     <string name="auto_recharge">自动回充</string>
     <string name="auto_mission">自主宣教</string>
-    <string name="prompt_no_task">该任务我不会哦，请联系管理员大大给我配置吧</string>
+    <string name="prompt_no_task">该任务我不会哦，请联系管理员大大给我配置吧。</string>
     <string name="wear_equipment">穿戴设备</string>
     <string name="bluetooth_connection_device">蓝牙连接设备</string>
     <string name="auscaltation">远程听诊</string>
@@ -100,7 +100,7 @@
     <string name="navigation_title">引导中</string>
     <string name="end_boot_bt">结束引导</string>
     <string name="no_data_title">暂无内容</string>
-    <string name="emergency_click_recharge_tip">急停按钮已启动无法自动回充</string>
+    <string name="emergency_click_recharge_tip">急停按钮已启动无法自动回充。</string>
     <string name="tip_recharge_tip_content">我要回去冲电了。</string>
     <string name="battery_low_tip">当前电量低于20%,我要去充电了.</string>
     <string name="termination_bt_text">终止</string>
@@ -114,4 +114,6 @@
     <string name="no_english_map_tip">请配置英文地图</string>
     <string name="take_charge_tip">护士姐姐，请帮帮我，带我去充电。</string>
     <string name="english_navigation_tip">请补充英文导航点信息。</string>
+    <string name="charging_tip">正在充电中。</string>
+    <string name="loading_title">加载中</string>
 </resources>

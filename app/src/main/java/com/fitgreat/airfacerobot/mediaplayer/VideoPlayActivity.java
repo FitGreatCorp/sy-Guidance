@@ -130,9 +130,6 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
             mVideoIntroductionTitle.setBaseTitle(instructionEnName);
         }
         LogUtils.d(DEFAULT_LOG_TAG, "onResume  playFile.exists() :" + playFile.exists() + "----播放视频文件路径---" + playFile.getAbsolutePath());
-        if (playFile.exists()) {
-            playFile.delete();
-        }
         if (!playFile.exists()) {
             if (downloadingDialog == null) {
                 downloadingDialog = new DownloadingDialog(this);

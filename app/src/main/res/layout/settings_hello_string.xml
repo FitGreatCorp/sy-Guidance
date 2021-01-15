@@ -69,6 +69,34 @@
             android:textSize="14sp" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/px20"
+        android:gravity="center|left"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="@dimen/px80"
+            android:layout_height="wrap_content"
+            android:text="Welcome:"
+            android:textColor="@android:color/black" />
+
+        <EditText
+            android:id="@+id/en_et_hello"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/free_operation_item_back"
+            android:focusedByDefault="false"
+            android:gravity="top|left"
+            android:hint="Please enter welcome"
+            android:paddingLeft="10dp"
+            android:paddingTop="5dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="5dp"
+            android:textSize="14sp" />
+    </LinearLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -90,7 +118,7 @@
             android:layout_width="@dimen/px0"
             android:layout_height="@dimen/px49"
             android:background="@drawable/free_operation_item_back"
-            android:gravity="top|left"
+            android:gravity="center|left"
             android:paddingLeft="10dp"
             android:paddingTop="5dp"
             android:paddingRight="10dp"
@@ -106,8 +134,8 @@
             android:id="@+id/switch_free_operation_log"
             android:layout_width="@dimen/px12"
             android:layout_height="@dimen/px12"
-            android:scaleType="fitCenter"
             android:layout_marginRight="@dimen/px15"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_triangle_down"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"

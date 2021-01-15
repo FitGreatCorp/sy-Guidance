@@ -70,6 +70,7 @@ import std_msgs.Byte;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_ROS_MOVE_STATUS;
@@ -188,6 +189,7 @@ public class RosManager {
     private boolean mainPageDialogShowTag;
     //迎宾语播放次数限制一直有人时默认播放一次
     private int playTipTime = 0;
+    private String currentLanguage;
 
     private Handler myHandler = new Handler(Looper.getMainLooper()) {
         @Override
@@ -210,7 +212,7 @@ public class RosManager {
         }
     };
     private boolean broadcastGreetSwitchTag;
-    private String string_hello;
+    private String string_hello, en_string_hello;
 
     public boolean isPowerStatus() {
         return mPowerStatus == 1;
@@ -242,7 +244,6 @@ public class RosManager {
                 public void onSuccess(autoparkResponse setmodeResponse) {    //  getResult  为 false  机器附近有物体  true   没有物体
                     LogUtils.d(TAG, "judgmentHasPerson getMsg   " + setmodeResponse.getMsg() + " getResult      " + setmodeResponse.getResult());
                     if (!setmodeResponse.getResult()) {
-                        playTipTime = 0;
                         playTipTime++;
                         //是否播放迎宾语
                         broadcastGreetSwitchTag = SpUtils.getBoolean(MyApp.getContext(), BROADCAST_GREET_SWITCH_TAG, false);
@@ -250,11 +251,18 @@ public class RosManager {
                         mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
                         //程序首页是否有弹窗弹出
                         mainPageDialogShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
-                        //迎宾语内容
+                        //中英文迎宾语内容
                         string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");
-                        LogUtils.d(TAG, "机器人附近有障碍物, " + " string_hello, " + string_hello+ " mainPageShowTag, " + mainPageShowTag+ " playTipTime, " + playTipTime+ " mainPageDialogShowTag, " + mainPageDialogShowTag);
-                        if (broadcastGreetSwitchTag && (!TextUtils.isEmpty(string_hello)) && mainPageShowTag && playTipTime == 1&&!mainPageDialogShowTag) { //播放迎宾语开关打开
-                            playShowText(string_hello);
+                        en_string_hello = SpUtils.getString(MyApp.getContext(), "en_hello_string", "Hi");
+                        //当前语言
+                        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
+                        LogUtils.d(TAG, "机器人附近有障碍物, " + " string_hello, " + string_hello + " mainPageShowTag, " + mainPageShowTag + " playTipTime, " + playTipTime + " mainPageDialogShowTag, " + mainPageDialogShowTag);
+                        if (broadcastGreetSwitchTag && mainPageShowTag && playTipTime == 1 && !mainPageDialogShowTag) { //播放迎宾语开关打开
+                            if (!TextUtils.isEmpty(string_hello) && currentLanguage.equals("zh")) {
+                                playShowText(string_hello);
+                            } else if (!TextUtils.isEmpty(en_string_hello) && currentLanguage.equals("en")) {
+                                playShowText(en_string_hello);
+                            }
                         }
                     } else {
                         playTipTime = 0;

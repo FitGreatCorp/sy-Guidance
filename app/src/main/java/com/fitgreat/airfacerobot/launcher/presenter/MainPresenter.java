@@ -91,9 +91,9 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         BusinessRequest.checkHardwareVersion(new HttpMainCallback() {
             @Override
             public void onResult(BaseResponse baseResponse) {
-                LogUtils.d(TAG, "check hardware version:" + JsonUtils.encode(baseResponse));
+                LogUtils.d("checkHardwareVersion", "查询服务端最新硬件是否更新成功:" + JsonUtils.encode(baseResponse));
                 if (baseResponse != null && !baseResponse.isEmptyData()) {
-                    LogUtils.d(TAG, "check hardware version:" + baseResponse.getData());
+                    LogUtils.d(DEFAULT_LOG_TAG, "检查硬件升级结果:::data , " + baseResponse.getData());
                     VersionInfo versionInfo = JsonUtils.decode(baseResponse.getData(), VersionInfo.class);
                     if (versionInfo != null) {
                         String current = RobotInfoUtils.getHardwareVersion().replaceAll("v", "").replaceAll("V", "");
@@ -102,7 +102,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                                 mView.foundHardwareNewVersion(versionInfo);
                             }
                         } else {
-                            LogUtils.d(TAG, "-------has not found new version------");
+                            LogUtils.d(DEFAULT_LOG_TAG, "-------has not found new version------");
                         }
                     }
                 }
@@ -110,7 +110,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
 
             @Override
             public void onFailed(String e) {
-                LogUtils.e(TAG, "check version exception:" + e);
+                LogUtils.e(DEFAULT_LOG_TAG, "check version exception:" + e);
             }
         });
     }
@@ -122,7 +122,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
         BusinessRequest.checkAppVersion(new MyStringCallback(new MyStringCallback.ResponseListener() {
             @Override
             public void onResponseString(String responseString) {
-                LogUtils.d(DEFAULT_LOG_TAG, "查询服务端最新软件是否更新成功::" + responseString);
+                LogUtils.d(DEFAULT_LOG_TAG, "查询服务端最新软件是否更新::" + responseString);
                 try {
                     JSONObject jsonObject = new JSONObject(responseString);
                     String msg = jsonObject.getString("msg");
@@ -481,7 +481,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String stringResponse = response.body().string();
-                    LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse=>" + stringResponse);
+                    LogUtils.d(DEFAULT_LOG_TAG, "获取常见问题成功:onResponse");
                     try {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         if (jsonObject.has("type") && jsonObject.getString("type").equals("success")) {

@@ -127,7 +127,6 @@ public class YesOrNoDialogActivity extends AppCompatActivity {
         Point point = new Point();
         defaultDisplay.getSize(point);
         attributes.width = (int) ((point.x) * 0.4);
-        attributes.height = (int) ((point.y) * 0.35);
         window.setAttributes(attributes);
     }
 
