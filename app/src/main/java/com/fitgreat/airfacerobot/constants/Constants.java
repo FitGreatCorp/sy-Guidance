@@ -104,11 +104,15 @@ public interface Constants {
      * 导航任务
      */
     String COMMON_PROBLEM_BY_INSTRUCTION = "common_problem_by_instruction";
-
     /**
      * 常见问题指令
      */
     String DEFAULT_LOG_TAG = "guidance_sy_hxk";
+    String DEFAULT_LOG_ONE = "guidance_sy_one";
+    String DEFAULT_LOG_TWO = "guidance_sy_two";
+
+
+    String DEFAULT_LOG_THREE = "guidance_sy_three";
 
     String basePath = Environment.getExternalStorageDirectory().getPath() + "/ExternalResource/";
     /**

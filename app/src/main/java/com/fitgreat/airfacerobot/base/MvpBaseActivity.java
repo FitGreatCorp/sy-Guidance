@@ -21,6 +21,7 @@ import java.util.List;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_FAILURE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_SUCCESS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_CONNECTION_CHECK_FAILURE;
@@ -160,12 +161,12 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         public void onReceive(Context context, Intent intent) {
             LogUtils.d(TAG, "NetWorkChangeBroadcastReceiver");
             if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_FAILURE)) {
-                LogUtils.d("startSpecialWorkFlow", "网路连接断开");
+                LogUtils.d(DEFAULT_LOG_TAG, "--------BaseChangeBroadcastReceiver-----网路连接断开");
                 disconnectNetWork();
             } else if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_SUCCESS)) {
-                LogUtils.d("startSpecialWorkFlow", "网路连接可用");
+                LogUtils.d(DEFAULT_LOG_TAG, "--------BaseChangeBroadcastReceiver-----网路连接可用");
             } else if (intent.getAction().equals(ROS_CONNECTION_CHECK_FAILURE)) {
-                LogUtils.d("startSpecialWorkFlow", "ros连接断开");
+                LogUtils.d(DEFAULT_LOG_TAG, "ros连接断开");
                 disconnectRos();
             }
         }

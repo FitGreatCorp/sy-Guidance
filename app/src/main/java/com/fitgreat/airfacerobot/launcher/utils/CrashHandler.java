@@ -22,6 +22,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+
 public class CrashHandler implements Thread.UncaughtExceptionHandler{
 
     public static final String TAG = "CrashHandler";
@@ -72,7 +74,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler{
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
-                Log.e(TAG, "error : ", e);
+                Log.e(DEFAULT_LOG_TAG, "error : ", e);
             }
             //退出程序
             android.os.Process.killProcess(android.os.Process.myPid());
@@ -171,13 +173,14 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler{
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
+                Log.e(DEFAULT_LOG_TAG, "保存信息::"+sb.toString());
                 FileWriter fos = new FileWriter(path + fileName);
                 fos.write(sb.toString());
                 fos.close();
             }
             return fileName;
         } catch (Exception e) {
-            Log.e(TAG, "an error occured while writing file...", e);
+            Log.e(DEFAULT_LOG_TAG, "an error occured while writing file...", e);
         }
         return null;
     }

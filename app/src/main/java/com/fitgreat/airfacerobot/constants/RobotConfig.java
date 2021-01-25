@@ -49,6 +49,7 @@ public interface RobotConfig {
      */
     String CONTROL_TYPE_HEADER_ACTUATOR = "control_header_actuator";
     String MSG_INSTRUCTION_STATUS_FINISHED = "instructino_status_finished";
+    String MSG_TASK_STATUS_FINISHED = "instruction_task_status_finished";
     String MSG_UPDATE_INSTARUCTION_STATUS = "update_instruction";
     String ROS_UPDATE_STATUS = "ros_update";
 
@@ -321,4 +322,17 @@ public interface RobotConfig {
      * 启动首页眨眼动画
      */
     String START_BLINK_ANIMATION_MSG = "start_blink_animation_msg";
+    /**
+     * 更新机器人信息到服务端
+     */
+    String UPDATE_ROBOT_STATE_TAG = "update_robot_state_tag";
+    /**
+     * 空闲操作工作流开始标志
+     */
+    String FREE_OPERATION_STATE_TAG = "free_operation_start_tag";
+
+    /**
+     * 启动计时器开始空闲操作
+     */
+    String START_FREE_OPERATION_MSG = "start_free_operation_msg";
 }

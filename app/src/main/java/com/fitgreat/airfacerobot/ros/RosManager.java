@@ -252,8 +252,8 @@ public class RosManager {
                         //程序首页是否有弹窗弹出
                         mainPageDialogShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
                         //中英文迎宾语内容
-                        string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "Hi");
-                        en_string_hello = SpUtils.getString(MyApp.getContext(), "en_hello_string", "Hi");
+                        string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", "您好，我是小灰，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。");
+                        en_string_hello = SpUtils.getString(MyApp.getContext(), "en_hello_string", "Hello, I am Xiao Hui, and I am very happy to serve you. I can show you the way if you don’t understand, you can also ask me.");
                         //当前语言
                         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
                         LogUtils.d(TAG, "机器人附近有障碍物, " + " string_hello, " + string_hello + " mainPageShowTag, " + mainPageShowTag + " playTipTime, " + playTipTime + " mainPageDialogShowTag, " + mainPageDialogShowTag);

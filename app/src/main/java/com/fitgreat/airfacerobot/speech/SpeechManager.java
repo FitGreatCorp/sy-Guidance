@@ -101,42 +101,42 @@ public class SpeechManager {
      * 文字语音播报
      */
     public static void textTtsPlay(String textContent, String ttsId, TtsBroadcastListener ttsBroadcastListener) {
-        if (ddsInitializationTag) {
-            ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
-            try {
-                ttsEngine.setVolume(100);
-            } catch (DDSNotInitCompleteException e) {
-                e.printStackTrace();
-            }
-            try {
-                ttsEngine.speak(textContent, 1, ttsId, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-                ttsEngine.setListener(new TTSEngine.Callback() {
-                    @Override
-                    public void beginning(String s) {
-                        if (ttsBroadcastListener != null) {
-                            ttsBroadcastListener.ttsBroadcastBegin();
-                        }
+        ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+        try {
+            ttsEngine.setVolume(100);
+            ttsEngine.setSpeed(1.3f);
+            ttsEngine.setSpeaker("gdgm");
+        } catch (DDSNotInitCompleteException e) {
+            e.printStackTrace();
+        }
+        try {
+            ttsEngine.speak(textContent, 1, ttsId, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+            ttsEngine.setListener(new TTSEngine.Callback() {
+                @Override
+                public void beginning(String s) {
+                    if (ttsBroadcastListener != null) {
+                        ttsBroadcastListener.ttsBroadcastBegin();
                     }
+                }
 
-                    @Override
-                    public void received(byte[] bytes) {
-                    }
+                @Override
+                public void received(byte[] bytes) {
+                }
 
-                    @Override
-                    public void end(String s, int i) {
-                        if (ttsBroadcastListener != null) {
-                            ttsBroadcastListener.ttsBroadcastEnd(s);
-                        }
+                @Override
+                public void end(String s, int i) {
+                    if (ttsBroadcastListener != null) {
+                        ttsBroadcastListener.ttsBroadcastEnd(s);
                     }
+                }
 
-                    @Override
-                    public void error(String s) {
-                    }
-                });
-            } catch (DDSNotInitCompleteException e) {
-                e.printStackTrace();
-                LogUtils.e(TAG, "textTtsPlay:" + e.getMessage());
-            }
+                @Override
+                public void error(String s) {
+                }
+            });
+        } catch (DDSNotInitCompleteException e) {
+            e.printStackTrace();
+            LogUtils.e(TAG, "textTtsPlay:" + e.getMessage());
         }
     }
 
@@ -334,46 +334,34 @@ public class SpeechManager {
     public static void addWakeupWordList() {
         List<WakeupWord> mainWordLisrt = new ArrayList<>();
         WakeupWord mainWord1 = new WakeupWord()
-                .setPinyin("ni hao xiao bai")
-                .setWord("你好小白")
+                .setPinyin("ni hao xiao hui")
+                .setWord("你好小灰")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         WakeupWord mainWord2 = new WakeupWord()
-                .setPinyin("xiao bai xiao bai")
-                .setWord("小白小白")
+                .setPinyin("xiao hui xiao hui")
+                .setWord("小灰小灰")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         WakeupWord mainWord3 = new WakeupWord()
-                .setPinyin("xiao bai ni hao")
-                .setWord("小白你好")
+                .setPinyin("xiao hui ni hao")
+                .setWord("小灰你好")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         WakeupWord mainWord4 = new WakeupWord()
-                .setPinyin("xiao bai")
-                .setWord("小白")
+                .setPinyin("xiao hui")
+                .setWord("小灰")
                 .addGreeting("我在,请问有什么可以帮你?")
-                .setThreshold("0.15");
-        WakeupWord mainWord5 = new WakeupWord()
-                .setPinyin("small white")
-                .setWord("small white")
-                .addGreeting("I am here, can I help you?")
                 .setThreshold("0.15");
         mainWordLisrt.add(mainWord1);
         mainWordLisrt.add(mainWord2);
         mainWordLisrt.add(mainWord3);
         mainWordLisrt.add(mainWord4);
-//        mainWordLisrt.add(mainWord5);
         try {
             //清空唤醒词
             DDS.getInstance().getAgent().getWakeupEngine().clearMainWakeupWord();
             //添加默认唤醒词
             DDS.getInstance().getAgent().getWakeupEngine().addMainWakeupWords(mainWordLisrt);
-            //打印唤醒词
-//            List<WakeupWord> mainWakeupWords = DDS.getInstance().getAgent().getWakeupEngine().getMainWakeupWords();
-//            for (WakeupWord wakeupWord :
-//                    mainWakeupWords) {
-//                LogUtils.json("CommandTodo", JSON.toJSONString(wakeupWord));
-//            }
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
             LogUtils.e("CommandTodo", "添加唤醒词报错::" + e.getMessage());

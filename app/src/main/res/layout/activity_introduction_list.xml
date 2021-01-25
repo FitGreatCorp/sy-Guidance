@@ -88,6 +88,15 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/introduction_list_one_item_one_kind_image_one"
+                    android:layout_width="@dimen/px21"
+                    android:layout_height="@dimen/px26"
+                    android:layout_margin="@dimen/px15"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_introduction_ppt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <View
                     android:layout_width="wrap_content"
@@ -148,6 +157,15 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/introduction_list_two_item_one_kind_image_one"
+                    android:layout_width="@dimen/px21"
+                    android:layout_height="@dimen/px26"
+                    android:layout_margin="@dimen/px15"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_introduction_ppt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <View
                     android:layout_width="wrap_content"
@@ -193,6 +211,15 @@
                     android:id="@+id/introduction_list_two_item_two_kind_image"
                     android:layout_width="@dimen/px30"
                     android:layout_height="@dimen/px22"
+                    android:layout_margin="@dimen/px15"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_introduction_ppt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/introduction_list_two_item_two_kind_image_one"
+                    android:layout_width="@dimen/px21"
+                    android:layout_height="@dimen/px26"
                     android:layout_margin="@dimen/px15"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_introduction_ppt"
@@ -257,6 +284,15 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/introduction_list_three_item_one_kind_image_one"
+                    android:layout_width="@dimen/px21"
+                    android:layout_height="@dimen/px26"
+                    android:layout_margin="@dimen/px15"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_introduction_ppt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <View
                     android:layout_width="wrap_content"
@@ -307,6 +343,15 @@
                     android:src="@drawable/ic_introduction_ppt"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/introduction_list_three_item_two_kind_image_one"
+                    android:layout_width="@dimen/px21"
+                    android:layout_height="@dimen/px26"
+                    android:layout_margin="@dimen/px15"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_introduction_ppt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <View
                     android:layout_width="wrap_content"
@@ -352,6 +397,15 @@
                     android:id="@+id/introduction_list_three_item_three_kind_image"
                     android:layout_width="@dimen/px30"
                     android:layout_height="@dimen/px22"
+                    android:layout_margin="@dimen/px15"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_introduction_ppt"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/introduction_list_three_item_three_kind_image_one"
+                    android:layout_width="@dimen/px21"
+                    android:layout_height="@dimen/px26"
                     android:layout_margin="@dimen/px15"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_introduction_ppt"

@@ -70,7 +70,7 @@
     <string name="nurse_desk_title">Nurse desk</string>
     <string name="pharmacy_title">Pharmacy</string>
     <string name="restroom_title">Restroom</string>
-    <string name="home_prompt_text">Hello, I\'m Xiaobai. Glad to serve you. I can show you the way. If you don\'t understand, you can ask me.</string>
+    <string name="home_prompt_text">Hello, I am Xiao Hui, and I am very happy to serve you. I can show you the way if you don’t understand, you can also ask me.</string>
     <string name="common_problem_title">Common Problem</string>
     <string name="emergency_click_prompt">Sorry, my emergency stop button is activated and the task cannot be performed.</string>
     <string name="prompt_problem_has_no">sorry，I don\'t know the question,can you change the question？</string>

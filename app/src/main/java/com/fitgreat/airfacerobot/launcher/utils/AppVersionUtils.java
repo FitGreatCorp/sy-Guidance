@@ -29,7 +29,7 @@ public class AppVersionUtils {
         if (info == null || info.isEmpty()) {
             return softwareVersionNumber;
         }
-        LogUtils.d(DEFAULT_LOG_TAG, "install size:" + info.size());
+//        LogUtils.d(DEFAULT_LOG_TAG, "install size:" + info.size());
         for (PackageInfo packageInfo : info) {
             if (packageInfo != null) {
                 if ("com.fitgreat.airfacerobot".equals(packageInfo.packageName)) {

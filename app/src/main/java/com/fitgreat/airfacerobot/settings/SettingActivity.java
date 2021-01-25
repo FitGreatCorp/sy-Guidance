@@ -22,6 +22,9 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.aispeech.dui.dds.DDS;
+import com.aispeech.dui.dds.agent.wakeup.word.WakeupWord;
+import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
@@ -32,6 +35,7 @@ import com.fitgreat.airfacerobot.constants.Constants;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.launcher.ui.activity.AppListActivity;
 import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
+import com.fitgreat.airfacerobot.launcher.utils.PinYinUtil;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.utils.WebPageUtils;
 import com.fitgreat.airfacerobot.launcher.widget.InputDialog;
@@ -52,12 +56,14 @@ import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TWO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SWITCH_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_SELECT_POSITION;
@@ -126,13 +132,15 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
     TextView freeOperation;
     @BindView(R.id.switch_free_operation_log)
     ImageView switchFreeOperationLog;
+    @BindView(R.id.wake_word)
+    EditText wake_word;
 
     LinearLayout info;
     LinearLayout hello;
     InputMethodManager inputMethodManager;
     private InputDialog inputDialog;
     private MyDialog myDialog;
-    private String STRING_HELLO,EN_STRING_HELLO;
+    private String STRING_HELLO, EN_STRING_HELLO;
     private static final String TAG = "SettingActivity";
     private Drawable selectedDrawable;
     private Drawable normalDrawable;
@@ -374,9 +382,20 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
                 RouteUtils.sendDaemonBroadcast(this, Constants.ACTION_SHUTDOWN, null);
                 break;
             case R.id.btn_save:
-                LogUtils.d(TAG, "btn_save !!!!!!!");
-                SpUtils.putString(getContext(), "hello_string", et_hello.getText().toString());
-                SpUtils.putString(getContext(), "en_hello_string", en_et_hello.getText().toString());
+                if ((et_hello.getText().toString().equals("")) || TextUtils.isEmpty(et_hello.getText().toString())) {
+                    SpUtils.putString(getContext(), "hello_string", null);
+                } else {
+                    SpUtils.putString(getContext(), "hello_string", et_hello.getText().toString());
+                }
+                if ((en_et_hello.getText().toString().equals("")) || TextUtils.isEmpty(en_et_hello.getText().toString())) {
+                    SpUtils.putString(getContext(), "en_hello_string", null);
+                } else {
+                    SpUtils.putString(getContext(), "en_hello_string", en_et_hello.getText().toString());
+                }
+                LogUtils.d(DEFAULT_LOG_TWO, "添加唤醒词中文::" + (wake_word.getText().toString()) + "  ::" +(wake_word.getText().toString().equals("")));
+                if (!TextUtils.isEmpty(wake_word.getText().toString()) && !(wake_word.getText().toString().equals(""))) {
+                    updateWakeupWordList(wake_word.getText().toString());
+                }
                 inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 ToastUtils.showSmallToast("设置成功");
                 break;
@@ -493,6 +512,24 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
                 break;
             default:
                 break;
+        }
+    }
+
+    public static void updateWakeupWordList(String chineseWord) {
+        List<WakeupWord> mainWordList = new ArrayList<>();
+        LogUtils.d(DEFAULT_LOG_TWO, "添加唤醒词中文::" + chineseWord + "  添加唤醒词拼音::" + PinYinUtil.cn2Spell(chineseWord));
+        WakeupWord addMainWord = new WakeupWord()
+                .setPinyin(PinYinUtil.cn2Spell(chineseWord))
+                .setWord(chineseWord)
+                .addGreeting("我在,请问有什么可以帮你?")
+                .setThreshold("0.15");
+        mainWordList.add(addMainWord);
+        try {
+            //添加默认唤醒词
+            DDS.getInstance().getAgent().getWakeupEngine().addMainWakeupWords(mainWordList);
+        } catch (DDSNotInitCompleteException e) {
+            e.printStackTrace();
+            LogUtils.e("CommandTodo", "添加唤醒词报错::" + e.getMessage());
         }
     }
 

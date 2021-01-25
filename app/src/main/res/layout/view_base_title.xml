@@ -10,7 +10,7 @@
         android:id="@+id/container_base_back"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:padding="@dimen/px10"
+        android:padding="@dimen/px13"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 

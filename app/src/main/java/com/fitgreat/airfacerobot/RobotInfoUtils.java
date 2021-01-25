@@ -2,6 +2,8 @@ package com.fitgreat.airfacerobot;
 
 import android.text.TextUtils;
 
+import com.fitgreat.airfacerobot.constants.RobotConfig;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.GroupInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.archmvp.base.util.JsonUtils;
@@ -42,6 +44,8 @@ public class RobotInfoUtils {
      */
     public static void setRobotRunningStatus(String status) {
         SpUtils.putString(MyApp.getContext(), ROBOT_RUNNING_STATUS, status);
+        //更新服务端机器人状态
+        EventBus.getDefault().post(new InitEvent(RobotConfig.UPDATE_ROBOT_STATE_TAG, status));
     }
 
 

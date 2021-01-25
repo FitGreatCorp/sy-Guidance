@@ -230,6 +230,8 @@ public class RobotInitActivity extends MvpBaseActivity {
 
     private void gotohome() {
         EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE_DONE, ""));
+        //启动计时器 等待空闲操作
+        EventBus.getDefault().post(new InitEvent(RobotConfig.START_FREE_OPERATION_MSG, ""));
         finish();
     }
 

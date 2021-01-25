@@ -91,7 +91,10 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_ONE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_THREE;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TWO;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_ACTIVITY_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.AUTOMATIC_RECHARGE_TAG;
@@ -102,6 +105,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERA
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_STATE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
@@ -117,6 +121,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_I
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PROMPT_ROBOT_RECHARGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_BLINK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.START_FREE_OPERATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_INTRODUCTION_WORK_FLOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_SPEAK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.TYPE_CHECK_STATE_DONE;
@@ -287,14 +292,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                         }
                         handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 1000);
                     }
-//                    startPositionHeight++;
-//                    scrollPositionY++;
-//                    mVoiceMsgScrollView.smoothScrollTo(0, scrollPositionY);
-//                    int[] end = new int[2];
-//                    mVoiceMsg.getLocationOnScreen(end);
-//                    LogUtils.d("mVoiceMsgScrollView", "滑动一次结束  mVoiceMsg x坐标::::" +end[0] + " ,mVoiceMsg y坐标,    " + end[1]);
-//                    LogUtils.d("mVoiceMsgScrollView", "滑动一次结束文本高度::::" + mVoiceMsg.getMeasuredHeight() + " ,mVoiceMsgScrollView测量高度,    " + mVoiceMsgScrollView.getMeasuredHeight()+"  scrollPositionY   "+scrollPositionY);
-//                    handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 1000);
                     break;
                 case START_BLINK_ANIMATION_TAG:  //眨眼动画连续播放
                     //移除机器人说话动画消息
@@ -333,6 +330,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             }
         }
     };
+    private boolean mainPageShowTag;
 
 
     @Override
@@ -343,6 +341,8 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void initData() {
+        //空闲操作工作流启动标志默认没启动
+        SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
         //首页是否有弹窗弹出
         SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
         //注册EventBus
@@ -465,61 +465,32 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         if (robotInfoData != null) {
             //更新本地导航位置,执行任务信息
             mPresenter.getLocationInfo(handler);
-            //中英文迎宾语内容
-            string_hello = SpUtils.getString(MyApp.getContext(), "hello_string", null);
-            en_string_hello = SpUtils.getString(MyApp.getContext(), "en_hello_string", null);
             //机器人名字信息
             if (currentLanguage.equals("en") && !TextUtils.isEmpty(robotInfoData.getF_EName())) {
                 mRobotName.setText(robotInfoData.getF_EName());
-                //没有配置英文迎宾语,播放默认迎宾语
-                if (en_string_hello == null) {
-                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text)));
-                    mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
-                }
             } else if (currentLanguage.equals("zh") && !TextUtils.isEmpty(robotInfoData.getF_Name())) {
                 mRobotName.setText(robotInfoData.getF_Name());
-                //没有配置中文迎宾语,播放默认迎宾语
-                if (string_hello == null) {
-                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text)));
-                    mVoiceMsg.setText(MvpBaseActivity.getActivityContext().getString(R.string.home_prompt_text));
-                }
             }
             LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
             //dds对话Observer注册
             EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
             //启动语音唤醒,打开one shot模式
             EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
-            //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
-            introductionTimer = new Timer();
-            introductionTimerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    freeOperationCountdown++;
-                    if (freeOperationCountdown == 300) {
-                        freeOperationCountdown = 0;
-                        String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
-                        if (!"null".equals(currentFreeOperation)) {
-                            WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
-                            //首页是否有弹窗
-                            boolean mainPageDialogShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
-                            LogUtils.d(DEFAULT_LOG_TAG, "空闲时启动操作工作流 :  " + freeOperationCountdown + " ,currentLanguage,  " + currentLanguage + " ,mainPageDialogShowTag,  " + mainPageDialogShowTag + ",  机器人状态, " + RobotInfoUtils.getRobotRunningStatus() + "   " + JSON.toJSONString(workflowEntity));
-                            if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("1")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
-                                return;
-                            } else if (!mainPageDialogShowTag && RobotInfoUtils.getRobotRunningStatus().equals("1")) { //首页没有弹窗时执行空闲操作
-                                OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
-                                stopIntroductionTimer();
-                            }
-                        } else {
-                            LogUtils.d(DEFAULT_LOG_TAG, "请配置空闲执行工作流 : ");
-                        }
-                    }
-                }
-            };
-            LogUtils.d(DEFAULT_LOG_TAG, "空闲时操作计时器启动 :  " + freeOperationCountdown);
-            introductionTimer.schedule(introductionTimerTask, 0, 1000);
             //检查app软件更新
-            mPresenter.checkSoftwareVersion(this);
+            boolean checkUpdateTag = SpUtils.getBoolean(MyApp.getContext(), "checkUpdateTag", false);
+            LogUtils.d(DEFAULT_LOG_TAG, "onResume:checkAppVersion   " + checkUpdateTag);
+            if (checkUpdateTag) {
+                SpUtils.putBoolean(MyApp.getContext(), "checkUpdateTag", false);
+                mPresenter.checkSoftwareVersion(this);
+            }
+            //启动说话动画
             handler.sendEmptyMessage(START_BLINK_ANIMATION_TAG);
+            //空闲操作计时器
+            boolean freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+            LogUtils.d(DEFAULT_LOG_TWO, "onResume: startFreeOperation   freeOperationStartTag= :  " + freeOperationStartTag + ",  机器人状态=, " + RobotInfoUtils.getRobotRunningStatus());
+            if (!freeOperationStartTag) {
+                startFreeOperation();
+            }
         }
     }
 
@@ -618,7 +589,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case R.id.language_english_relativeLayout:
                 changeRobotLanguage();
                 break;
-            case R.id.auto_recharge_bt: //自动回充安妮
+            case R.id.auto_recharge_bt: //自动回充按钮
                 rechargeToDo();
                 break;
             default:
@@ -648,6 +619,52 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         //首页是否有弹窗弹出
         SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
         RouteUtils.goToActivity(getContext(), SettingActivity.class);
+    }
+
+    /**
+     * 空闲操作计时器启动   TODO
+     */
+    public void startFreeOperation() {
+        //启动空闲时3分钟计时,3分钟计时结束后启动院内介绍工作流
+        introductionTimer = new Timer();
+        introductionTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                LogUtils.d(DEFAULT_LOG_TWO, "空闲操作工作流启动倒计时 :  " + freeOperationCountdown);
+                freeOperationCountdown++;
+                if (freeOperationCountdown == 310) {
+                    freeOperationCountdown = 0;
+                    String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
+                    if (!"null".equals(currentFreeOperation)) {
+                        WorkflowEntity workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
+                        //首页是否有弹窗
+                        LogUtils.d(DEFAULT_LOG_TWO, "空闲时启动操作工作流 freeOperationCountdown=" + freeOperationCountdown + ",  机器人状态, " + RobotInfoUtils.getRobotRunningStatus() + "   " + JSON.toJSONString(workflowEntity));
+                        if (workflowEntity.getF_Name().equals("自动回充") && RobotInfoUtils.getRobotRunningStatus().equals("5")) {   //空闲时执行工作流为自动回充,机器人状态为冲电中时不执行该工作流
+                            return;
+                        } else if (RobotInfoUtils.getRobotRunningStatus().equals("1")) { //首页没有弹窗时执行空闲操作
+                            setRobotModelCotrol();
+                            if (workflowEntity.getF_Name().equals("自动回充")) {
+                                //开启自动回充工作流
+                                OperationUtils.startSpecialWorkFlow(1, handler);
+                            } else {
+                                OperationUtils.startActivity(workflowEntity, RobotInfoUtils.getRobotInfo(), 0);
+                            }
+                            SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, true);
+                            stopIntroductionTimer();
+                        }
+                    } else {
+                        LogUtils.d(DEFAULT_LOG_TWO, "请配置空闲执行工作流 : ");
+                    }
+                }
+            }
+        };
+        boolean freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+        boolean mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
+        LogUtils.d(DEFAULT_LOG_TWO, "首页无操作 空闲操作计时器开始:  mainPageShowTag   " + mainPageShowTag + "----!freeOperationStartTag----" + !freeOperationStartTag + ",  机器人状态 , " + RobotInfoUtils.getRobotRunningStatus());
+        if (mainPageShowTag && (!freeOperationStartTag)) {
+            LogUtils.d(DEFAULT_LOG_TWO, "空闲时操作计时器启动 :  " + freeOperationCountdown);
+            introductionTimer.schedule(introductionTimerTask, 0, 1000);
+        }
     }
 
     /**
@@ -702,16 +719,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 首页按钮自动化回充
      */
     private void rechargeToDo() {
-        //自动回充提示弹窗关闭监听
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(CLOSE_RECHARGING_TIP_DIALOG);
-        closeBroadcastReceiver = new CloseBroadcastReceiver();
-        registerReceiver(closeBroadcastReceiver, intentFilter);
-        //自动回充提示弹窗弹出前,加载提示弹窗
-        rechargeTipDialog = new MyTipDialog(this);
-        rechargeTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.loading_title));
-        rechargeTipDialog.setTipLoadModel(true);
-        rechargeTipDialog.show();
         //如果急停按钮被按下语音提示
         boolean emergencyTag = SpUtils.getBoolean(MyApp.getContext(), CLICK_EMERGENCY_TAG, false);
         if (emergencyTag) {
@@ -722,6 +729,27 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.charging_tip)));
             return;
         }
+        setRobotModelCotrol();
+        //自动回充提示弹窗关闭监听
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(CLOSE_RECHARGING_TIP_DIALOG);
+        closeBroadcastReceiver = new CloseBroadcastReceiver();
+        registerReceiver(closeBroadcastReceiver, intentFilter);
+        //自动回充提示弹窗弹出前,加载提示弹窗
+        rechargeTipDialog = new MyTipDialog(this);
+        rechargeTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.loading_title));
+        rechargeTipDialog.setTipLoadModel(true);
+        rechargeTipDialog.show();
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
+        //开启自动回充工作流
+        OperationUtils.startSpecialWorkFlow(1, handler);
+    }
+
+    /**
+     * 设置机器人状态为锁轴
+     */
+    private void setRobotModelCotrol() {
         //机器人工作模式状态是否为控制模式
         boolean isControlModel = SpUtils.getBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
         if (!isControlModel) { //当前不为控制模式则切换为控制模式
@@ -731,10 +759,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             moveMode.setPowerlock(1);
             EventBus.getDefault().post(moveMode);
         }
-        //关闭dds语音播报
-        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
-        //开启自动回充工作流
-        OperationUtils.startSpecialWorkFlow(1, handler);
     }
 
     private class CloseBroadcastReceiver extends BroadcastReceiver {
@@ -767,6 +791,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                     new NormalOrCountDownDialog.TipDialogYesNoListener() {
                         @Override
                         public void tipProgressChoseYes() { //启动自动回充工作流
+                            setRobotModelCotrol();
                             OperationUtils.startSpecialWorkFlow(1, handler);
                             lowBatteryTipDialog = null;
                             //首页是否有弹窗弹出
@@ -790,6 +815,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
 
                         @Override
                         public void endOfCountdown() {
+                            setRobotModelCotrol();
                             OperationUtils.startSpecialWorkFlow(1, handler);
                             lowBatteryTipDialog = null;
                             //首页是否有弹窗弹出
@@ -859,9 +885,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         rechargeTipDialog.show();
         handler.postDelayed(() -> {
             rechargeTipDialog.dismiss();
-            rechargeTipDialog=null;
+            rechargeTipDialog = null;
             RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
-        }, 1* 1000);
+        }, 3 * 1000);
         //暂停空闲操作首页计时器
         stopIntroductionTimer();
     }
@@ -870,9 +896,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
      * 取消循环院内介绍计时器
      */
     private void stopIntroductionTimer() {
-        freeOperationCountdown = 0;
+        LogUtils.d(DEFAULT_LOG_TWO, "首页无操作 计时器取消: introductionTimer是否为空   " + (introductionTimer != null));
         if (introductionTimer != null) {
-            LogUtils.d(DEFAULT_LOG_TAG, "首页无操作 计时器取消: " + freeOperationCountdown);
+            freeOperationCountdown = 0;
             //取消无操作计时器计时
             introductionTimer.cancel();
             introductionTimer = null;
@@ -1079,14 +1105,14 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case START_BLINK_ANIMATION_MSG: //启动眨眼动画
                 handler.sendEmptyMessage(START_BLINK_ANIMATION_TAG);
                 break;
+            case START_FREE_OPERATION_MSG: //
+                startFreeOperation();
+                break;
             default:
                 break;
         }
     }
 
-    public void initEndBackTodo() {
-
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(DaemonEvent daemonEvent) {

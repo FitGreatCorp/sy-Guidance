@@ -97,6 +97,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 import static com.fitgreat.airfacerobot.MyApp.getContext;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_ONE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
@@ -112,6 +113,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_STATE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_ACTION_ID;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
@@ -126,6 +128,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_SPEAK_TEXT;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_START_INIT_VOICE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_STOP_MOVE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TASK_END;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TASK_STATUS_FINISHED;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_TTS_SHOW_DIALOG;
@@ -345,6 +348,7 @@ public class RobotBrainService extends Service {
     }
 
     private int checkBatteryTime = 0;
+    private boolean isFirstTipLowPowerTag = true;
 
     /**
      * 定时器广播
@@ -369,16 +373,16 @@ public class RobotBrainService extends Service {
                     //电量小于20%弹窗提示
                     int batteryInt = Integer.parseInt(getBattery());
                     if (batteryInt != 0 && batteryInt < 20) {
-                        checkBatteryTime++;
-                        LogUtils.d(DEFAULT_LOG_TAG, "  当前电量过低弹窗提示冲电,  " + batteryInt + "  时间次数,  " + checkBatteryTime + " ,机器人状态, " + RobotInfoUtils.getRobotRunningStatus());
-                        if (checkBatteryTime == 3600 && !RobotInfoUtils.getRobotRunningStatus().equals("5")) {
+                        if (isFirstTipLowPowerTag && (!RobotInfoUtils.getRobotRunningStatus().equals("5"))) {
+                            isFirstTipLowPowerTag = false;
                             EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
-                            checkBatteryTime = 0;
+                        } else if (!RobotInfoUtils.getRobotRunningStatus().equals("5")) {
+                            if (checkBatteryTime == 900) {
+                                checkBatteryTime = 0;
+                                EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
+                            }
                         }
-//                        if (checkBatteryTime == 60 && !RobotInfoUtils.getRobotRunningStatus().equals("5")) {
-//                            EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
-//                            checkBatteryTime = 0;
-//                        }
+                        checkBatteryTime++;
                     }
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -474,14 +478,14 @@ public class RobotBrainService extends Service {
                     if (!isTerminal) {
                         handler.postDelayed(() -> {
                             playShowContent(appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_failed_tip_two)));
-                        }, 1000);
+                        }, 500);
                     }
                     //本次导航任务失败,重试三次
                     if (navigationTimes < 3 && navigation_failed_retry_tag) {
                         navigationTimes++;
                         handler.postDelayed(() -> {
                             playShowContent(appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_two)));
-                        }, 500);
+                        }, 2000);
                         ExecutorManager.getInstance().executeTask(() -> {
                             jRos.op_setAutoMove((byte) 1, Double.valueOf(currentNavigationX), Double.valueOf(currentNavigationY), Double.valueOf(currentNavigationZ));
                             instruction_status = "1";
@@ -503,20 +507,24 @@ public class RobotBrainService extends Service {
                                 tipRechargingDialog.dismiss();
                                 tipRechargingDialog = null;
                             }
-                            //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我带我去充电"
-                            handler.postDelayed(() -> {
-                                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.take_charge_tip)));
-                            }, 1000);
-                            handler.postDelayed(() -> {
-                                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.take_charge_tip)));
-                            }, 2000);
+                            if (navigation_failed_retry_tag) {
+                                //最终不能导航移动连续两次语音提示  "护士姐姐请帮帮我带我去充电"
+                                handler.postDelayed(() -> {
+                                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.take_charge_tip)));
+                                }, 1000);
+                                handler.postDelayed(() -> {
+                                    EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.take_charge_tip)));
+                                }, 2000);
+                            }
                         } else {
                             //关闭导航提示弹窗
                             if (navigationIngDialog != null) {
                                 navigationIngDialog.dismiss();
                                 navigationIngDialog = null;
                             }
-                            EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.prompt_task_exception)));
+                            handler.postDelayed(() -> {
+                                EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.prompt_task_exception)));
+                            }, 1000);
                         }
                     }
                     break;
@@ -738,6 +746,21 @@ public class RobotBrainService extends Service {
                             e.printStackTrace();
                             LogUtils.e(DEFAULT_LOG_TAG, "连续获取机器人电量异常:  " + e.getMessage());
                         }
+
+
+                        //电量小于20%弹窗提示
+//                        String batteryString = String.valueOf(jRos.getRobotState().percentage);
+//                        int batteryInt = Integer.parseInt(batteryString);
+//                        if (batteryInt != 0 && batteryInt < 20) {
+////                        LogUtils.d(DEFAULT_LOG_TAG, "  当前电量过低弹窗提示冲电,  " + batteryInt + "  时间次数,  " + checkBatteryTime + " ,机器人状态, " + RobotInfoUtils.getRobotRunningStatus());
+//                            if (!RobotInfoUtils.getRobotRunningStatus().equals("5")) {
+//                                if (checkBatteryTime == 900) {
+//                                    checkBatteryTime = 0;
+//                                    EventBus.getDefault().post(new InitEvent(RobotConfig.PROMPT_ROBOT_RECHARGE, ""));
+//                                }
+//                            }
+//                            checkBatteryTime++;
+//                        }
                     }
                 };
                 batteryTimer.scheduleAtFixedRate(batteryTimerTask, 0, 1000);
@@ -848,6 +871,18 @@ public class RobotBrainService extends Service {
                 break;
             case MSG_RETRY_INIT_SIGNAL:
                 signalManager.getRobotToken();
+                break;
+            case RobotConfig.UPDATE_ROBOT_STATE_TAG: //更新机器人信息
+//                LogUtils.d(DEFAULT_LOG_TAG, " UPDATE_ROBOT_STATE_TAG 机器人状态 : " + initEvent.getAction() + " : Battery : " + getBattery());
+                BusinessRequest.updateRobotState(getBattery(), initEvent.getAction(), new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                    }
+                });
                 break;
         }
     }
@@ -1133,8 +1168,12 @@ public class RobotBrainService extends Service {
                 break;
             case MSG_INSTRUCTION_STATUS_FINISHED:  //终止当前任务
                 instruction_status = signalDataEvent.getAction();
-                LogUtils.d(DEFAULT_LOG_TAG, "视频,pdf,text文本播放结束/终止 !!!!!!!!   instruction_status = " + instruction_status + ", InstructionId =" + signalDataEvent.getInstructionId());
                 BusinessRequest.UpdateInstructionStatue(signalDataEvent.getInstructionId(), instruction_status, updateInstructionCallback);
+                break;
+            case MSG_TASK_STATUS_FINISHED:  //终止视频  txt pdf播放任务 TODO  不继续插下一步
+                instruction_status = signalDataEvent.getAction();
+                LogUtils.d(DEFAULT_LOG_TAG, "视频,pdf,text文本播放结束/终止 !!!!!!!!   instruction_status = " + instruction_status + ", InstructionId =" + signalDataEvent.getInstructionId());
+                BusinessRequest.UpdateInstructionStatue(signalDataEvent.getInstructionId(), instruction_status, endUpdateInstructionCallback);
                 break;
             case ROS_MSG_ROBOT_POSITION:
                 String position_x = String.valueOf(signalDataEvent.getPosition_X());
@@ -1305,6 +1344,13 @@ public class RobotBrainService extends Service {
         tipRechargingDialog.setTipDialogSelectListener(MvpBaseActivity.getActivityContext().getString(R.string.termination_bt_text), new MyTipDialog.TipDialogSelectListener() {
             @Override
             public void tipSelect() {
+                boolean freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+                LogUtils.d(DEFAULT_LOG_ONE, "空闲操作工作流启动状态 自动回充工作流  freeOperationStartTag== " + freeOperationStartTag);
+                if (freeOperationStartTag) { //空闲操作标签重置
+                    SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+                    //启动计时器 等待空闲操作
+                    EventBus.getDefault().post(new InitEvent(RobotConfig.START_FREE_OPERATION_MSG, ""));
+                }
                 LogUtils.d(DEFAULT_LOG_TAG, "终止自动回充任务");
                 //首页是否有弹窗弹出
                 SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, false);
@@ -1419,8 +1465,7 @@ public class RobotBrainService extends Service {
         @Override
         public void onAvailable(Network network) {
             super.onAvailable(network);
-            LogUtils.d(TAG, "network = " + network.toString());
-            LogUtils.d(TAG, "-------onAvailable: network--------ip:" + NetworkUtils.getLocalIpAddress(getApplication()));
+            LogUtils.d(DEFAULT_LOG_TAG, "network = " + network.toString());
             /*网络可用，开始初始化服务*/
             if (handler.hasMessages(NET_DELAY_INIT)) {
                 handler.removeMessages(NET_DELAY_INIT);
@@ -1444,7 +1489,7 @@ public class RobotBrainService extends Service {
         @Override
         public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
             super.onCapabilitiesChanged(network, networkCapabilities);
-            LogUtils.d(TAG, "-----onCapabilitiesChanged----" + networkCapabilities.toString());
+            LogUtils.d(DEFAULT_LOG_TAG, "-----onCapabilitiesChanged----" + networkCapabilities.toString());
             if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
                 if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                     Log.d(TAG, "onCapabilitiesChanged: 网络类型为wifi");
@@ -1472,7 +1517,7 @@ public class RobotBrainService extends Service {
         @Override
         public void onLost(Network network) {
             super.onLost(network);
-            LogUtils.d(TAG, "-----------onLost: network");
+            LogUtils.d(DEFAULT_LOG_TAG, "-----------onLost: network------------------");
             Intent intent = new Intent();
             intent.setAction(NETWORK_CONNECTION_CHECK_FAILURE);
             sendBroadcast(intent);
@@ -1504,6 +1549,8 @@ public class RobotBrainService extends Service {
             String result = response.body().string();
             LogUtils.d(DEFAULT_LOG_TAG, "updateInstructionCallback result =   " + result);
             string_hello = SpUtils.getString(RobotBrainService.this, "hello_string", "Hi");
+            //空闲操作工作流启动状态
+
             try {
                 JSONObject baseResult = new JSONObject(result);
                 if (baseResult.has("type")) {
@@ -1602,7 +1649,115 @@ public class RobotBrainService extends Service {
             }
         }
     };
+    /**
+     * 返回更新指令信息的结果
+     */
+    private Callback endUpdateInstructionCallback = new Callback() {
+        @Override
+        public void onFailure(Call call, IOException e) {
+            LogUtils.e(DEFAULT_LOG_TAG, "onFailure : " + e.toString());
+        }
 
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            String result = response.body().string();
+            LogUtils.d(DEFAULT_LOG_TAG, "updateInstructionCallback result =   " + result);
+            string_hello = SpUtils.getString(RobotBrainService.this, "hello_string", "Hi");
+            try {
+                JSONObject baseResult = new JSONObject(result);
+                if (baseResult.has("type")) {
+                    String type = baseResult.getString("type");
+                    if (type.equals("success")) {
+                        JSONObject jsonObject1 = new JSONObject();
+                        jsonObject1.put("Type", "Tips");
+                        jsonObject1.put("Result", "UpdateInstructionStatue");
+                        String json = jsonObject1.toString();
+                        signalManager.invokeToAllSendMessage(json);
+                        LogUtils.d(DEFAULT_LOG_TAG, "fileUrl,  " + fileUrl + ", instruction_status,   " + instruction_status + "  ,prodiceId,  " + produceId + "  ,operationtype,  " + operationType + "  ,instructionType,  " + instructionType);
+                        if (instruction_status.equals("1")) {
+                            saveRobotstatus(3);
+                            switch (instructionType) {
+                                case "Location":
+                                    taskVideoCall = false;
+                                    break;
+                                case "Check":
+                                    break;
+                                case "Operation":  //TODO 更新任务指令 执行操作
+                                    if (operationType.equals("2")) {
+                                        //点击宣教播放按钮后切换机器人为  操作中状态
+                                        saveRobotstatus(3);
+                                        Intent videoIntent = new Intent(RobotBrainService.this, VideoPlayActivity.class);
+                                        videoIntent.putExtra("container", container);
+                                        videoIntent.putExtra("blob", fileUrl);
+                                        videoIntent.putExtra("enBlob", enFileUrl);
+                                        videoIntent.putExtra("instructionId", instructionId);
+                                        videoIntent.putExtra("status", instruction_status);
+                                        videoIntent.putExtra("instructionName", instructionName);
+                                        videoIntent.putExtra("instructionEnName", instructionEnName);
+                                        videoIntent.putExtra("F_Type", instructionType);
+                                        videoIntent.putExtra("operationType", operationType);
+                                        videoIntent.putExtra("operationProcedureId", produceId);
+                                        handler.postDelayed(() -> startActivity(videoIntent), 2000);
+                                        LogUtils.d(DEFAULT_LOG_TAG, "开始播放视频任务\t\t");
+                                    } else if (operationType.equals("3")) {
+                                        Intent pdfIntent = new Intent(RobotBrainService.this, PdfPlayActivity.class);
+                                        pdfIntent.putExtra("container", container);
+                                        pdfIntent.putExtra("blob", fileUrl);
+                                        pdfIntent.putExtra("enBlob", enFileUrl);
+                                        pdfIntent.putExtra("instructionId", instructionId);
+                                        pdfIntent.putExtra("instructionName", instructionName);
+                                        pdfIntent.putExtra("instructionEnName", instructionEnName);
+                                        pdfIntent.putExtra("status", instruction_status);
+                                        pdfIntent.putExtra("F_Type", instructionType);
+                                        pdfIntent.putExtra("operationType", operationType);
+                                        pdfIntent.putExtra("operationProcedureId", produceId);
+                                        handler.postDelayed(() -> startActivity(pdfIntent), 2000);
+                                        LogUtils.d(DEFAULT_LOG_TAG, "开始播放pdf资料任务\t\t");
+                                    } else if (operationType.equals("4")) {
+                                        if (TextUtils.isEmpty(fileUrl)) {
+                                            instruction_status = "-1";
+                                            BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                                            return;
+                                        } else {
+                                            Intent textIntent = new Intent(RobotBrainService.this, TextPlayActivity.class);
+                                            textIntent.putExtra("container", container);
+                                            textIntent.putExtra("blob", fileUrl);
+                                            textIntent.putExtra("enBlob", enFileUrl);
+                                            textIntent.putExtra("instructionId", instructionId);
+                                            textIntent.putExtra("instructionName", instructionName);
+                                            textIntent.putExtra("instructionEnName", instructionEnName);
+                                            textIntent.putExtra("status", instruction_status);
+                                            textIntent.putExtra("F_Type", instructionType);
+                                            textIntent.putExtra("operationType", operationType);
+                                            textIntent.putExtra("operationProcedureId", produceId);
+                                            startActivity(textIntent);
+                                        }
+                                        LogUtils.d(DEFAULT_LOG_TAG, "开始播放text文本任务\t\t" + fileUrl);
+                                    } else if (operationType.equals("5")) {
+                                        taskVideoCall = false;
+                                        jRos.op_runParking((byte) 1);
+                                        handler.postDelayed(() -> playShowContent(MvpBaseActivity.getActivityContext().getString(R.string.charging_prompt)), 2000);
+                                    } else if (operationType.equals("6")) {
+                                        taskVideoCall = true;
+                                        instruction_status = "2";
+                                        BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else if (instruction_status.equals("2") || instruction_status.equals("4")) {
+                            LogUtils.d(DEFAULT_LOG_TAG, "开始获取下一步操作任务, " + isTerminal + " produceId," + produceId);
+                        } else if (instruction_status.equals("-1")) {
+                            BusinessRequest.stopOperateTask(produceId, "3", stopTaskCallback);
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    };
     /**
      * 返回获取的下一步操作信息
      */
@@ -1655,6 +1810,12 @@ public class RobotBrainService extends Service {
                         } else if (instructionType.equals("End")) {
                             //工作流结束后机器人当前状态为空闲
                             RobotInfoUtils.setRobotRunningStatus("1");
+                            boolean freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+                            if (freeOperationStartTag) { //空闲操作标签重置
+                                SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+                                //启动计时器 等待空闲操作
+                                EventBus.getDefault().post(new InitEvent(RobotConfig.START_FREE_OPERATION_MSG, ""));
+                            }
                         } else {
                             if (!taskVideoCall) {
                                 JSONObject jsonObject1 = new JSONObject();

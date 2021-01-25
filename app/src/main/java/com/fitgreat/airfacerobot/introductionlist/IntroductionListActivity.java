@@ -1,8 +1,10 @@
 package com.fitgreat.airfacerobot.introductionlist;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
@@ -31,6 +33,9 @@ import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.IntroductionView;
 import com.fitgreat.airfacerobot.launcher.widget.RoundImageView;
+import com.fitgreat.airfacerobot.mediaplayer.PdfPlayActivity;
+import com.fitgreat.airfacerobot.mediaplayer.TextPlayActivity;
+import com.fitgreat.airfacerobot.mediaplayer.VideoPlayActivity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
@@ -46,6 +51,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_THREE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 
 /**
@@ -62,6 +68,9 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
     RoundImageView introduction_list_one_item_one_back_image;
     @BindView(R.id.introduction_list_one_item_one_kind_image)
     ImageView introduction_list_one_item_one_kind_image;
+    @BindView(R.id.introduction_list_one_item_one_kind_image_one)
+    ImageView introduction_list_one_item_one_kind_image_one;
+
     @BindView(R.id.introduction_list_one_item_one_title)
     TextView introduction_list_one_item_one_title;
     @BindView(R.id.introduction_list_two_linearLayout)
@@ -70,32 +79,58 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
     RoundImageView introduction_list_two_item_one_back_image;
     @BindView(R.id.introduction_list_two_item_one_kind_image)
     ImageView introduction_list_two_item_one_kind_image;
+    @BindView(R.id.introduction_list_two_item_one_kind_image_one)
+    ImageView introduction_list_two_item_one_kind_image_one;
+
+
     @BindView(R.id.introduction_list_two_item_one_title)
     TextView introduction_list_two_item_one_title;
     @BindView(R.id.introduction_list_two_item_two_back_image)
     RoundImageView introduction_list_two_item_two_back_image;
     @BindView(R.id.introduction_list_two_item_two_kind_image)
     ImageView introduction_list_two_item_two_kind_image;
+    @BindView(R.id.introduction_list_two_item_two_kind_image_one)
+    ImageView introduction_list_two_item_two_kind_image_one;
+
+
     @BindView(R.id.introduction_list_two_item_two_title)
     TextView introduction_list_two_item_two_title;
     @BindView(R.id.introduction_list_three_linearLayout)
     LinearLayout introduction_list_three_linearLayout;
     @BindView(R.id.introduction_list_three_item_one_back_image)
     RoundImageView introduction_list_three_item_one_back_image;
+
+
     @BindView(R.id.introduction_list_three_item_one_kind_image)
     ImageView introduction_list_three_item_one_kind_image;
+    @BindView(R.id.introduction_list_three_item_one_kind_image_one)
+    ImageView introduction_list_three_item_one_kind_image_one;
+
+
     @BindView(R.id.introduction_list_three_item_one_title)
     TextView introduction_list_three_item_one_title;
     @BindView(R.id.introduction_list_three_item_two_back_image)
     RoundImageView introduction_list_three_item_two_back_image;
+
+
     @BindView(R.id.introduction_list_three_item_two_kind_image)
     ImageView introduction_list_three_item_two_kind_image;
+    @BindView(R.id.introduction_list_three_item_two_kind_image_one)
+    ImageView introduction_list_three_item_two_kind_image_one;
+
+
     @BindView(R.id.introduction_list_three_item_two_title)
     TextView introduction_list_three_item_two_title;
     @BindView(R.id.introduction_list_three_item_three_back_image)
     RoundImageView introduction_list_three_item_three_back_image;
+
+
     @BindView(R.id.introduction_list_three_item_three_kind_image)
     ImageView introduction_list_three_item_three_kind_image;
+    @BindView(R.id.introduction_list_three_item_three_kind_image_one)
+    ImageView introduction_list_three_item_three_kind_image_one;
+
+
     @BindView(R.id.introduction_list_three_item_three_title)
     TextView introduction_list_three_item_three_title;
     @BindView(R.id.introduction_list_one_constraintLayout)
@@ -176,10 +211,24 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                         ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.no_en_file_tip));
                         return;
                     } else {
-                        taskTipDialog();
-                        mPresenter.startOperationTask(operationInfo);
+                        Intent intent = null;
+                        if (operationInfo.getF_Type().equals("2")) {
+                            intent = new Intent(IntroductionListActivity.this, VideoPlayActivity.class);
+                        }
+                        if (operationInfo.getF_Type().equals("3")) {
+                            intent = new Intent(IntroductionListActivity.this, PdfPlayActivity.class);
+                        }
+                        if (operationInfo.getF_Type().equals("4")) {
+                            intent = new Intent(this, TextPlayActivity.class);
+                        }
+                        LogUtils.json(DEFAULT_LOG_TAG,JSON.toJSONString(operationInfo));
+                        intent.putExtra("F_FileUrl", operationInfo.getF_FileUrl());
+                        intent.putExtra("F_EFileUrl", operationInfo.getF_EFileUrl());
+                        intent.putExtra("F_Name", operationInfo.getF_Name());
+                        intent.putExtra("F_EName", operationInfo.getF_EName());
+                        intent.putExtra("taskKind", "download");
+                        startActivity(intent);
                     }
-                    LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(operationInfo));
                 });
                 introductionListRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
                 introductionListRecyclerView.addItemDecoration(new SpacesItemDecoration(20));
@@ -187,23 +236,23 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
             } else if (operationInfoList.size() == 1) {
                 introductionListOneLinearLayout.setVisibility(View.VISIBLE);
                 mLinearLayoutNoData.setVisibility(View.GONE);
-                loadIntroductionData(operationInfoList.get(0), introduction_list_one_item_one_back_image, introduction_list_one_item_one_kind_image, introduction_list_one_item_one_title);
+                loadIntroductionData(operationInfoList.get(0), introduction_list_one_item_one_back_image, introduction_list_one_item_one_kind_image, introduction_list_one_item_one_kind_image, introduction_list_one_item_one_title);
                 itemClickEvent(operationInfoList, introduction_list_one_constraintLayout, 0);
             } else if (operationInfoList.size() == 2) {
                 introduction_list_two_linearLayout.setVisibility(View.VISIBLE);
                 mLinearLayoutNoData.setVisibility(View.GONE);
-                loadIntroductionData(operationInfoList.get(0), introduction_list_two_item_one_back_image, introduction_list_two_item_one_kind_image, introduction_list_two_item_one_title);
+                loadIntroductionData(operationInfoList.get(0), introduction_list_two_item_one_back_image, introduction_list_two_item_one_kind_image, introduction_list_two_item_one_kind_image_one, introduction_list_two_item_one_title);
                 itemClickEvent(operationInfoList, introduction_list_two_item_one_constraintLayout, 0);
-                loadIntroductionData(operationInfoList.get(1), introduction_list_two_item_two_back_image, introduction_list_two_item_two_kind_image, introduction_list_two_item_two_title);
+                loadIntroductionData(operationInfoList.get(1), introduction_list_two_item_two_back_image, introduction_list_two_item_two_kind_image, introduction_list_two_item_two_kind_image_one, introduction_list_two_item_two_title);
                 itemClickEvent(operationInfoList, introduction_list_two_item_two_constraintLayout, 1);
             } else if (operationInfoList.size() == 3) {
                 introduction_list_three_linearLayout.setVisibility(View.VISIBLE);
                 mLinearLayoutNoData.setVisibility(View.GONE);
-                loadIntroductionData(operationInfoList.get(0), introduction_list_three_item_one_back_image, introduction_list_three_item_one_kind_image, introduction_list_three_item_one_title);
+                loadIntroductionData(operationInfoList.get(0), introduction_list_three_item_one_back_image, introduction_list_three_item_one_kind_image, introduction_list_three_item_one_kind_image_one, introduction_list_three_item_one_title);
                 itemClickEvent(operationInfoList, introduction_list_three_item_one_constraintLayout, 0);
-                loadIntroductionData(operationInfoList.get(1), introduction_list_three_item_two_back_image, introduction_list_three_item_two_kind_image, introduction_list_three_item_two_title);
+                loadIntroductionData(operationInfoList.get(1), introduction_list_three_item_two_back_image, introduction_list_three_item_two_kind_image, introduction_list_three_item_two_kind_image_one, introduction_list_three_item_two_title);
                 itemClickEvent(operationInfoList, introduction_list_three_item_two_constraintLayout, 1);
-                loadIntroductionData(operationInfoList.get(2), introduction_list_three_item_three_back_image, introduction_list_three_item_three_kind_image, introduction_list_three_item_three_title);
+                loadIntroductionData(operationInfoList.get(2), introduction_list_three_item_three_back_image, introduction_list_three_item_three_kind_image, introduction_list_three_item_three_kind_image_one, introduction_list_three_item_three_title);
                 itemClickEvent(operationInfoList, introduction_list_three_item_three_constraintLayout, 2);
             }
         } else {
@@ -239,8 +288,25 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                 ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.no_en_file_tip));
                 return;
             } else {
-                taskTipDialog();
-                mPresenter.startOperationTask(operationInfoList.get(i));
+//                taskTipDialog();
+//                mPresenter.startOperationTask(operationInfoList.get(i));
+                Intent intent = null;
+                if (operationInfoList.get(i).getF_Type().equals("2")) {
+                    intent = new Intent(IntroductionListActivity.this, VideoPlayActivity.class);
+                }
+                if (operationInfoList.get(i).getF_Type().equals("3")) {
+                    intent = new Intent(IntroductionListActivity.this, PdfPlayActivity.class);
+                }
+                if (operationInfoList.get(i).getF_Type().equals("4")) {
+                    intent = new Intent(this, TextPlayActivity.class);
+                }
+                LogUtils.json(DEFAULT_LOG_TAG,JSON.toJSONString(operationInfoList.get(i)));
+                intent.putExtra("F_FileUrl", operationInfoList.get(i).getF_FileUrl());
+                intent.putExtra("F_EFileUrl", operationInfoList.get(i).getF_EFileUrl());
+                intent.putExtra("F_Name", operationInfoList.get(i).getF_Name());
+                intent.putExtra("F_EName", operationInfoList.get(i).getF_EName());
+                intent.putExtra("taskKind", "download");
+                startActivity(intent);
             }
         });
     }
@@ -248,14 +314,16 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
     /**
      * 加载数据 (数据只有1条 2条  3条时加载显示)
      */
-    private void loadIntroductionData(OperationInfo operationInfo, ImageView backImageView, ImageView kindImageView, TextView titleView) {
+    private void loadIntroductionData(OperationInfo operationInfo, ImageView backImageView, ImageView videoKindImageView, ImageView otherKindImageView, TextView titleView) {
         if (currentLanguage.equals("zh") && !("null".equals(operationInfo.getF_Name()))) {
             titleView.setText(operationInfo.getF_Name());
         } else if (currentLanguage.equals("en") && !("null".equals(operationInfo.getF_EName()))) {
             titleView.setText(operationInfo.getF_EName());
         }
         if (operationInfo.getF_Type().equals("2")) {
-            kindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_video));
+            videoKindImageView.setVisibility(View.VISIBLE);
+            otherKindImageView.setVisibility(View.GONE);
+            videoKindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_video));
             //加载介绍图片,如果服务端没有设置显示默认图片
             if (("null".equals(operationInfo.getF_DescImg()))) {
                 backImageView.setImageDrawable(getDrawable(R.drawable.img_play_video));
@@ -263,7 +331,9 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                 Glide.with(this).load(operationInfo.getF_DescImg()).into(backImageView);
             }
         } else if (operationInfo.getF_Type().equals("3")) {
-            kindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_ppt));
+            videoKindImageView.setVisibility(View.GONE);
+            otherKindImageView.setVisibility(View.VISIBLE);
+            otherKindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_ppt));
             //加载介绍图片,如果服务端没有设置显示默认图片
             if (("null".equals(operationInfo.getF_DescImg()))) {
                 backImageView.setImageDrawable(getDrawable(R.drawable.img_play_ppt));
@@ -271,7 +341,9 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                 Glide.with(this).load(operationInfo.getF_DescImg()).into(backImageView);
             }
         } else if (operationInfo.getF_Type().equals("4")) {
-            kindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_word));
+            videoKindImageView.setVisibility(View.GONE);
+            otherKindImageView.setVisibility(View.VISIBLE);
+            otherKindImageView.setImageDrawable(getDrawable(R.drawable.ic_introduction_word));
             //加载介绍图片,如果服务端没有设置显示默认图片
             if (("null".equals(operationInfo.getF_DescImg()))) {
                 backImageView.setImageDrawable(getDrawable(R.drawable.img_play_txt));

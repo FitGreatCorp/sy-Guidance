@@ -140,7 +140,6 @@ public class IntroductionListPresenter extends BasePresenterImpl<IntroductionLis
      * 发起操作任务
      */
     public void startOperationTask(OperationInfo operationInfo) {
-
         JSONArray operationList = new JSONArray();
         JSONArray instructionList = new JSONArray();
         //添加操作任务

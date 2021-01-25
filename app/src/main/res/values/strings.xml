@@ -68,7 +68,7 @@
     <string name="nurse_desk_title">护士台</string>
     <string name="pharmacy_title">药房</string>
     <string name="restroom_title">洗手间</string>
-    <string name="home_prompt_text">您好，我是小白，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。</string>
+    <string name="home_prompt_text">您好，我是小灰，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。</string>
     <string name="common_problem_title">常见问题</string>
     <string name="prompt_no_navigation">该地点不在我设定位置里,可以说个我知道的地点带你去哦。</string>
     <string name="emergency_click_prompt">抱歉我的急停按钮已启动，无法执行该任务。</string>

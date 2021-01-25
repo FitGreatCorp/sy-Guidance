@@ -142,6 +142,8 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         super.onPause();
         //选择导航页面是否显示标志
         SpUtils.putBoolean(MyApp.getContext(), NAVIGATION_PAGE_WHETHER_SHOW, false);
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
     }
 
     @Override

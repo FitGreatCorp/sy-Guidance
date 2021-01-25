@@ -165,10 +165,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         mPresenter.getQuestionList();
         //启动语音唤醒,打开one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
-        //启动机器人动画
-//        animationDrawable = (AnimationDrawable) commonProblemRobotImage.getBackground();
-//        animationDrawable.start();
-//        mCommonProblemTitle.setBackKListener(this);
+        mCommonProblemTitle.setBackKListener(this);
     }
 
     @Override
@@ -183,6 +180,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     @Override
     protected void onPause() {
         super.onPause();
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
         //退出常见问题模块
         SpUtils.putBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, false);
         //常见问题条目选中编号回复原始值
@@ -212,6 +211,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void disconnectNetWork() {
+        LogUtils.d(DEFAULT_LOG_TAG,"常见问题页面断网");
         RouteUtils.goToActivity(CommonProblemActivity.this, RobotInitActivity.class);
         //机器人状态切换为停机离线状态
         RobotInfoUtils.setRobotRunningStatus("0");

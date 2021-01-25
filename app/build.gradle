@@ -99,6 +99,8 @@ dependencies {
     implementation rootProject.ext.dependencies["support"]["constraint-layout"]
     implementation rootProject.ext.dependencies["inject"]["butterknife"]
     implementation files('libs/lib-robot-java-0.1.7.jar')
+    implementation files('libs/agora-rtc-sdk.jar')
+    implementation files('libs/pinyin4j-2.5.0.jar')
     annotationProcessor rootProject.ext.dependencies["inject"]["butterknife-compiler"]
     implementation rootProject.ext.dependencies["room"]
     annotationProcessor rootProject.ext.dependencies["room-compiler"]

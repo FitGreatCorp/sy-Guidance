@@ -15,14 +15,16 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+
 public class MyCrashHandler implements Thread.UncaughtExceptionHandler {
     private static final String TAG = "MyCrashHandler";
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        LogUtils.e(TAG, "Thread = " + t.getName() + "\nThrowable = " + e.getMessage());
+        LogUtils.e(DEFAULT_LOG_TAG, "Thread = " + t.getName() + "\nThrowable = " + e.getMessage());
         String stackTraceInfo = getStackTraceInfo(e);
-        LogUtils.e(TAG, stackTraceInfo);
+        LogUtils.e(DEFAULT_LOG_TAG, stackTraceInfo);
         saveThrowableMessage(stackTraceInfo);
     }
 
@@ -55,7 +57,7 @@ public class MyCrashHandler implements Thread.UncaughtExceptionHandler {
         if (TextUtils.isEmpty(errorMessage)) {
             return;
         }
-        LogUtils.e(TAG,errorMessage);
+        LogUtils.e(DEFAULT_LOG_TAG,errorMessage);
         OperationUtils.saveSpecialLog("DangerError", errorMessage);
         try {
             Thread.sleep(2*3000);
@@ -76,7 +78,7 @@ public class MyCrashHandler implements Thread.UncaughtExceptionHandler {
                     outputStream.write(bytes, 0, len);
                 }
                 outputStream.flush();
-                LogUtils.e(TAG, "写入本地文件成功：" + file.getAbsolutePath());
+                LogUtils.e(DEFAULT_LOG_TAG, "写入本地文件成功：" + file.getAbsolutePath());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {

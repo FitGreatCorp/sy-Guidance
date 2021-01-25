@@ -42,6 +42,8 @@ public class DownloadUtils {
     public final static int DOWNLOAD_SUCCESS = 1001;
     public final static int DOWNLOAD_FAILED = 1002;
     public final static String DOWNLOAD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/";
+    public final static String DOWNLOAD_PATH_ONE = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download/one/";
+
     public final static String DOWNLOAD_CAMERA = Environment.getExternalStorageDirectory().getPath() + "/DCIM/";
     private final static String TAG = DownloadUtils.class.getSimpleName();
     private static String stepId;

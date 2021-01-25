@@ -11,9 +11,12 @@ import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
+
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 
 /**
@@ -42,22 +45,30 @@ public class IntroductionProcessAdapter extends BaseQuickAdapter<OperationInfo, 
         if (!("null".equals(operationInfo.getF_DescImg()))) {
             Glide.with(mContext).load(operationInfo.getF_DescImg()).into(mainIntroductionProcessImage);
         }
-        //院内介绍默认logo,种类logo加载(种类分 视频  ppt  txt文本)
+        //院内介绍默认logo,种类logo加载(种类分 视频)
         ImageView introductionProcessKindImage = (ImageView) baseViewHolder.getView(R.id.introduction_process_kind_image);
+        //院内介绍默认logo,种类logo加载(种类分  ppt  txt文本)
+        ImageView introductionProcessKindImage0ne = (ImageView) baseViewHolder.getView(R.id.introduction_process_kind_image_one);
         if (operationInfo.getF_Type().equals("2")) {
             introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_video));
+            baseViewHolder.setVisible(R.id.introduction_process_kind_image,true);
+            baseViewHolder.setGone(R.id.introduction_process_kind_image_one,true);
             //服务端没有配置院内介绍列表视频展示图片时,加载默认图片
             if (("null".equals(operationInfo.getF_DescImg()))) {
                 mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_play_video));
             }
         } else if (operationInfo.getF_Type().equals("3")) {
-            introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_ppt));
+            baseViewHolder.setVisible(R.id.introduction_process_kind_image_one,true);
+            baseViewHolder.setGone(R.id.introduction_process_kind_image,true);
+            introductionProcessKindImage0ne.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_ppt));
             //服务端没有配置院内介绍列表ppt展示图片时,加载默认图片
             if (("null".equals(operationInfo.getF_DescImg()))) {
                 mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_play_ppt));
             }
         } else if (operationInfo.getF_Type().equals("4")) {
-            introductionProcessKindImage.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_word));
+            baseViewHolder.setVisible(R.id.introduction_process_kind_image_one,true);
+            baseViewHolder.setGone(R.id.introduction_process_kind_image,true);
+            introductionProcessKindImage0ne.setImageDrawable(mContext.getDrawable(R.drawable.ic_introduction_word));
             //服务端没有配置院内介绍列表ppt展示图片时,加载默认图片
             if (("null".equals(operationInfo.getF_DescImg()))) {
                 mainIntroductionProcessImage.setImageDrawable(mContext.getDrawable(R.drawable.img_play_txt));
