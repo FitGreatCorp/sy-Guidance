@@ -99,6 +99,7 @@ import okhttp3.Response;
 import static com.fitgreat.airfacerobot.MyApp.getContext;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_ONE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TWO;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_CONTENT;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_NO;
 import static com.fitgreat.airfacerobot.constants.Constants.DIALOG_TITLE;
@@ -1620,7 +1621,8 @@ public class RobotBrainService extends Service {
                                             textIntent.putExtra("operationProcedureId", produceId);
                                             startActivity(textIntent);
                                         }
-                                        LogUtils.d(DEFAULT_LOG_TAG, "开始播放text文本任务\t\t" + fileUrl);
+                                        LogUtils.d(DEFAULT_LOG_TWO, "开始播放text文本任务\t\t" + fileUrl);
+                                        LogUtils.d(DEFAULT_LOG_TWO, "开始播放text文本任务\t\t" + enFileUrl);
                                     } else if (operationType.equals("5")) {
                                         taskVideoCall = false;
                                         jRos.op_runParking((byte) 1);

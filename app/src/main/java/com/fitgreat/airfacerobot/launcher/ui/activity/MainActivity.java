@@ -330,8 +330,6 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             }
         }
     };
-    private boolean mainPageShowTag;
-
 
     @Override
     public int getLayoutResource() {
@@ -630,9 +628,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         introductionTimerTask = new TimerTask() {
             @Override
             public void run() {
-                LogUtils.d(DEFAULT_LOG_TWO, "空闲操作工作流启动倒计时 :  " + freeOperationCountdown);
+//                LogUtils.d(DEFAULT_LOG_TWO, "空闲操作工作流启动倒计时 :  " + freeOperationCountdown);
                 freeOperationCountdown++;
-                if (freeOperationCountdown == 310) {
+                if (freeOperationCountdown == 300) {
                     freeOperationCountdown = 0;
                     String currentFreeOperation = SpUtils.getString(MyApp.getContext(), CURRENT_FREE_OPERATION, "null");
                     if (!"null".equals(currentFreeOperation)) {

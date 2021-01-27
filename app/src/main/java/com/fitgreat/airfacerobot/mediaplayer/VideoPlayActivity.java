@@ -171,23 +171,23 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
             taskKind = getIntent().getStringExtra("taskKind");
         }
         //院内介绍列表点击进入播放页面
-        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))) { //当前机器人语言为中文
+        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))&&!TextUtils.isEmpty(taskKind)) { //当前机器人语言为中文
             mVideoIntroductionTitle.setBaseTitle(F_Name);
             url = DownloadUtils.DOWNLOAD_PATH + F_Name + ".mp4";
-        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))) {
+        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))&&!TextUtils.isEmpty(taskKind)) {
             mVideoIntroductionTitle.setBaseTitle(F_EName);
             url = DownloadUtils.DOWNLOAD_PATH + F_EName + ".mp4";
         }
         LogUtils.d(DEFAULT_LOG_THREE, "taskKind=" + taskKind + ", F_EName==" + F_EName);
         //工作流进入播放页面
-        if (currentLanguage.equals("en") && !TextUtils.isEmpty(instructionEnName)) {
+        if (currentLanguage.equals("en") && TextUtils.isEmpty(taskKind)) {
             if (TextUtils.isEmpty(enBlob)) {
                 SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
                 finishInstruction("2");
                 finish();
                 return;
             }
-        } else if (currentLanguage.equals("zh") && !TextUtils.isEmpty(instructionName)) {
+        } else if (currentLanguage.equals("zh") && TextUtils.isEmpty(taskKind)) {
             if (TextUtils.isEmpty(blob)) {
                 finishInstruction("2");
                 finish();
@@ -276,6 +276,8 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
                         }
                     });
                 }
+            } else {
+                initView();
             }
         } else {
             if (currentLanguage.equals("zh")) { //当前机器人语言为中文
@@ -385,6 +387,7 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
             instructEnd.setAction(status);
             EventBus.getDefault().post(instructEnd);
         }
+        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
@@ -411,6 +414,7 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
             instructEnd.setAction(status);
             EventBus.getDefault().post(instructEnd);
         }
+        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
@@ -451,7 +455,7 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
 
     @Override
     public void back() {
-        if (TextUtils.isEmpty(taskKind)){
+        if (TextUtils.isEmpty(taskKind)) {
             freeOperationEnd();
             SignalDataEvent instruct = new SignalDataEvent();
             instruct.setType(MSG_TASK_STATUS_FINISHED);
@@ -459,6 +463,7 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
             instruct.setAction("-1");
             EventBus.getDefault().post(instruct);
         }
+        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 

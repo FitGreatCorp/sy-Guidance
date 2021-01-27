@@ -22,6 +22,7 @@ import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.constants.RobotConfig;
 import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.archmvp.base.util.LogUtils;
+import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -29,11 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_COMPLETE;
 
 
 public class SpeechManager {
     public static final String TAG = SpeechManager.class.getSimpleName();
+    private static String currentLanguage;
     private int mAuthCount = 0;
     private Context mContext;
     private static TTSEngine ttsEngine;
@@ -79,7 +82,6 @@ public class SpeechManager {
                 checkDDSReady();
             }
         }.start();
-
     }
 
     /**
@@ -98,14 +100,19 @@ public class SpeechManager {
     }
 
     /**
-     * 文字语音播报
+     * 文字语音播报   lucyfa   gdgm
      */
     public static void textTtsPlay(String textContent, String ttsId, TtsBroadcastListener ttsBroadcastListener) {
         ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         try {
             ttsEngine.setVolume(100);
-            ttsEngine.setSpeed(1.3f);
-            ttsEngine.setSpeaker("gdgm");
+            ttsEngine.setSpeed(1.2f);
+            if (currentLanguage.equals("en")) {
+                ttsEngine.setSpeaker("lucyfa");
+            }else {
+                ttsEngine.setSpeaker("zhilingf");
+            }
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
         }

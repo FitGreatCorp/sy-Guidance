@@ -195,15 +195,17 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         //根据当前系统语言显示任务名称
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //院内介绍列表点击进入播放页面
-        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))) { //当前机器人语言为中文
+        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))&& !TextUtils.isEmpty(taskKind)) { //当前机器人语言为中文
             mTextIntroductionTitle.setBaseTitle(F_Name);
             localTxtPath = DownloadUtils.DOWNLOAD_PATH + F_Name + ".txt";
-        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))) {
+        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))&& !TextUtils.isEmpty(taskKind)) {
             mTextIntroductionTitle.setBaseTitle(F_EName);
             localTxtPath = DownloadUtils.DOWNLOAD_PATH + F_EName + ".txt";
         }
         //工作流进入播放页面
-        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(instructionName))) { //当前机器人语言为中文
+        LogUtils.d(DEFAULT_LOG_TWO, "本地文本中文文件名字:" + instructionName + "---文件路径----" + blob);
+        LogUtils.d(DEFAULT_LOG_TWO, "本地文本英文文件名字:" + instructionEnName + "---文件路径----" + enBlob);
+        if (currentLanguage.equals("zh") && TextUtils.isEmpty(taskKind)) { //当前机器人语言为中文
             mTextIntroductionTitle.setBaseTitle(instructionName);
             if (TextUtils.isEmpty(blob)) {
                 SignalDataEvent instructEnd = new SignalDataEvent();
@@ -215,7 +217,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
                 return;
             }
             localTxtPath = DownloadUtils.DOWNLOAD_PATH + blob.substring(blob.lastIndexOf("/") + 1);
-        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(instructionEnName))) {
+        } else if (currentLanguage.equals("en") && TextUtils.isEmpty(taskKind)) {
             mTextIntroductionTitle.setBaseTitle(instructionEnName);
             if (TextUtils.isEmpty(enBlob)) {
                 SignalDataEvent instructEnd = new SignalDataEvent();
@@ -337,6 +339,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
             } else if (currentLanguage.equals("en")) {
                 file = new File(DownloadUtils.DOWNLOAD_PATH + enBlob);
             }
+            LogUtils.d(DEFAULT_LOG_TWO, "---工作流进入-----文字播放次数---" + file.exists() + "----" + file.getAbsolutePath());
             if (!file.exists()) {
                 if (downloadingDialog == null) {
                     downloadingDialog = new DownloadingDialog(TextPlayActivity.this);
@@ -363,9 +366,12 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
             playContent = FileUtils.readTxt(localTxtPath).trim();
             //页面展示播报文字text文件内容
             textIntroductionContent.setText(playContent);
-            playContent = playContent.replaceAll("\\p{P}", "");
-            playContent = playContent.replaceAll(" +", "");//去掉所有空格,包括首尾,中间
+            if (currentLanguage.equals("zh")){
+                playContent = playContent.replaceAll("\\p{P}", "");
+                playContent = playContent.replaceAll(" +", "");//去掉所有空格,包括首尾,中间
+            }
         }
+        LogUtils.d(DEFAULT_LOG_TWO, "--playTts-----文字播放次数---" + playContent);
         handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 12 * 1000);
         if (!TextUtils.isEmpty(playContent)) {
             //语音播报监控标号
@@ -412,7 +418,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
     }
 
     private void voicePlayEnd(String ttsId, int targetId) {
-        LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放一次播放结束---ttsId= " + ttsId+",targetId= "+targetId+",taskKind= "+taskKind);
+        LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放一次播放结束---ttsId= " + ttsId + ",targetId= " + targetId + ",taskKind= " + taskKind);
         if (TextUtils.isEmpty(taskKind)) {
             if (ttsId.equals(String.valueOf(targetId))) {
                 RobotInfoUtils.setRobotRunningStatus("1");
@@ -426,6 +432,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
             }
         } else {
             if (ttsId.equals(String.valueOf(targetId))) {
+                RobotInfoUtils.setRobotRunningStatus("1");
                 finish();
             }
         }
@@ -466,6 +473,7 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
 
     @Override
     public void back() {
+        RobotInfoUtils.setRobotRunningStatus("1");
         if (TextUtils.isEmpty(taskKind)) {
             freeOperationEnd();
             SignalDataEvent instruct = new SignalDataEvent();

@@ -193,6 +193,7 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             instructEnd.setAction(status);
             EventBus.getDefault().post(instructEnd);
         }
+        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
@@ -219,6 +220,7 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             instructEnd.setAction(status);
             EventBus.getDefault().post(instructEnd);
         }
+        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
@@ -289,21 +291,21 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
         }
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //院内介绍列表点击进入播放页面
-        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))) { //当前机器人语言为中文
+        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))&&!TextUtils.isEmpty(taskKind)) { //当前机器人语言为中文
             mPdfIntroductionTitle.setBaseTitle(F_Name);
             url = DownloadUtils.DOWNLOAD_PATH + F_Name + ".pdf";
-        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))) {
+        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))&&!TextUtils.isEmpty(taskKind)) {
             mPdfIntroductionTitle.setBaseTitle(F_EName);
             url = DownloadUtils.DOWNLOAD_PATH + F_EName + ".pdf";
         }
         //工作流进入播放页面
-        if (currentLanguage.equals("en") && !TextUtils.isEmpty(instructionEnName)) {
+        if (currentLanguage.equals("en") && TextUtils.isEmpty(taskKind)) {
             if (TextUtils.isEmpty(enBlob)) {
                 finishInstruction("2");
                 finish();
                 return;
             }
-        } else if (currentLanguage.equals("zh") && !TextUtils.isEmpty(instructionName)) {
+        } else if (currentLanguage.equals("zh") && TextUtils.isEmpty(taskKind)) {
             if (TextUtils.isEmpty(blob)) {
                 finishInstruction("2");
                 finish();
@@ -475,6 +477,7 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
             instruct.setAction("-1");
             EventBus.getDefault().post(instruct);
         }
+        RobotInfoUtils.setRobotRunningStatus("1");
         finish();
     }
 
