@@ -251,6 +251,7 @@ public class RobotBrainService extends Service {
             }
         }
     };
+    private boolean freeOperationStartTag;
 
 
     @Nullable
@@ -546,6 +547,8 @@ public class RobotBrainService extends Service {
                     BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
                     //自动回充工作流启动后,导航到目的地后不弹窗提示
                     rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                    //空闲操作启动状态
+                    freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
                     //导航成功到达目的地,语音播报提示
                     StringBuffer startNavigationPrompt = new StringBuffer();
                     startNavigationPrompt.append(MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_one));
@@ -555,8 +558,8 @@ public class RobotBrainService extends Service {
                         startNavigationPrompt.append(instructionEnName);
                     }
                     LogUtils.d(DEFAULT_LOG_TAG, "导航成功,自动回充工作流启动状态  " + rechargingStatus + "  目的地名字, " + instructionName + "  " + instructionEnName);
-                    //自动回充工作流没有启动时,导航成功到达目的地时弹窗提示
-                    if (!rechargingStatus) {
+                    //自动回充工作流没有启动时,空闲操作工作流没有启动时,导航成功到达目的地时弹窗提示
+                    if (!rechargingStatus&&!freeOperationStartTag) {
                         Intent intent = new Intent(MyApp.getContext(), YesOrNoDialogActivity.class);
                         intent.putExtra(DIALOG_TITLE, MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
                         intent.putExtra(DIALOG_CONTENT, appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_two)));

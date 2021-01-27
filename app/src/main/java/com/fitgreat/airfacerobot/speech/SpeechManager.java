@@ -107,11 +107,12 @@ public class SpeechManager {
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         try {
             ttsEngine.setVolume(100);
-            ttsEngine.setSpeed(1.2f);
             if (currentLanguage.equals("en")) {
                 ttsEngine.setSpeaker("lucyfa");
-            }else {
+                ttsEngine.setSpeed(1.2f);
+            }else if (currentLanguage.equals("zh")){
                 ttsEngine.setSpeaker("zhilingf");
+                ttsEngine.setSpeed(1.1f);
             }
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
