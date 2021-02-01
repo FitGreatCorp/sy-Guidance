@@ -91,6 +91,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_FOUR;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_ONE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_THREE;
@@ -470,8 +471,10 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 mRobotName.setText(robotInfoData.getF_Name());
             }
             LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
-            //dds对话Observer注册
-            EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
+            if (SpeechManager.isDdsInitialization()){
+                //dds对话Observer注册
+                EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
+            }
             //启动语音唤醒,打开one shot模式
             EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
             //检查app软件更新

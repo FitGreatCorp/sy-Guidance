@@ -195,10 +195,10 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         //根据当前系统语言显示任务名称
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //院内介绍列表点击进入播放页面
-        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name))&& !TextUtils.isEmpty(taskKind)) { //当前机器人语言为中文
+        if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(F_Name)) && !TextUtils.isEmpty(taskKind)) { //当前机器人语言为中文
             mTextIntroductionTitle.setBaseTitle(F_Name);
             localTxtPath = DownloadUtils.DOWNLOAD_PATH + F_Name + ".txt";
-        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName))&& !TextUtils.isEmpty(taskKind)) {
+        } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(F_EName)) && !TextUtils.isEmpty(taskKind)) {
             mTextIntroductionTitle.setBaseTitle(F_EName);
             localTxtPath = DownloadUtils.DOWNLOAD_PATH + F_EName + ".txt";
         }
@@ -243,6 +243,8 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
     @Override
     protected void onPause() {
         super.onPause();
+        //关闭dds语音播报
+        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
         //移除文本滚动
         handler.removeMessages(CONTENT_SLIDE_TAG);
     }
@@ -252,9 +254,56 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
         EventBus.getDefault().post(initUiEvent);
-        //关闭dds语音播报
-        EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
         super.onDestroy();
+    }
+
+    @Override
+    public void disconnectNetWork() {
+        RouteUtils.goToActivity(TextPlayActivity.this, RobotInitActivity.class);
+        //机器人状态切换为停机离线状态
+        RobotInfoUtils.setRobotRunningStatus("0");
+        //释放sdk,需要重新初始化dds服务
+        if (SpeechManager.isDdsInitialization()) {
+            //DDS需要重新初始化
+            SpeechManager.instance(this).restoreToDo();
+        }
+        finish();
+    }
+
+    @Override
+    public void disconnectRos() {
+        RouteUtils.goToActivity(TextPlayActivity.this, RobotInitActivity.class);
+        //机器人状态不在视频中时,切换为离线
+        if (!RobotInfoUtils.getRobotRunningStatus().equals("4")) {
+            RobotInfoUtils.setRobotRunningStatus("0");
+        }
+        //释放sdk,需要重新初始化dds服务
+        if (SpeechManager.isDdsInitialization()) {
+            //DDS需要重新初始化
+            SpeechManager.instance(this).restoreToDo();
+        }
+        finish();
+    }
+
+    @Override
+    public Object createPresenter() {
+        return null;
+    }
+
+    @Override
+    public void back() {
+        RobotInfoUtils.setRobotRunningStatus("1");
+        if (TextUtils.isEmpty(taskKind)) {
+            freeOperationEnd();
+            SignalDataEvent instruct = new SignalDataEvent();
+            instruct.setType(MSG_TASK_STATUS_FINISHED);
+            instruct.setInstructionId(instructionId);
+            instruct.setAction("-1");
+            EventBus.getDefault().post(instruct);
+        }
+        handler.postDelayed(() -> {
+            finish();
+        }, 1 * 1000);
     }
 
     private void initResume() {
@@ -366,60 +415,79 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
             playContent = FileUtils.readTxt(localTxtPath).trim();
             //页面展示播报文字text文件内容
             textIntroductionContent.setText(playContent);
-            if (currentLanguage.equals("zh")){
-                playContent = playContent.replaceAll("\\p{P}", "");
+            if (currentLanguage.equals("zh")) {
                 playContent = playContent.replaceAll(" +", "");//去掉所有空格,包括首尾,中间
             }
         }
-        LogUtils.d(DEFAULT_LOG_TWO, "--playTts-----文字播放次数---" + playContent);
+        LogUtils.d(DEFAULT_LOG_TWO, "-------文字播放次数---" + playContent);
         handler.sendEmptyMessageDelayed(CONTENT_SLIDE_TAG, 12 * 1000);
-        if (!TextUtils.isEmpty(playContent)) {
-            //语音播报监控标号
-            int broadcastCount = 0;
-            if (playContent.length() <= 500) {
-                SpeechManager.textTtsPlay(playContent, String.valueOf(playContent.length()), new SpeechManager.TtsBroadcastListener() {
-                    @Override
-                    public void ttsBroadcastBegin() {
-                    }
-
-                    @Override
-                    public void ttsBroadcastEnd(String ttsId) {
-                        voicePlayEnd(ttsId, playContent.length());
-                    }
-                });
-            } else { //文本长度超过一定限制,分段语音播报
-                broadcastCount = playContent.length() / 500;
-                int startPosition;
-                int endPosition;
-                LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放次数---" + broadcastCount);
-                for (int j = 0; j <= broadcastCount; j++) {
-                    startPosition = 0 + j * 500;
-                    if (j == broadcastCount) {
-                        endPosition = playContent.length() - 1;
-                    } else {
-                        endPosition = 500 + j * 500;
-                    }
-                    String broadcastContent = playContent.substring(startPosition, endPosition);
-                    int finalBroadcastCount = broadcastCount;
-                    LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放一次播放内容---" + broadcastContent);
-                    SpeechManager.textTtsPlay(broadcastContent, Integer.toString(j), new SpeechManager.TtsBroadcastListener() {
+        handler.postDelayed(() -> {
+            if (!TextUtils.isEmpty(playContent)) {
+                //语音播报监控标号
+                int broadcastCount = 0;
+                LogUtils.d(DEFAULT_LOG_TWO, "-------播放文本长度---" + playContent.length());
+                if (playContent.length() <= 500) {
+                    SpeechManager.textTtsPlay(playContent, String.valueOf(playContent.length()), new SpeechManager.TtsBroadcastListener() {
                         @Override
                         public void ttsBroadcastBegin() {
                         }
 
                         @Override
                         public void ttsBroadcastEnd(String ttsId) {
-                            voicePlayEnd(ttsId, finalBroadcastCount);
+                            voicePlayEnd(ttsId, playContent.length());
                         }
                     });
+                } else { //文本长度超过一定限制,分段语音播报
+                    broadcastCount = playContent.length() / 500;
+                    int startPosition;
+                    int endPosition;
+                    LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放次数---" + broadcastCount);
+                    for (int j = 0; j <= broadcastCount; j++) {
+                        startPosition = 0 + j * 500;
+                        if (j == broadcastCount) {
+                            endPosition = playContent.length() - 1;
+                        } else {
+                            endPosition = 500 + j * 500;
+                        }
+                        String broadcastContent = playContent.substring(startPosition, endPosition);
+                        int finalBroadcastCount = broadcastCount;
+                        LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放一次播放内容---" + broadcastContent);
+                        SpeechManager.textTtsPlay(broadcastContent, Integer.toString(j), new SpeechManager.TtsBroadcastListener() {
+                            @Override
+                            public void ttsBroadcastBegin() {
+                            }
+
+                            @Override
+                            public void ttsBroadcastEnd(String ttsId) {
+                                voicePlayEnd(ttsId, finalBroadcastCount);
+                            }
+                        });
+                    }
                 }
             }
+        }, 1 * 1000);
+    }
+
+
+    /**
+     * 空闲操作启动标签逻辑初始化
+     */
+    private void freeOperationEnd() {
+        boolean freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+        if (freeOperationStartTag) { //空闲操作标签重置
+            RobotInfoUtils.setRobotRunningStatus("1");
+            SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
+            //启动计时器 等待空闲操作
+            EventBus.getDefault().post(new InitEvent(RobotConfig.START_FREE_OPERATION_MSG, ""));
         }
     }
 
+    /**
+     * 文本播报结束逻辑处理
+     */
     private void voicePlayEnd(String ttsId, int targetId) {
         LogUtils.d(DEFAULT_LOG_TAG, "---broadcastCount---长文字播放一次播放结束---ttsId= " + ttsId + ",targetId= " + targetId + ",taskKind= " + taskKind);
-        if (TextUtils.isEmpty(taskKind)) {
+        if (TextUtils.isEmpty(taskKind)) {  //工作流进入播放页面
             if (ttsId.equals(String.valueOf(targetId))) {
                 RobotInfoUtils.setRobotRunningStatus("1");
                 freeOperationEnd();
@@ -430,68 +498,11 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
                 EventBus.getDefault().post(instructEnd);
                 finish();
             }
-        } else {
+        } else { //院内介绍点击进入播放页面
             if (ttsId.equals(String.valueOf(targetId))) {
                 RobotInfoUtils.setRobotRunningStatus("1");
                 finish();
             }
-        }
-    }
-
-    @Override
-    public void disconnectNetWork() {
-        RouteUtils.goToActivity(TextPlayActivity.this, RobotInitActivity.class);
-        //机器人状态切换为停机离线状态
-        RobotInfoUtils.setRobotRunningStatus("0");
-        //释放sdk,需要重新初始化dds服务
-        if (SpeechManager.isDdsInitialization()) {
-            //DDS需要重新初始化
-            SpeechManager.instance(this).restoreToDo();
-        }
-        finish();
-    }
-
-    @Override
-    public void disconnectRos() {
-        RouteUtils.goToActivity(TextPlayActivity.this, RobotInitActivity.class);
-        //机器人状态不在视频中时,切换为离线
-        if (!RobotInfoUtils.getRobotRunningStatus().equals("4")) {
-            RobotInfoUtils.setRobotRunningStatus("0");
-        }
-        //释放sdk,需要重新初始化dds服务
-        if (SpeechManager.isDdsInitialization()) {
-            //DDS需要重新初始化
-            SpeechManager.instance(this).restoreToDo();
-        }
-        finish();
-    }
-
-    @Override
-    public Object createPresenter() {
-        return null;
-    }
-
-    @Override
-    public void back() {
-        RobotInfoUtils.setRobotRunningStatus("1");
-        if (TextUtils.isEmpty(taskKind)) {
-            freeOperationEnd();
-            SignalDataEvent instruct = new SignalDataEvent();
-            instruct.setType(MSG_TASK_STATUS_FINISHED);
-            instruct.setInstructionId(instructionId);
-            instruct.setAction("-1");
-            EventBus.getDefault().post(instruct);
-        }
-        finish();
-    }
-
-    private void freeOperationEnd() {
-        boolean freeOperationStartTag = SpUtils.getBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
-        if (freeOperationStartTag) { //空闲操作标签重置
-            RobotInfoUtils.setRobotRunningStatus("1");
-            SpUtils.putBoolean(MyApp.getContext(), FREE_OPERATION_STATE_TAG, false);
-            //启动计时器 等待空闲操作
-            EventBus.getDefault().post(new InitEvent(RobotConfig.START_FREE_OPERATION_MSG, ""));
         }
     }
 }

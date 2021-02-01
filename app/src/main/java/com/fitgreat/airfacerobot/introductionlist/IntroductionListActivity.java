@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -25,6 +26,7 @@ import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
+import com.fitgreat.airfacerobot.chosedestination.ChoseDestinationActivity;
 import com.fitgreat.airfacerobot.introductionlist.adapter.IntroductionProcessAdapter;
 import com.fitgreat.airfacerobot.introductionlist.presenter.IntroductionListPresenter;
 import com.fitgreat.airfacerobot.introductionlist.view.IntroductionListView;
@@ -32,17 +34,22 @@ import com.fitgreat.airfacerobot.launcher.ui.activity.RobotInitActivity;
 import com.fitgreat.airfacerobot.launcher.utils.OperationUtils;
 import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.widget.IntroductionView;
+import com.fitgreat.airfacerobot.launcher.widget.MyTipDialog;
 import com.fitgreat.airfacerobot.launcher.widget.RoundImageView;
 import com.fitgreat.airfacerobot.mediaplayer.PdfPlayActivity;
 import com.fitgreat.airfacerobot.mediaplayer.TextPlayActivity;
 import com.fitgreat.airfacerobot.mediaplayer.VideoPlayActivity;
 import com.fitgreat.airfacerobot.model.OperationInfo;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
+import com.fitgreat.airfacerobot.versionupdate.DownloadUtils;
+import com.fitgreat.airfacerobot.versionupdate.DownloadingDialog;
+import com.fitgreat.archmvp.base.util.FileUtils;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.geek.webpage.web.activity.BaseWebpageActivity;
 
+import java.io.File;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -149,6 +156,11 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
     private IntroductionProcessAdapter introductionProcessAdapter;
     private AlertDialog tipIntroductionAlertDialog = null;
     private String currentLanguage;
+    private MyTipDialog jumpTipDialog;
+    private String localTxtPath;
+    private File txtFile;
+    private String txtContent;
+    private Intent intent = null;
 
 
     @Override
@@ -221,13 +233,13 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                         if (operationInfo.getF_Type().equals("4")) {
                             intent = new Intent(this, TextPlayActivity.class);
                         }
-                        LogUtils.json(DEFAULT_LOG_TAG,JSON.toJSONString(operationInfo));
+                        LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(operationInfo));
                         intent.putExtra("F_FileUrl", operationInfo.getF_FileUrl());
                         intent.putExtra("F_EFileUrl", operationInfo.getF_EFileUrl());
                         intent.putExtra("F_Name", operationInfo.getF_Name());
                         intent.putExtra("F_EName", operationInfo.getF_EName());
                         intent.putExtra("taskKind", "download");
-                        startActivity(intent);
+                        jumpPlayPage(operationInfo,intent);
                     }
                 });
                 introductionListRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -288,9 +300,6 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                 ToastUtils.showSmallToast(MvpBaseActivity.getActivityContext().getString(R.string.no_en_file_tip));
                 return;
             } else {
-//                taskTipDialog();
-//                mPresenter.startOperationTask(operationInfoList.get(i));
-                Intent intent = null;
                 if (operationInfoList.get(i).getF_Type().equals("2")) {
                     intent = new Intent(IntroductionListActivity.this, VideoPlayActivity.class);
                 }
@@ -300,15 +309,90 @@ public class IntroductionListActivity extends MvpBaseActivity<IntroductionListVi
                 if (operationInfoList.get(i).getF_Type().equals("4")) {
                     intent = new Intent(this, TextPlayActivity.class);
                 }
-                LogUtils.json(DEFAULT_LOG_TAG,JSON.toJSONString(operationInfoList.get(i)));
+                LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(operationInfoList.get(i)));
                 intent.putExtra("F_FileUrl", operationInfoList.get(i).getF_FileUrl());
                 intent.putExtra("F_EFileUrl", operationInfoList.get(i).getF_EFileUrl());
                 intent.putExtra("F_Name", operationInfoList.get(i).getF_Name());
                 intent.putExtra("F_EName", operationInfoList.get(i).getF_EName());
                 intent.putExtra("taskKind", "download");
-                startActivity(intent);
+                jumpPlayPage(operationInfoList.get(i),intent);
             }
         });
+    }
+
+    private void jumpPlayPage(OperationInfo operationInfo,Intent intent) {
+        if (operationInfo.getF_Type().equals("4")) {
+            if (currentLanguage.equals("zh") && !(TextUtils.isEmpty(operationInfo.getF_Name()))) {
+                localTxtPath = DownloadUtils.DOWNLOAD_PATH + operationInfo.getF_Name() + ".txt";
+                //本地中文txt文本文件
+                txtFile = new File(DownloadUtils.DOWNLOAD_PATH + operationInfo.getF_Name() + ".txt");
+            } else if (currentLanguage.equals("en") && !(TextUtils.isEmpty(operationInfo.getF_Name()))) {
+                localTxtPath = DownloadUtils.DOWNLOAD_PATH + operationInfo.getF_EName() + ".txt";
+                //本地英文txt文本文件
+                txtFile = new File(DownloadUtils.DOWNLOAD_PATH + operationInfo.getF_EName() + ".txt");
+            }
+            if (!txtFile.exists()) {
+                if (currentLanguage.equals("zh")) {
+                    DownloadUtils.download(operationInfo.getF_FileUrl(), DownloadUtils.DOWNLOAD_PATH + operationInfo.getF_Name() + ".txt", false, new DownloadUtils.OnDownloadListener() {
+                        @Override
+                        public void onDownloadSuccess(String filePath) {
+                            jumpTxtPlayPage(intent);
+                        }
+
+                        @Override
+                        public void onDownloading(int progress) {
+                        }
+
+                        @Override
+                        public void onDownloadFailed(Exception e) {
+                            LogUtils.e(DEFAULT_LOG_THREE, "中文txt下载失败:" + e.getMessage());
+                        }
+                    });
+                } else if (currentLanguage.equals("en")) {
+                    DownloadUtils.download(operationInfo.getF_EFileUrl(), DownloadUtils.DOWNLOAD_PATH + operationInfo.getF_EName() + ".txt", false, new DownloadUtils.OnDownloadListener() {
+                        @Override
+                        public void onDownloadSuccess(String filePath) {
+                            jumpTxtPlayPage(intent);
+                        }
+
+                        @Override
+                        public void onDownloading(int progress) {
+                        }
+
+                        @Override
+                        public void onDownloadFailed(Exception e) {
+                            LogUtils.e(DEFAULT_LOG_THREE, "英文txt下载失败:" + e.getMessage());
+                        }
+                    });
+                }
+            } else {
+                jumpTxtPlayPage(intent);
+            }
+        } else {
+            startActivity(intent);
+        }
+    }
+    public void jumpTxtPlayPage(Intent intent) {
+        txtContent = FileUtils.readTxt(localTxtPath).trim();
+        //页面展示播报文字text文件内容
+        if (currentLanguage.equals("zh")) {
+            txtContent = txtContent.replaceAll(" +", "");//去掉所有空格,包括首尾,中间
+        }
+        if (txtContent.length() <= 500) {
+            startActivity(intent);
+        } else {
+            //加载提示框
+            jumpTipDialog = new MyTipDialog(this);
+            jumpTipDialog.setDialogTitle(MvpBaseActivity.getActivityContext().getString(R.string.loading_title));
+            jumpTipDialog.setTipLoadModel(true);
+            jumpTipDialog.show();
+            Intent finalIntent = intent;
+            baseHandler.postDelayed(() -> {
+                jumpTipDialog.dismiss();
+                jumpTipDialog = null;
+                startActivity(finalIntent);
+            }, 4 * 1000);
+        }
     }
 
     /**

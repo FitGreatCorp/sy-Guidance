@@ -214,9 +214,7 @@ public class RobotBrainService extends Service {
     private String currentNavigationZ = null;
     //导航失败重试次数
     private int navigationTimes = 0;
-    private DuiMessageObserver mMessageObserver = new DuiMessageObserver();// 消息监听器
-    private DuiCommandObserver mCommandObserver = new DuiCommandObserver();// 命令监听器
-    private DuiUpdateObserver mUpdateObserver = new DuiUpdateObserver();   //更新监听器
+
     private Timer batteryTimer = null;
     private TimerTask batteryTimerTask = null;
     private String currentLanguage;
@@ -252,6 +250,9 @@ public class RobotBrainService extends Service {
         }
     };
     private boolean freeOperationStartTag;
+    private DuiMessageObserver mMessageObserver=new DuiMessageObserver();;
+    private DuiCommandObserver mCommandObserver=new DuiCommandObserver();
+    private DuiUpdateObserver mUpdateObserver=new DuiUpdateObserver();
 
 
     @Nullable
@@ -559,7 +560,7 @@ public class RobotBrainService extends Service {
                     }
                     LogUtils.d(DEFAULT_LOG_TAG, "导航成功,自动回充工作流启动状态  " + rechargingStatus + "  目的地名字, " + instructionName + "  " + instructionEnName);
                     //自动回充工作流没有启动时,空闲操作工作流没有启动时,导航成功到达目的地时弹窗提示
-                    if (!rechargingStatus&&!freeOperationStartTag) {
+                    if (!rechargingStatus && !freeOperationStartTag) {
                         Intent intent = new Intent(MyApp.getContext(), YesOrNoDialogActivity.class);
                         intent.putExtra(DIALOG_TITLE, MvpBaseActivity.getActivityContext().getString(R.string.start_chose_destination_dialog_title));
                         intent.putExtra(DIALOG_CONTENT, appendStartNavigationPrompt(MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_one), MvpBaseActivity.getActivityContext().getString(R.string.navigation_success_tip_two)));
@@ -650,9 +651,19 @@ public class RobotBrainService extends Service {
                         case "stop":
                             //dds释放
                             speechManager.restoreToDo();
-                            mCommandObserver.unregist();
-                            mMessageObserver.unregist();
-                            mUpdateObserver.unregist();
+//                            // 消息监听器
+//                            mMessageObserver = new DuiMessageObserver();
+//                            // 命令监听器
+//                            mCommandObserver = new DuiCommandObserver();
+//                            //更新监听器
+//                            mUpdateObserver = new DuiUpdateObserver();
+                            try {
+                                mCommandObserver.unregist();
+                                mMessageObserver.unregist();
+                                mUpdateObserver.unregist();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                             break;
                         default:
                             break;
@@ -701,9 +712,19 @@ public class RobotBrainService extends Service {
                 break;
             case DDS_OBSERVER_REGISTERED://dds初始化成功 Observer注册
                 LogUtils.d("CommandTodo", "Observer注册");
-                mCommandObserver.regist();
-                mMessageObserver.regist();
-                mUpdateObserver.regist();
+//                // 消息监听器
+//                mMessageObserver = new DuiMessageObserver();
+//                // 命令监听器
+//                mCommandObserver = new DuiCommandObserver();
+//                //更新监听器
+//                mUpdateObserver = new DuiUpdateObserver();
+                try {
+                    mCommandObserver.regist();
+                    mMessageObserver.regist();
+                    mUpdateObserver.regist();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             case DDS_VOICE_TEXT_CANCEL://DDS语音播报取消
                 speechManager.cancelTtsPlay();

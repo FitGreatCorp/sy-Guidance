@@ -147,7 +147,7 @@ dependencies {
     /**
      * speech语音
      */
-    implementation(name: 'lib-dds-1.2.8.1-release', ext: 'aar')
+    implementation(name: 'lib-dds-1.2.18.1-release', ext: 'aar')
     implementation 'com.alibaba:fastjson:1.1.71.android'
     implementation 'org.apache.commons:commons-lang3:3.7'
     implementation 'com.zhy:okhttputils:2.6.2'

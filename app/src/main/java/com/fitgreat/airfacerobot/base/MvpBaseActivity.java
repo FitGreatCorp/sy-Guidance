@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,12 +18,15 @@ import com.fitgreat.archmvp.base.ui.BasePresenterImpl;
 import com.fitgreat.archmvp.base.ui.BaseView;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.gyf.barlibrary.ImmersionBar;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TWO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_FAILURE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.NETWORK_CONNECTION_CHECK_SUCCESS;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.ROS_CONNECTION_CHECK_FAILURE;
@@ -44,6 +49,8 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
     private List<AppCompatActivity> activityList = new ArrayList<AppCompatActivity>();
     private static Context activityContext;
     public Handler baseHandler = new Handler(Looper.getMainLooper());
+    private IntentFilter intentFilter;
+    private NetworkChangeReceiver networkChangeReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,6 +79,23 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
         //添加当前页面
         activityList.add(this);
         activityContext = this;
+        //注册网络状态监听广播
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        networkChangeReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkChangeReceiver, intentFilter);
+    }
+
+    class NetworkChangeReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            LogUtils.d(DEFAULT_LOG_TAG, "当前网络状态改变,网络是否可用  "+activeNetworkInfo.isAvailable());
+            if (!activeNetworkInfo.isAvailable()) { //当前网络连接不可用
+                disconnectNetWork();
+            }
+        }
     }
 
     public static Context getActivityContext() {
@@ -106,7 +130,12 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
             unbinder.unbind();
             unbinder = null;
         }
-        unregisterReceiver(myReceiver);
+        if (myReceiver != null) {
+            unregisterReceiver(myReceiver);
+        }
+        if (networkChangeReceiver != null) {
+            unregisterReceiver(networkChangeReceiver);
+        }
         //清除当前页面
         activityList.remove(this);
     }
@@ -162,7 +191,7 @@ public abstract class MvpBaseActivity<V extends BaseView, T extends BasePresente
             LogUtils.d(TAG, "NetWorkChangeBroadcastReceiver");
             if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_FAILURE)) {
                 LogUtils.d(DEFAULT_LOG_TAG, "--------BaseChangeBroadcastReceiver-----网路连接断开");
-                disconnectNetWork();
+
             } else if (intent.getAction().equals(NETWORK_CONNECTION_CHECK_SUCCESS)) {
                 LogUtils.d(DEFAULT_LOG_TAG, "--------BaseChangeBroadcastReceiver-----网路连接可用");
             } else if (intent.getAction().equals(ROS_CONNECTION_CHECK_FAILURE)) {

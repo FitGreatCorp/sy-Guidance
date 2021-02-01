@@ -73,7 +73,7 @@ public class SpeechManager {
      */
     public void initialization() {
         //初始化DDS
-        DDS.getInstance().setDebugMode(2); //在调试时可以打开sdk调试日志，在发布版本时，请关闭
+
         DDS.getInstance().init(MyApp.getContext(), createConfig(), mInitListener, mAuthListener);
         //检查授权
         new Thread() {
@@ -103,21 +103,17 @@ public class SpeechManager {
      * 文字语音播报   lucyfa   gdgm
      */
     public static void textTtsPlay(String textContent, String ttsId, TtsBroadcastListener ttsBroadcastListener) {
-        ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
-        currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         try {
+            ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+            currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
             ttsEngine.setVolume(100);
             if (currentLanguage.equals("en")) {
                 ttsEngine.setSpeaker("lucyfa");
                 ttsEngine.setSpeed(1.2f);
             }else if (currentLanguage.equals("zh")){
                 ttsEngine.setSpeaker("zhilingf");
-                ttsEngine.setSpeed(1.1f);
+                ttsEngine.setSpeed(0.9f); //1.1
             }
-        } catch (DDSNotInitCompleteException e) {
-            e.printStackTrace();
-        }
-        try {
             ttsEngine.speak(textContent, 1, ttsId, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
             ttsEngine.setListener(new TTSEngine.Callback() {
                 @Override
@@ -140,11 +136,12 @@ public class SpeechManager {
 
                 @Override
                 public void error(String s) {
+                    LogUtils.e("textTtsPlay", "error:::" + s);
                 }
             });
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
-            LogUtils.e(TAG, "textTtsPlay:" + e.getMessage());
+            LogUtils.e("textTtsPlay", "DDSNotInitCompleteException:::" + e.getMessage());
         }
     }
 
@@ -285,16 +282,18 @@ public class SpeechManager {
      * 启动语音唤醒,打开OneShot模式
      */
     public static void startOneShotWakeup() {
-        try {
-            ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
-            wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
-            //启动语音唤醒
-            wakeupEngine.enableWakeup();
-            //one shot模式切换
-            wakeupEngine.enableOneShot();
-            addWakeupWordList();
-        } catch (DDSNotInitCompleteException e) {
-            e.printStackTrace();
+        if (isDdsInitialization()){
+            try {
+                ttsEngine = DDS.getInstance().getAgent().getTTSEngine();
+                wakeupEngine = DDS.getInstance().getAgent().getWakeupEngine();
+                //启动语音唤醒
+                wakeupEngine.enableWakeup();
+                //one shot模式切换
+                wakeupEngine.enableOneShot();
+                addWakeupWordList();
+            } catch (DDSNotInitCompleteException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -509,6 +508,7 @@ public class SpeechManager {
             if (isFull) { //DDS初始化成功
                 mContext.sendBroadcast(new Intent(DDS_INIT_COMPLETE));
                 ddsInitializationTag = true;
+                DDS.getInstance().setDebugMode(2); //在调试时可以打开sdk调试日志，在发布版本时，请关闭
                 //更新页面进度显示
 //                updateVoiceProgress(100);
             }
