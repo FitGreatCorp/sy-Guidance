@@ -9,6 +9,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.model.CommonProblemEntity;
+import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 
 import org.jetbrains.annotations.NotNull;
@@ -16,9 +17,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_FIVE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DEFAULT_POSITION;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.PREVIOUS_CHOOSE_COMMON_PROBLEM_POSITION;
 
 /**
  * 常见问题适配器
@@ -52,35 +55,28 @@ public class CommonProblemAdapter extends BaseQuickAdapter<CommonProblemEntity, 
         //常见问题答案展开 折叠状态切换
         ImageView commonProblemLogoView = (ImageView) baseViewHolder.getView(R.id.item_common_problem_logo);
         if (currentPosition != DEFAULT_POSITION && currentPosition == itemPosition) {
-            if (commonProblemEntity.isShowAnswerTag()) {
-                baseViewHolder.setGone(R.id.item_common_problem_answer, true);
-                baseViewHolder.setGone(R.id.bottom_line, true);
-                commonProblemLogoView.setImageDrawable(mContext.getDrawable(R.drawable.ic_triangle_down));
-                //常见问题答案折叠
-                commonProblemEntity.setShowAnswerTag(false);
-            } else {
+            LogUtils.d(DEFAULT_LOG_FIVE,",currentPosition=="+currentPosition+",itemPosition==  "+itemPosition+", 展开显示状态=="+commonProblemEntity.isShowAnswerTag());
+            if (commonProblemEntity.isShowAnswerTag()) {   //常见问题答案展开
                 baseViewHolder.setVisible(R.id.item_common_problem_answer, true);
                 baseViewHolder.setVisible(R.id.bottom_line, true);
                 commonProblemLogoView.setImageDrawable(mContext.getDrawable(R.drawable.ic_triangle_top));
-                //常见问题答案展开
-                commonProblemEntity.setShowAnswerTag(true);
+            } else {   //常见问题答案隐藏
+                baseViewHolder.setGone(R.id.item_common_problem_answer, true);
+                baseViewHolder.setGone(R.id.bottom_line, true);
+                commonProblemLogoView.setImageDrawable(mContext.getDrawable(R.drawable.ic_triangle_down));
             }
         } else {
             baseViewHolder.setGone(R.id.item_common_problem_answer, true);
             baseViewHolder.setGone(R.id.bottom_line, true);
             commonProblemLogoView.setImageDrawable(mContext.getDrawable(R.drawable.ic_triangle_down));
-            //常见问题答案折叠
-            commonProblemEntity.setShowAnswerTag(false);
         }
         //最后一个条目标题下滑线,答案下划线隐藏切换
         if (itemPosition == getData().size() - 1) {
             if (!commonProblemEntity.isShowAnswerTag()) {
                 baseViewHolder.setVisible(R.id.middle_line, false);
-            }else {
+            } else {
                 baseViewHolder.setVisible(R.id.bottom_line, false);
             }
         }
-        //更新列表数据
-        getData().set(itemPosition, commonProblemEntity);
     }
 }

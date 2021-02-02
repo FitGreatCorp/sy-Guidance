@@ -314,6 +314,10 @@ public interface RobotConfig {
      */
     String CHOOSE_COMMON_PROBLEM_POSITION = "choose_common_problem_position";
     /**
+     * 常见问题上一次选择题目编号
+     */
+    String PREVIOUS_CHOOSE_COMMON_PROBLEM_POSITION = "previous_choose_common_problem_position";
+    /**
      * 关闭自动回充工作流加载提示框
      */
     String CLOSE_RECHARGING_TIP_DIALOG = "close_recharging_tip_dialog";

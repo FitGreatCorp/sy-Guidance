@@ -30,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_FIVE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
@@ -81,15 +82,13 @@ public class DuiMessageObserver implements MessageObserver {
      */
     @Override
     public void onMessage(String message, String data) {
-        try {
-            LogUtils.d("CommandTodo", "  |message| : " + message + "  oneshot模式  " + (DDS.getInstance().getAgent().getWakeupEngine().getOneshotState()));
-        } catch (DDSNotInitCompleteException e) {
-            e.printStackTrace();
-        }
-        LogUtils.json("CommandTodo", data);
+//        try {
+//            LogUtils.d(DEFAULT_LOG_FIVE, "  |message| : " + message +"  |data| : " + data+ "  oneshot模式  " + (DDS.getInstance().getAgent().getWakeupEngine().getOneshotState()));
+//        } catch (DDSNotInitCompleteException e) {
+//            e.printStackTrace();
+//        }
         boolean startCommonProblemModelTag = SpUtils.getBoolean(MyApp.getContext(), JUMP_COMMON_PROBLEM_PAGE, false);
         boolean mainPageShowTag = SpUtils.getBoolean(MyApp.getContext(), MAIN_PAGE_WHETHER_SHOW, false);
-
         //当前设备语言
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, null);
         MessageBean bean = null;

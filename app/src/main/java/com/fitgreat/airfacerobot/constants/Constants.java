@@ -112,6 +112,8 @@ public interface Constants {
     String DEFAULT_LOG_TWO = "guidance_sy_two";
     String DEFAULT_LOG_THREE = "guidance_sy_three";
     String DEFAULT_LOG_FOUR = "guidance_sy_four";
+    String DEFAULT_LOG_FIVE = "guidance_sy_five";
+
 
 
     String basePath = Environment.getExternalStorageDirectory().getPath() + "/ExternalResource/";

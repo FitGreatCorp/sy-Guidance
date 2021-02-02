@@ -696,7 +696,7 @@ public class RobotBrainService extends Service {
                 SpeechManager.closeOneShotWakeup();
                 break;
             case PLAY_TASK_PROMPT_INFO:
-                LogUtils.d("CommandTodo", actionDdsEvent.getmActionContent());
+//                LogUtils.d("CommandTodo", actionDdsEvent.getmActionContent());
                 speechManager.textTtsPlay(actionDdsEvent.getmActionContent(), String.valueOf(actionDdsEvent.getmActionContent().length()), new SpeechManager.TtsBroadcastListener() {
                     @Override
                     public void ttsBroadcastBegin() {

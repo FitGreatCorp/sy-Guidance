@@ -56,6 +56,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
+import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_FIVE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
@@ -65,6 +66,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.DEFAULT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.PREVIOUS_CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_BLINK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_SPEAK_ANIMATION_MSG;
@@ -138,6 +140,9 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             }
         }
     };
+    private List<CommonProblemEntity> data;
+    private CommonProblemEntity commonProblemEntity;
+
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(InitEvent initEvent) {
@@ -165,6 +170,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void initData() {
+        //常见问题条目选中编号回复原始值
+        SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, DEFAULT_POSITION);
         //获取当前机器人语言
         currentLanguage = SpUtils.getString(MyApp.getContext(), CURRENT_LANGUAGE, "zh");
         //注册EventBus
@@ -259,14 +266,14 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities, this);
             mCommonProblemList.setLayoutManager(new LinearLayoutManager(this));
             commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
+                commonProblemAdapter = (CommonProblemAdapter) adapter;
+                data = commonProblemAdapter.getData();
                 //关闭当前对话
                 EventBus.getDefault().post(new ActionDdsEvent(DDS_STOP_DIALOG, ""));
-                LogUtils.d(DEFAULT_LOG_TAG, " commonProblemAdapter  position    " + position);
-                //保存当前条目编号
+                //更新当前选中问题编号值
                 SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, position);
-                //更新适配器数据并刷新
-                adapter.notifyDataSetChanged();
-                mCommonProblemEntity = (CommonProblemEntity) adapter.getData().get(position);
+                mCommonProblemEntity = (CommonProblemEntity) commonProblemAdapter.getData().get(position);
+                LogUtils.d(DEFAULT_LOG_FIVE, ",position==" + position + ", 展开显示状态==" + mCommonProblemEntity.isShowAnswerTag());
                 //关闭dds语音播报
                 EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
                 //语音播报当前问题答案
@@ -275,6 +282,22 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
                 } else {
                     EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, mCommonProblemEntity.getF_EAnswer()));
                 }
+                LogUtils.d(DEFAULT_LOG_FIVE,"常见问题个数=="+data.size());
+                for (int i = 0; i < data.size(); i++) {
+                    commonProblemEntity = data.get(i);
+                    if (i==position){
+                        //更新列表问题显示状态
+                        if (commonProblemEntity.isShowAnswerTag()) {
+                            commonProblemEntity.setShowAnswerTag(false);
+                        } else {
+                            commonProblemEntity.setShowAnswerTag(true);
+                        }
+                    }else {
+                        commonProblemEntity.setShowAnswerTag(false);
+                    }
+                    commonProblemAdapter.getData().set(i,commonProblemEntity);
+                }
+                commonProblemAdapter.notifyDataSetChanged();
             });
             mCommonProblemList.setAdapter(commonProblemAdapter);
             //通过指令从首页跳转到常见问题页面
@@ -291,19 +314,23 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     }
 
     public void reFreshListData(CommonProblemEntity commonProblemEntity) {
-        //更新当前播报问题选中状态
+        //获取当前展示 播报问题编号
         int itemPosition = CashUtils.getProblemPosition(commonProblemEntity.getF_QId());
-        //保存当前条目编号
+        //更新当前选中问题编号
         SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, itemPosition);
-        //更新适配器数据并刷新
+        //更新列表问题显示状态
+        if (!commonProblemEntity.isShowAnswerTag()) {
+            commonProblemEntity.setShowAnswerTag(true);
+        }
+        commonProblemAdapter.setData(itemPosition, commonProblemEntity);
         commonProblemAdapter.notifyDataSetChanged();
+        //语音播报问题答案
         if (currentLanguage.equals("zh")) {
             EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_Answer()));
         } else {
             EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, commonProblemEntity.getF_EAnswer()));
         }
     }
-
 //    private List<BaseNode> getEntity(List<CommonProblemEntity> commonProblemEntities) {
 //        List<BaseNode> dataList = new ArrayList<>();
 //        for (int i = 0; i < commonProblemEntities.size(); i++) {
@@ -322,8 +349,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     public void onMsg(AskAnswerDataEvent askAnswerDataEvent) {
         switch (askAnswerDataEvent.getCommandType()) {
             case COMMON_PROBLEM_TAG:
-                LogUtils.d(DEFAULT_LOG_TAG, "----COMMON_PROBLEM_TAG---CommonProblemActivity-----");
                 mCommonProblemEntity = askAnswerDataEvent.getCommonProblemEntity();
+                SpUtils.putBoolean(MyApp.getContext(), "voiceAnswerTag", true);
                 reFreshListData(mCommonProblemEntity);
                 break;
             default:
