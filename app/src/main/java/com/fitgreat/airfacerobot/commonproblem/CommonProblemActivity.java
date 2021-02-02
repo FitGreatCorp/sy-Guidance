@@ -59,6 +59,7 @@ import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_STOP_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DEFAULT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
@@ -258,6 +259,8 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             commonProblemAdapter = new CommonProblemAdapter(commonProblemEntities, this);
             mCommonProblemList.setLayoutManager(new LinearLayoutManager(this));
             commonProblemAdapter.setOnItemClickListener((adapter, view, position) -> {
+                //关闭当前对话
+                EventBus.getDefault().post(new ActionDdsEvent(DDS_STOP_DIALOG, ""));
                 LogUtils.d(DEFAULT_LOG_TAG, " commonProblemAdapter  position    " + position);
                 //保存当前条目编号
                 SpUtils.putInt(MyApp.getContext(), CHOOSE_COMMON_PROBLEM_POSITION, position);

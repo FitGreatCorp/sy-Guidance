@@ -103,6 +103,10 @@ public interface RobotConfig {
      */
     String DDS_VOICE_TEXT_CANCEL = "dds_voice_text_cancel";
     /**
+     * dds取消对话
+     */
+    String DDS_STOP_DIALOG = "dds_stop_dialog";
+    /**
      * 关闭dds唤醒
      */
     String CLOSE_DDS_WAKE_TAG = "close_dds_wake_tag";

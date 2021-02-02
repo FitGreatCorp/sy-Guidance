@@ -83,7 +83,7 @@ public class DuiCommandObserver implements CommandObserver {
     @Override
     public void onCall(String command, String data) {
         boolean emergencyTag = SpUtils.getBoolean(MyApp.getContext(), CLICK_EMERGENCY_TAG, false);
-        LogUtils.d(DEFAULT_LOG_TAG, "  data: " + data);
+        LogUtils.d("CommandTodo", "  data: " + data);
         if (emergencyTag) { //急停按钮被按下
             EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, MvpBaseActivity.getActivityContext().getString(R.string.emergency_click_prompt)));
         } else {

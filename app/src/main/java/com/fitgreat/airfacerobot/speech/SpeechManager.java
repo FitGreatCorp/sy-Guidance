@@ -12,6 +12,7 @@ import com.aispeech.dui.dds.DDSAuthListener;
 import com.aispeech.dui.dds.DDSConfig;
 import com.aispeech.dui.dds.DDSInitListener;
 import com.aispeech.dui.dds.agent.ASREngine;
+import com.aispeech.dui.dds.agent.Agent;
 import com.aispeech.dui.dds.agent.tts.TTSEngine;
 import com.aispeech.dui.dds.agent.wakeup.WakeupEngine;
 import com.aispeech.dui.dds.agent.wakeup.word.WakeupWord;
@@ -159,7 +160,20 @@ public class SpeechManager {
             }
         }
     }
-
+    /**
+     * 关闭对话
+     */
+    public void stopDialog() {
+        if (isDdsInitialization()) {
+            Agent agent = DDS.getInstance().getAgent();
+            try {
+                agent.stopDialog();
+            } catch (DDSNotInitCompleteException e) {
+                e.printStackTrace();
+                LogUtils.e("MSG_STOP_TASK", "textTtsPlay:" + e.getMessage());
+            }
+        }
+    }
     /**
      * 开启语音唤醒
      */

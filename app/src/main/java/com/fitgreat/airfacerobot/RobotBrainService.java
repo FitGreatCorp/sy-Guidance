@@ -112,6 +112,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CLOSE_START_INTROD
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_OBSERVER_REGISTERED;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_STOP_DIALOG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FILE_PLAY_OK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_STATE_TAG;
@@ -728,6 +729,9 @@ public class RobotBrainService extends Service {
                 break;
             case DDS_VOICE_TEXT_CANCEL://DDS语音播报取消
                 speechManager.cancelTtsPlay();
+                break;
+            case DDS_STOP_DIALOG://DDS关闭对话
+                speechManager.stopDialog();
                 break;
         }
     }
