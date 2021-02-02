@@ -310,6 +310,14 @@ public class VideoPlayActivity extends MvpBaseActivity implements TopTitleView.B
         }
     }
 
+//    @Override
+//    protected void onStop() {
+//        super.onPause();
+//        //显示应用返回首页悬浮按钮\
+//        InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
+//        initUiEvent.setHideFloatBall(false);
+//        EventBus.getDefault().post(initUiEvent);
+//    }
     /**
      * 初始化UI组件
      */

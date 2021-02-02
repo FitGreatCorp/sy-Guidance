@@ -40,6 +40,7 @@ import com.fitgreat.airfacerobot.launcher.utils.ToastUtils;
 import com.fitgreat.airfacerobot.launcher.utils.WebPageUtils;
 import com.fitgreat.airfacerobot.launcher.widget.InputDialog;
 import com.fitgreat.airfacerobot.launcher.widget.MyDialog;
+import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.WorkflowEntity;
 import com.fitgreat.airfacerobot.remotesignal.model.RobotInfoData;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
@@ -68,6 +69,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.BROADCAST_GREET_SW
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_FREE_OPERATION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.FREE_OPERATION_SELECT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 
 /**
  * 设置activity<p>
@@ -240,6 +242,15 @@ public class SettingActivity extends MvpBaseActivity<SettingsView, SettingsPrese
             workflowEntity = JSON.parseObject(currentFreeOperation, WorkflowEntity.class);
             freeOperation.setText(workflowEntity.getF_Name());
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //显示应用返回首页悬浮按钮\
+        InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
+        initUiEvent.setHideFloatBall(false);
+        EventBus.getDefault().post(initUiEvent);
     }
 
     @Override

@@ -241,20 +241,16 @@ public class TextPlayActivity extends MvpBaseActivity implements TopTitleView.Ba
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
         //关闭dds语音播报
         EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
         //移除文本滚动
         handler.removeMessages(CONTENT_SLIDE_TAG);
-    }
-
-    @Override
-    protected void onDestroy() {
+        //显示应用返回首页悬浮按钮\
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
         EventBus.getDefault().post(initUiEvent);
-        super.onDestroy();
     }
 
     @Override

@@ -25,14 +25,9 @@ import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
 import com.github.barteksc.pdfviewer.PDFView;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
-
 import butterknife.BindView;
-import butterknife.OnClick;
-
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_ONE;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_THREE;
@@ -428,6 +423,7 @@ public class PdfPlayActivity extends MvpBaseActivity implements TopTitleView.Bas
     @Override
     protected void onStop() {
         super.onStop();
+        //显示悬浮按钮
         InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
         initUiEvent.setHideFloatBall(false);
         EventBus.getDefault().post(initUiEvent);

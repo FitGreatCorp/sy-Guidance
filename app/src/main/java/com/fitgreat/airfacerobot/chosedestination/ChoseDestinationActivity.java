@@ -113,7 +113,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         super.onResume();
         loadShowMap();
     }
-
     /**
      * 加载展示地图
      */
@@ -154,6 +153,10 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             showMapBitmap.recycle();
             showMapBitmap = null;
         }
+        //显示应用返回首页悬浮按钮\
+        InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
+        initUiEvent.setHideFloatBall(false);
+        EventBus.getDefault().post(initUiEvent);
     }
 
     @Override

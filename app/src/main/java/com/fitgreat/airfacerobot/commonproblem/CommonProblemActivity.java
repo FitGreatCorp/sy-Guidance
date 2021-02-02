@@ -45,12 +45,16 @@ import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.LogUtils;
 import com.fitgreat.archmvp.base.util.RouteUtils;
 import com.fitgreat.archmvp.base.util.SpUtils;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
+
 import butterknife.BindView;
 import butterknife.OnClick;
+
 import static com.fitgreat.airfacerobot.constants.Constants.COMMON_PROBLEM_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CHOOSE_COMMON_PROBLEM_POSITION;
@@ -58,6 +62,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_VOICE_TEXT_CANCEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DEFAULT_POSITION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.JUMP_COMMON_PROBLEM_PAGE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.PLAY_TASK_PROMPT_INFO;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_BLINK_ANIMATION_MSG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG;
@@ -132,6 +137,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
             }
         }
     };
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMsg(InitEvent initEvent) {
         switch (initEvent.type) {
@@ -145,6 +151,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
                 break;
         }
     }
+
     @Override
     public CommonProblemPresenter createPresenter() {
         return new CommonProblemPresenter();
@@ -178,8 +185,12 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
+        //显示应用返回首页悬浮按钮\
+        InitEvent initUiEvent = new InitEvent(MSG_CHANGE_FLOATING_BALL, "");
+        initUiEvent.setHideFloatBall(false);
+        EventBus.getDefault().post(initUiEvent);
         //关闭dds语音播报
         EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
         //退出常见问题模块
@@ -211,7 +222,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
     @Override
     public void disconnectNetWork() {
-        LogUtils.d(DEFAULT_LOG_TAG,"常见问题页面断网");
+        LogUtils.d(DEFAULT_LOG_TAG, "常见问题页面断网");
         RouteUtils.goToActivity(CommonProblemActivity.this, RobotInitActivity.class);
         //机器人状态切换为停机离线状态
         RobotInfoUtils.setRobotRunningStatus("0");

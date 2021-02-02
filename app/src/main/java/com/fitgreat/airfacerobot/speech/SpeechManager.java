@@ -461,7 +461,7 @@ public class SpeechManager {
         //唤醒配置项
         config.addConfig(DDSConfig.K_WAKEUP_ROUTER, "dialog"); //唤醒路由：partner（将唤醒结果传递给partner，不会主动进入对话）、dialog（将唤醒结果传递给dui，会主动进入对话）
         config.addConfig(DDSConfig.K_ONESHOT_MIDTIME, "3000");// OneShot配置：
-        config.addConfig(DDSConfig.K_ONESHOT_ENDTIME, "5000");// OneShot配置：
+        config.addConfig(DDSConfig.K_ONESHOT_ENDTIME, "1000");// OneShot配置：
         //就近唤醒
 //        config.addConfig(DDSConfig. K_USE_NEAR_WAKEUP,"true");
         //识别配置项

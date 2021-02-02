@@ -471,7 +471,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 mRobotName.setText(robotInfoData.getF_Name());
             }
             LogUtils.json(DEFAULT_LOG_TAG, "robotInfoData:::" + JSON.toJSONString(robotInfoData));
-            if (SpeechManager.isDdsInitialization()){
+            if (SpeechManager.isDdsInitialization()) {
                 //dds对话Observer注册
                 EventBus.getDefault().post(new ActionDdsEvent(DDS_OBSERVER_REGISTERED, ""));
             }
