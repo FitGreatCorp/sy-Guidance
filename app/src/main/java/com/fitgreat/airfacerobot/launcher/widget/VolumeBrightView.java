@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.archmvp.base.util.LogUtils;
 
-import org.ros.internal.node.xmlrpc.MasterXmlRpcEndpoint;
 
 import java.math.BigDecimal;
 
