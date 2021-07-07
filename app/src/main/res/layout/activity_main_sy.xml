@@ -10,15 +10,14 @@
 
     <ImageView
         android:id="@+id/sy_hospital_logo"
-        android:layout_width="@dimen/px0"
+        android:layout_width="220dp"
         android:layout_height="@dimen/px50"
         android:layout_marginLeft="@dimen/px25"
         android:layout_marginTop="@dimen/px20"
         android:scaleType="fitCenter"
-        android:src="@mipmap/ic_sy_main_logo"
+        android:src="@mipmap/ic_launch_title"
         app:layout_constraintHorizontal_weight="1"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/constraintLayout_robot_information"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
@@ -30,7 +29,7 @@
         android:layout_marginRight="@dimen/px25"
         android:background="@mipmap/img_home_infobox"
         android:gravity="center"
-        app:layout_constraintLeft_toRightOf="@+id/sy_hospital_logo"
+
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -240,6 +239,7 @@
             android:background="@drawable/home_msg_bg"
             android:ellipsize="end"
             android:lineSpacingExtra="8dp"
+            android:text="你好"
             android:maxWidth="@dimen/px280"
             android:minWidth="@dimen/px280"
             android:padding="@dimen/px15"

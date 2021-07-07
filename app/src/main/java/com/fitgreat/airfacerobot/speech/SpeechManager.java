@@ -49,7 +49,6 @@ public class SpeechManager {
     private static ASREngine asrEngine = null;
     private static SpeechManager speechManager = null;
     private Handler handler = new Handler(Looper.getMainLooper());
-    ;
 
     /**
      * 单例模式获取对象

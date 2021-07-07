@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:topTitle="http://schemas.android.com/apk/res-auto"
     android:id="@+id/common_problem_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#F8F8F8"
     tools:ignore="MissingConstraints">
 
@@ -17,57 +18,59 @@
         app:layout_constraintTop_toTopOf="parent"
         topTitle:titleName="@string/home_question_title" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/common_problem_list"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/px0"
-        android:layout_margin="@dimen/px20"
-        android:background="@color/white"
-        android:scrollbars="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/common_problem_title"
-        app:layout_constraintVertical_weight="1" />
+        android:layout_height="match_parent">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/common_problem_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/px20"
+            android:background="@color/white"
+            android:scrollbars="vertical" />
 
-    <LinearLayout
-        android:id="@+id/linearLayout_no_data"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/px0"
-        android:layout_margin="@dimen/px20"
-        android:background="@color/white"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/common_problem_title"
-        app:layout_constraintVertical_weight="1">
+
+        <LinearLayout
+            android:id="@+id/linearLayout_no_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/px20"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="visible"
+            android:layout_centerInParent="true">
+
+            <ImageView
+                android:id="@+id/image_no_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/common_img_no_data" />
+
+            <TextView
+                android:id="@+id/title_no_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/px40"
+                android:text="@string/no_data_title"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/textSize14" />
+        </LinearLayout>
 
         <ImageView
-            android:id="@+id/image_no_data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/common_problem_robot_image"
+            android:layout_width="@dimen/px90"
+            android:layout_height="@dimen/px120"
+            android:layout_marginRight="@dimen/px10"
+            android:layout_marginBottom="@dimen/px20"
             android:scaleType="fitCenter"
-            android:src="@mipmap/common_img_no_data" />
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            tools:ignore="MissingConstraints" />
 
-        <TextView
-            android:id="@+id/title_no_data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/px40"
-            android:text="@string/no_data_title"
-            android:textColor="@android:color/black"
-            android:textSize="@dimen/textSize14" />
-    </LinearLayout>
+    </RelativeLayout>
 
-    <ImageView
-        android:id="@+id/common_problem_robot_image"
-        android:layout_width="@dimen/px90"
-        android:layout_height="@dimen/px120"
-        android:layout_marginRight="@dimen/px10"
-        android:layout_marginBottom="@dimen/px20"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        tools:ignore="MissingConstraints" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</LinearLayout>

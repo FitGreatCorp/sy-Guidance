@@ -13,17 +13,23 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.R;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
+import com.fitgreat.airfacerobot.adapter.PositionAdapter;
 import com.fitgreat.airfacerobot.base.MvpBaseActivity;
 import com.fitgreat.airfacerobot.chosedestination.presenter.ChoseDestinationPresenter;
 import com.fitgreat.airfacerobot.chosedestination.view.ChoseDestinationView;
@@ -40,6 +46,7 @@ import com.fitgreat.airfacerobot.model.InitEvent;
 import com.fitgreat.airfacerobot.model.LocationEntity;
 import com.fitgreat.airfacerobot.launcher.utils.CashUtils;
 import com.fitgreat.airfacerobot.model.MapEntity;
+import com.fitgreat.airfacerobot.model.PositionEvent;
 import com.fitgreat.airfacerobot.remotesignal.model.SignalDataEvent;
 import com.fitgreat.airfacerobot.speech.SpeechManager;
 import com.fitgreat.archmvp.base.util.BitmapUtils;
@@ -57,6 +64,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnClick;
 
+import static com.fitgreat.airfacerobot.adapter.PositionAdapter.EVE_SELECTED_POSITION;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.SINGLE_POINT_NAVIGATION;
 import static com.fitgreat.airfacerobot.constants.Constants.currentChineseMapPath;
@@ -76,18 +84,17 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.START_DDS_WAKE_TAG
 /**
  * 选择我要去目的地页面
  */
-public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationView, ChoseDestinationPresenter> implements ChoseDestinationView, TopTitleView.BaseBackListener {
+public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationView, ChoseDestinationPresenter> implements ChoseDestinationView, View.OnClickListener {
 
     private static final String TAG = "ChoseDestination";
     private List<LocationEntity> locationList;
+    private PositionAdapter positionAdapter;
+    private GridLayoutManager gridLayoutManager;
 
-    @BindView(R.id.chose_destination_container)
-    RelativeLayout mChoseDestinationContainer;
-    @BindView(R.id.chose_destination_map_back)
-    ImageView mChoseDestinationMapBack;
+    @BindView(R.id.position_list)
+    RecyclerView rv_position;
     @BindView(R.id.chose_destination_top_title)
-    TopTitleView mChoseDestinationTopTitle;
-
+    ImageView mChoseDestinationTopTitle;
 
     private String currentLanguage;
     private CloseBroadcastReceiver closeBroadcastReceiver;
@@ -104,7 +111,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
 
     @Override
     public int getLayoutResource() {
-        return R.layout.activity_chose_destination;
+        return R.layout.position_list_layout;
     }
 
     @Override
@@ -131,7 +138,6 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             showMapBitmap = MyBitmapUtils.decodeSampledBitmapFromFile(currentEnglishMapPath, point.x, point.y);
             f_showMapFileUrl = mapEntity.getF_EMapUrl();
         }
-        mChoseDestinationMapBack.setImageBitmap(showMapBitmap);
 //        Glide.with(this).load(showMapBitmap).into(mChoseDestinationMapBack);
 //        Glide.with(this).load(f_showMapFileUrl).into(mChoseDestinationMapBack);
     }
@@ -148,7 +154,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     @Override
     protected void onStop() {
         super.onStop();
-        mChoseDestinationMapBack.setImageBitmap(null);
+
         if (showMapBitmap!=null){
             showMapBitmap.recycle();
             showMapBitmap = null;
@@ -166,17 +172,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         EventBus.getDefault().unregister(this);
         //解绑关闭页面广播
         unregisterReceiver(closeBroadcastReceiver);
-    }
 
-    @OnClick({R.id.chose_destination_top_title})
-    public void onclick(View view) {
-        switch (view.getId()) {
-            case R.id.chose_destination_top_title:
-                finish();
-                break;
-            default:
-                break;
-        }
     }
 
     @Override
@@ -215,7 +211,16 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         }
         //绘制页面,添加页面位置信息
         if (locationList != null && locationList.size() != 0) {
-            flashView();
+//            flashView();
+
+//            for(int i = 0;i<locationList.size();i++){
+//                Log.d(TAG,"name = "+locationList.get(i).getF_Name() + " : ("+ locationList.get(i).getF_X() + ","+locationList.get(i).getF_Y()+")");
+//            }
+            positionAdapter = new PositionAdapter(this,locationList);
+            gridLayoutManager = new GridLayoutManager(this,4);
+            rv_position.setLayoutManager(gridLayoutManager);
+            rv_position.setAdapter(positionAdapter);
+
         }
         //注册监听关闭选择导航页面广播
         IntentFilter intentFilter = new IntentFilter();
@@ -223,7 +228,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         closeBroadcastReceiver = new CloseBroadcastReceiver();
         registerReceiver(closeBroadcastReceiver, intentFilter);
         //添加左上角返回按钮点击事件
-        mChoseDestinationTopTitle.setBackKListener(this);
+        mChoseDestinationTopTitle.setOnClickListener(this);
     }
 
     /**
@@ -248,7 +253,7 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             layoutParams.topMargin = Integer.parseInt(locationEntity.getS_Y()) - 85;
             layoutParams.leftMargin = Integer.parseInt(locationEntity.getS_X()) - 30;
-            mChoseDestinationContainer.addView(imageButton, layoutParams);
+//            mChoseDestinationContainer.addView(imageButton, layoutParams);
         }
     }
 
@@ -267,6 +272,22 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
                 showDialogNavigation(true, getNavigationTip(locationEntity), MvpBaseActivity.getActivityContext().getString(R.string.answer_yes), MvpBaseActivity.getActivityContext().getString(R.string.answer_no), locationEntity);
                 break;
             default:
+                break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMsg(PositionEvent posEvent) {
+        switch (posEvent.getType()) {
+            case EVE_SELECTED_POSITION:
+                int selected = posEvent.getSelected();
+                LocationEntity locationEntity = locationList.get(selected);
+                //关闭dds语音播报
+                EventBus.getDefault().post(new ActionDdsEvent(DDS_VOICE_TEXT_CANCEL, ""));
+                //弹窗提示导航
+                showDialogNavigation(true, getNavigationTip(locationEntity), getString(R.string.answer_yes), getString(R.string.answer_no), locationEntity);
+                //自动回充工作流结束
+                SpUtils.putBoolean(MyApp.getContext(), AUTOMATIC_RECHARGE_TAG, false);
                 break;
         }
     }
@@ -329,8 +350,12 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
     }
 
     @Override
-    public void back() {
-        finish();
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.chose_destination_top_title:
+                finish();
+                break;
+        }
     }
 
     private class CloseBroadcastReceiver extends BroadcastReceiver {

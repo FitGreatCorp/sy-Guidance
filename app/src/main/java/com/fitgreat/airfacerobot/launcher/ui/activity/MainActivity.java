@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -888,7 +889,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             rechargeTipDialog.dismiss();
             rechargeTipDialog = null;
             RouteUtils.goToActivity(getContext(), ChoseDestinationActivity.class);
-        }, 3 * 1000);
+        }, 1 * 1000);
         //暂停空闲操作首页计时器
         stopIntroductionTimer();
     }
