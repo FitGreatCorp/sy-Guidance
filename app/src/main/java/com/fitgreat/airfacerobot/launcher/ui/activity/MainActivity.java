@@ -27,6 +27,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
@@ -113,6 +114,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_WHETHER_SHOW;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAP_INFO_CASH;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_AUTO_CHARGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_INSTRUCTION_STATUS_FINISHED;
@@ -154,6 +156,13 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     RelativeLayout mLanguageEnglishRelativeLayout;
     @BindView(R.id.voice_msg_scrollView)
     ScrollView mVoiceMsgScrollView;
+
+    @BindView(R.id.power_mode_txt)
+    TextView powerModeTxt;
+    @BindView(R.id.home_control_mode_image)
+    ImageView controlModeImage;
+    @BindView(R.id.home_move_mode_image)
+    ImageView moveModeImage;
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ALERT_CODE = 6666;
@@ -203,6 +212,9 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
     private String string_hello, en_string_hello;
     private CloseBroadcastReceiver closeBroadcastReceiver;
     private AnimationDrawable blinkDrawable;
+
+    private SignalDataEvent controlMode;
+    private SignalDataEvent moveMode;
 
     private AnimationDrawable speakDrawable;
     private Handler handler = new Handler(Looper.getMainLooper()) {
@@ -494,6 +506,17 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
                 startFreeOperation();
             }
         }
+        boolean isLockState = SpUtils.getBoolean(getContext(), "isLock", true);
+        LogUtils.d("updateRobotInfo", "isLockState === " + isLockState);
+        if (isLockState) {
+            moveModeImage.setSelected(false);
+            controlModeImage.setSelected(true);
+            powerModeTxt.setText("控制模式");
+        } else {
+            moveModeImage.setSelected(true);
+            controlModeImage.setSelected(false);
+            powerModeTxt.setText("拖动模式");
+        }
     }
 
     @Override
@@ -572,7 +595,7 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         }
     }
 
-    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese_relativeLayout, R.id.language_english_relativeLayout, R.id.auto_recharge_bt})
+    @OnClick({R.id.bt_home_setting, R.id.constraintLayout_me_want_go, R.id.constraintLayout_common_problem, R.id.constraintLayout_hospital_introduction, R.id.language_chinese_relativeLayout, R.id.language_english_relativeLayout, R.id.auto_recharge_bt,R.id.home_control_mode_image,R.id.home_move_mode_image})
     public void onclick(View view) {
         switch (view.getId()) {
             case R.id.bt_home_setting: //跳转设置模块
@@ -594,11 +617,37 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
             case R.id.auto_recharge_bt: //自动回充按钮
                 rechargeToDo();
                 break;
+            case R.id.home_move_mode_image:
+                setDragMode(controlModeImage,moveModeImage,powerModeTxt);
+                break;
+            case R.id.home_control_mode_image:
+                setControlMode(moveModeImage, controlModeImage, powerModeTxt);
+                break;
             default:
                 break;
         }
     }
 
+
+    private void setControlMode(ImageView falseModeImage, ImageView trueImage, TextView modeText) {
+        controlMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
+        controlMode.setPowerlock(1);
+        EventBus.getDefault().post(controlMode);
+        SpUtils.putBoolean(getContext(), "isLock", true);
+        trueImage.setSelected(true);
+        falseModeImage.setSelected(false);
+        modeText.setText("控制模式");
+    }
+
+    private void setDragMode(ImageView falseModeImage, ImageView trueImage, TextView modeText) {
+        moveMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
+        moveMode.setPowerlock(2);
+        EventBus.getDefault().post(moveMode);
+        SpUtils.putBoolean(getContext(), "isLock", false);
+        trueImage.setSelected(true);
+        falseModeImage.setSelected(false);
+        modeText.setText("拖动模式");
+    }
 
     @Override
     public void validationPassword(String password) {
@@ -756,6 +805,12 @@ public class MainActivity extends MvpBaseActivity<MainView, MainPresenter> imple
         boolean isControlModel = SpUtils.getBoolean(MyApp.getContext(), IS_CONTROL_MODEL, false);
         if (!isControlModel) { //当前不为控制模式则切换为控制模式
             SpUtils.putBoolean(MyApp.getContext(), IS_CONTROL_MODEL, true);
+            SpUtils.putBoolean(getContext(), "isLock", true);
+
+            controlModeImage.setSelected(true);
+            moveModeImage.setSelected(false);
+            powerModeTxt.setText("控制模式");
+
             //机器人切换为控制模式
             SignalDataEvent moveMode = new SignalDataEvent(RobotConfig.MSG_CHANGE_POWER_LOCK, "");
             moveMode.setPowerlock(1);

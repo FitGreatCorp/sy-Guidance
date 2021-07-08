@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.aispeech.dui.dds.DDS;
@@ -17,6 +18,7 @@ import com.aispeech.dui.dds.agent.tts.TTSEngine;
 import com.aispeech.dui.dds.agent.wakeup.WakeupEngine;
 import com.aispeech.dui.dds.agent.wakeup.word.WakeupWord;
 import com.aispeech.dui.dds.exceptions.DDSNotInitCompleteException;
+import com.aispeech.dui.dds.update.DDSUpdateListener;
 import com.alibaba.fastjson.JSON;
 import com.fitgreat.airfacerobot.MyApp;
 import com.fitgreat.airfacerobot.RobotInfoUtils;
@@ -33,6 +35,7 @@ import java.util.List;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.CURRENT_LANGUAGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_COMPLETE;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.DDS_INIT_FAILURE;
 
 
 public class SpeechManager {
@@ -141,7 +144,7 @@ public class SpeechManager {
             });
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
-            LogUtils.e("textTtsPlay", "DDSNotInitCompleteException:::" + e.getMessage());
+            LogUtils.e(TAG, "DDSNotInitCompleteException:::" + e.getMessage());
         }
     }
 
@@ -155,7 +158,7 @@ public class SpeechManager {
                 ttsEngine.shutup("");
             } catch (DDSNotInitCompleteException e) {
                 e.printStackTrace();
-                LogUtils.e("MSG_STOP_TASK", "textTtsPlay:" + e.getMessage());
+                LogUtils.e(TAG, "textTtsPlay:" + e.getMessage());
             }
         }
     }
@@ -169,7 +172,7 @@ public class SpeechManager {
                 agent.stopDialog();
             } catch (DDSNotInitCompleteException e) {
                 e.printStackTrace();
-                LogUtils.e("MSG_STOP_TASK", "textTtsPlay:" + e.getMessage());
+                LogUtils.e(TAG, "textTtsPlay:" + e.getMessage());
             }
         }
     }
@@ -250,12 +253,12 @@ public class SpeechManager {
             DDS.getInstance().getAgent().getASREngine().startListening(new ASREngine.Callback() {
                 @Override
                 public void beginningOfSpeech() {
-                    LogUtils.d(DEFAULT_LOG_TAG, "检测到用户开始说话");
+                    LogUtils.d(TAG, "检测到用户开始说话");
                 }
 
                 @Override
                 public void endOfSpeech() {
-                    LogUtils.d(DEFAULT_LOG_TAG, "检测到用户结束说话");
+                    LogUtils.d(TAG, "检测到用户结束说话");
                 }
 
                 @Override
@@ -271,13 +274,13 @@ public class SpeechManager {
 
                 @Override
                 public void finalResults(String s) {
-                    LogUtils.d(DEFAULT_LOG_TAG, "用户说话中最终识别结果反馈 " + s);
+                    LogUtils.d(TAG, "用户说话中最终识别结果反馈 " + s);
                     asrVoiceListener.asrFinalResults(s);
                 }
 
                 @Override
                 public void error(String s) {
-                    LogUtils.d(DEFAULT_LOG_TAG, "识别过程中发生的错误 " + s);
+                    LogUtils.d(TAG, "识别过程中发生的错误 " + s);
                 }
 
                 @Override
@@ -355,22 +358,22 @@ public class SpeechManager {
         List<WakeupWord> mainWordLisrt = new ArrayList<>();
         WakeupWord mainWord1 = new WakeupWord()
                 .setPinyin("ni hao xiao hui")
-                .setWord("你好小灰")
+                .setWord("你好小白")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         WakeupWord mainWord2 = new WakeupWord()
                 .setPinyin("xiao hui xiao hui")
-                .setWord("小灰小灰")
+                .setWord("小白小白")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         WakeupWord mainWord3 = new WakeupWord()
                 .setPinyin("xiao hui ni hao")
-                .setWord("小灰你好")
+                .setWord("小白你好")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         WakeupWord mainWord4 = new WakeupWord()
                 .setPinyin("xiao hui")
-                .setWord("小灰")
+                .setWord("小白")
                 .addGreeting("我在,请问有什么可以帮你?")
                 .setThreshold("0.15");
         mainWordLisrt.add(mainWord1);
@@ -384,7 +387,7 @@ public class SpeechManager {
             DDS.getInstance().getAgent().getWakeupEngine().addMainWakeupWords(mainWordLisrt);
         } catch (DDSNotInitCompleteException e) {
             e.printStackTrace();
-            LogUtils.e("CommandTodo", "添加唤醒词报错::" + e.getMessage());
+            LogUtils.e(TAG, "添加唤醒词报错::" + e.getMessage());
         }
     }
 
@@ -517,22 +520,57 @@ public class SpeechManager {
     private DDSInitListener mInitListener = new DDSInitListener() {
         @Override
         public void onInitComplete(boolean isFull) {
-            LogUtils.d(DEFAULT_LOG_TAG, "DDSInitListener:onInitComplete=>" + isFull + "==: " + DDS.getInstance().getInitStatus());
+            LogUtils.d(TAG, "DDSInitListener:onInitComplete=>" + isFull + "==: " + DDS.getInstance().getInitStatus());
             if (isFull) { //DDS初始化成功
                 mContext.sendBroadcast(new Intent(DDS_INIT_COMPLETE));
                 ddsInitializationTag = true;
                 DDS.getInstance().setDebugMode(2); //在调试时可以打开sdk调试日志，在发布版本时，请关闭
                 //更新页面进度显示
 //                updateVoiceProgress(100);
+            }else{
+                try{
+                    DDS.getInstance().getUpdater().update(ddsUpdateListener);
+                }catch (DDSNotInitCompleteException e){
+                    e.printStackTrace();
+                }
+                mContext.sendBroadcast(new Intent(DDS_INIT_FAILURE));
             }
         }
 
         @Override
         public void onError(int what, final String msg) {
-            LogUtils.e("CommandTodo", "DDSInitListener:onError=>: " + what + ", error: " + msg);
+            LogUtils.e(TAG, "DDSInitListener:onError=>: " + what + ", error: " + msg);
             handler.post(() -> {
                 Toast.makeText(MyApp.getContext(), msg, Toast.LENGTH_SHORT).show();
             });
+        }
+    };
+
+
+    DDSUpdateListener ddsUpdateListener = new DDSUpdateListener() {
+        @Override
+        public void onUpdateFound(String s) {
+            Log.d(TAG,"onUpdateFound");
+        }
+
+        @Override
+        public void onUpdateFinish() {
+            Log.d(TAG,"onUpdateFinish");
+        }
+
+        @Override
+        public void onDownloadProgress(float v) {
+            Log.d(TAG,"onDownloadProgress : "+v);
+        }
+
+        @Override
+        public void onError(int i, String s) {
+            Log.d(TAG,"update onError : "+s);
+        }
+
+        @Override
+        public void onUpgrade(String s) {
+
         }
     };
 

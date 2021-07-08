@@ -83,7 +83,7 @@ public class HeaderActuatorManager {
             //检查data数据是否合法
             RecvPacket recvPacket = new RecvPacket();
             recvPacket.decodeBytes(data);
-            LogUtils.d(TAG, "recvPacket:" + recvPacket.toString());
+//            LogUtils.d(TAG, "recvPacket:" + recvPacket.toString());
         }
     };
 

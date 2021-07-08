@@ -203,12 +203,13 @@ public class ChoseDestinationActivity extends MvpBaseActivity<ChoseDestinationVi
         //添加导航点按钮位置
         locationList = CashUtils.getLocationList();
         //去除不配置S_Y  S_X的位置信息
-        for (int i = 0; i < locationList.size(); i++) {
-            LocationEntity locationEntity = locationList.get(i);
-            if ("null".equals(locationEntity.getS_Y()) || "null".equals(locationEntity.getS_X())) {
-                locationList.remove(i);
-            }
-        }
+//        for (int i = 0; i < locationList.size(); i++) {
+//            LocationEntity locationEntity = locationList.get(i);
+//            if ("null".equals(locationEntity.getS_Y()) || "null".equals(locationEntity.getS_X())) {
+//                locationList.remove(i);
+//            }
+//        }
+
         //绘制页面,添加页面位置信息
         if (locationList != null && locationList.size() != 0) {
 //            flashView();

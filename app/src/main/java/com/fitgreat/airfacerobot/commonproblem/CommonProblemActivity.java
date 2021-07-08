@@ -74,14 +74,14 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.START_SPEAK_ANIMAT
 /**
  * 常见问题展示选择页面
  */
-public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, CommonProblemPresenter> implements CommonProblemView, TopTitleView.BaseBackListener {
+public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, CommonProblemPresenter> implements CommonProblemView, View.OnClickListener {
     @BindView(R.id.common_problem_list)
     RecyclerView mCommonProblemList;
     @BindView(R.id.common_problem_robot_image)
     ImageView commonProblemRobotImage;
 
     @BindView(R.id.common_problem_title)
-    TopTitleView mCommonProblemTitle;
+    ImageView mCommonProblemTitle;
     @BindView(R.id.linearLayout_no_data)
     LinearLayout mLinearLayoutNoData;
 
@@ -180,7 +180,7 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
         mPresenter.getQuestionList();
         //启动语音唤醒,打开one shot模式
         EventBus.getDefault().post(new ActionDdsEvent(START_DDS_WAKE_TAG, ""));
-        mCommonProblemTitle.setBackKListener(this);
+        mCommonProblemTitle.setOnClickListener(this);
     }
 
     @Override
@@ -282,20 +282,20 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
                 } else {
                     EventBus.getDefault().post(new ActionDdsEvent(PLAY_TASK_PROMPT_INFO, mCommonProblemEntity.getF_EAnswer()));
                 }
-                LogUtils.d(DEFAULT_LOG_FIVE,"常见问题个数=="+data.size());
+                LogUtils.d(DEFAULT_LOG_FIVE, "常见问题个数==" + data.size());
                 for (int i = 0; i < data.size(); i++) {
                     commonProblemEntity = data.get(i);
-                    if (i==position){
+                    if (i == position) {
                         //更新列表问题显示状态
                         if (commonProblemEntity.isShowAnswerTag()) {
                             commonProblemEntity.setShowAnswerTag(false);
                         } else {
                             commonProblemEntity.setShowAnswerTag(true);
                         }
-                    }else {
+                    } else {
                         commonProblemEntity.setShowAnswerTag(false);
                     }
-                    commonProblemAdapter.getData().set(i,commonProblemEntity);
+                    commonProblemAdapter.getData().set(i, commonProblemEntity);
                 }
                 commonProblemAdapter.notifyDataSetChanged();
             });
@@ -360,7 +360,12 @@ public class CommonProblemActivity extends MvpBaseActivity<CommonProblemView, Co
 
 
     @Override
-    public void back() {
-        finish();
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.common_problem_title:
+                finish();
+                break;
+
+        }
     }
 }

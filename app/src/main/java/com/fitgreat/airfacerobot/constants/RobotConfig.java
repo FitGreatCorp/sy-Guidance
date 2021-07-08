@@ -343,4 +343,7 @@ public interface RobotConfig {
      * 启动计时器开始空闲操作
      */
     String START_FREE_OPERATION_MSG = "start_free_operation_msg";
+
+
+    String MSG_AUTO_CHARGE = "msg_auto_charge";
 }

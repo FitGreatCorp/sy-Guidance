@@ -10,13 +10,29 @@
     android:background="#F8F8F8"
     tools:ignore="MissingConstraints">
 
-    <com.fitgreat.airfacerobot.launcher.widget.TopTitleView
-        android:id="@+id/common_problem_title"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/common_problem_list"
-        app:layout_constraintTop_toTopOf="parent"
-        topTitle:titleName="@string/home_question_title" />
+        android:layout_height="50dp"
+        android:background="#FFFFFF">
+
+        <ImageView
+            android:id="@+id/common_problem_title"
+            android:layout_width="30dp"
+            android:layout_height="25dp"
+            android:src="@mipmap/ic_arrow_left"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="常见问题"
+            android:textSize="20sp"
+            android:textColor="@color/black"
+            android:layout_centerInParent="true"/>
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

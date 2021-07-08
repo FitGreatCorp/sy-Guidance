@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <string name="app_name">三亚导诊机器人</string>
+    <string name="app_name">市一导诊机器人</string>
     <string name="robot_init">机器人初始化</string>
     <string name="net_starting">第①步:\n正在连接服务器...</string>
     <string name="net_success">第①步:\n连接服务器成功</string>
@@ -13,7 +13,7 @@
     <string name="voice_starting">第③步:\n连接语音平台中...</string>
     <string name="voice_success">第③步:\n连接语音平台成功</string>
     <string name="voice_fail">第③步:\n连接语音平台失败</string>
-    <string name="register_result_done">恭喜你,\t脸部登记成功!</string>
+    <string name="register_result_done">恭喜您,\t脸部登记成功!</string>
     <string name="register_result_failure">抱歉,\t脸部登记失败</string>
     <string name="ic_signal">信号</string>
     <string name="battery_60">10%</string>
@@ -24,7 +24,7 @@
     <string name="robot_bluetooth_title">连接设备</string>
     <string name="unsuppert">暂未支持</string>
     <string name="unset_map">地图尚未设置</string>
-    <string name="show_t1">Hi，你可以叫我小白，请问我有什么可以帮助您的吗？</string>
+    <string name="show_t1">Hi，您可以叫我小白，请问我有什么可以帮助您的吗？</string>
     <string name="retry_bt_text">重试</string>
     <string name="register_bt_text">随行人员登记</string>
     <string name="link_server">连接服务器</string>
@@ -70,13 +70,13 @@
     <string name="restroom_title">洗手间</string>
     <string name="home_prompt_text">您好，我是小灰，很高兴为您服务。我可以为您带路有什么不懂的也可以问我哦。</string>
     <string name="common_problem_title">常见问题</string>
-    <string name="prompt_no_navigation">该地点不在我设定位置里,可以说个我知道的地点带你去哦。</string>
+    <string name="prompt_no_navigation">该地点不在我设定位置里,可以说个我知道的地点带您去哦。</string>
     <string name="emergency_click_prompt">抱歉我的急停按钮已启动，无法执行该任务。</string>
     <string name="prompt_problem_has_no">该问题我不知道呢,可以换个问题吗。</string>
     <string name="prompt_task_exception">当前任务出现异常。</string>
     <string name="ask_for_help_text">护士姐姐，请帮帮我。</string>
-    <string name="start_chose_destination_tip_one">你现在要去\t</string>
-    <string name="start_chose_destination_tip_two">\t吗?\t点击\t\"是\"\t我会带你过去哦</string>
+    <string name="start_chose_destination_tip_one">您现在要去\t</string>
+    <string name="start_chose_destination_tip_two">\t吗?\t点击\t\"是\"\t我会带您过去哦</string>
     <string name="navigation_success_tip_one">我已到达\t\t</string>
     <string name="navigation_success_tip_two">\t\t是否还需要其他服务?</string>
     <string name="start_chose_destination_dialog_title">提示</string>

@@ -21,6 +21,7 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -120,6 +121,7 @@ import static com.fitgreat.airfacerobot.constants.RobotConfig.GUIDE_WORK_FLOW_AC
 import static com.fitgreat.airfacerobot.constants.RobotConfig.INIT_ROS_KEY_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.IS_CONTROL_MODEL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MAIN_PAGE_DIALOG_SHOW_TAG;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_AUTO_CHARGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CANCEL_RECHARGE;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_POWER_LOCK;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_GETROS_VERSION;
@@ -1068,58 +1070,64 @@ public class RobotBrainService extends Service {
                 }
                 break;
             case OPERATION_TYPE_AUTO_MOVE:   //  TODO 开始导航任务
-                instructionType = signalDataEvent.getInstructionType();
-                instructionName = signalDataEvent.getF_InstructionName();
-                instructionEnName = signalDataEvent.getF_InstructionEnName();
-                container = signalDataEvent.getContainer();
-                operationType = signalDataEvent.getOperationType();
-                produceId = signalDataEvent.getProduceId();
-                fileUrl = signalDataEvent.getFileUrl();
-                targetUser = signalDataEvent.getTargetUser();
-                connectionId = signalDataEvent.getConnectionId();
-                instructionId = signalDataEvent.getInstructionId();
-                //记录当前导航目的地信息
-                currentNavigationDestination = instructionName;
-                currentNavigationX = signalDataEvent.getX();
-                currentNavigationY = signalDataEvent.getY();
-                currentNavigationZ = signalDataEvent.getE();
-                //默认执行完当前任务后,查询并执行下一个任务
-                isTerminal = false;
-                LogUtils.d(DEFAULT_LOG_TAG, "开始导航任务");
-                LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(signalDataEvent));
-                //导航失败重试标志默认为true
-                navigation_failed_retry_tag = true;
-                rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
-                //首页是否有弹窗弹出
-                SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
-                if (rechargingStatus) {
-                    //自动回充时,任务提示弹窗,可以终止
-                    rechargingDialog();
-                } else {
-                    //导航时,任务提示弹窗,可以终止
-                    showNavigationIngDialog();
-                }
-                //开始导航任务提示语音
-                handler.postDelayed(() -> {
-                    //根据当前设备语言拼接提示语中英文版本
-                    StringBuffer startNavigationPrompt = new StringBuffer();
-                    startNavigationPrompt.append(MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_one));
-                    if (currentLanguage != null && currentLanguage.equals("zh")) {
-                        startNavigationPrompt.append(instructionName);
+                if(jRos.getRobotState().isUrgent){
+                    Toast.makeText(this,"急停按钮已按下！",Toast.LENGTH_SHORT).show();
+                }else{
+                    instructionType = signalDataEvent.getInstructionType();
+                    instructionName = signalDataEvent.getF_InstructionName();
+                    instructionEnName = signalDataEvent.getF_InstructionEnName();
+                    container = signalDataEvent.getContainer();
+                    operationType = signalDataEvent.getOperationType();
+                    produceId = signalDataEvent.getProduceId();
+                    fileUrl = signalDataEvent.getFileUrl();
+                    targetUser = signalDataEvent.getTargetUser();
+                    connectionId = signalDataEvent.getConnectionId();
+                    instructionId = signalDataEvent.getInstructionId();
+                    //记录当前导航目的地信息
+                    currentNavigationDestination = instructionName;
+                    currentNavigationX = signalDataEvent.getX();
+                    currentNavigationY = signalDataEvent.getY();
+                    currentNavigationZ = signalDataEvent.getE();
+                    //默认执行完当前任务后,查询并执行下一个任务
+                    isTerminal = false;
+                    LogUtils.d(DEFAULT_LOG_TAG, "开始导航任务");
+                    LogUtils.json(DEFAULT_LOG_TAG, JSON.toJSONString(signalDataEvent));
+                    //导航失败重试标志默认为true
+                    navigation_failed_retry_tag = true;
+                    rechargingStatus = SpUtils.getBoolean(getContext(), AUTOMATIC_RECHARGE_TAG, false);
+                    //首页是否有弹窗弹出
+                    SpUtils.putBoolean(MyApp.getContext(), MAIN_PAGE_DIALOG_SHOW_TAG, true);
+                    if (rechargingStatus) {
+                        //自动回充时,任务提示弹窗,可以终止
+                        rechargingDialog();
                     } else {
-                        startNavigationPrompt.append(instructionEnName);
+                        //导航时,任务提示弹窗,可以终止
+                        showNavigationIngDialog();
                     }
-                    startNavigationPrompt.append(MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_two));
-                    ToastUtils.showSmallToast(startNavigationPrompt.toString());
-                    //语音提示
-                    playShowContent(startNavigationPrompt.toString());
-                }, 500);
-                //发送导航指令到ros端
-                ExecutorManager.getInstance().executeTask(() -> {
-                    jRos.op_setAutoMove((byte) 1, Double.valueOf(signalDataEvent.getX()), Double.valueOf(signalDataEvent.getY()), Double.valueOf(signalDataEvent.getE()));
-                    instruction_status = "1";
-                    BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
-                });
+                    //开始导航任务提示语音
+                    handler.postDelayed(() -> {
+                        //根据当前设备语言拼接提示语中英文版本
+                        StringBuffer startNavigationPrompt = new StringBuffer();
+                        startNavigationPrompt.append(MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_one));
+                        if (currentLanguage != null && currentLanguage.equals("zh")) {
+                            startNavigationPrompt.append(instructionName);
+                        } else {
+                            startNavigationPrompt.append(instructionEnName);
+                        }
+                        startNavigationPrompt.append(MvpBaseActivity.getActivityContext().getString(R.string.start_navigation_tip_two));
+                        ToastUtils.showSmallToast(startNavigationPrompt.toString());
+                        //语音提示
+                        playShowContent(startNavigationPrompt.toString());
+                    }, 500);
+                    //发送导航指令到ros端
+                    SpUtils.putBoolean(getContext(), "isLock", true);
+                    ExecutorManager.getInstance().executeTask(() -> {
+                        jRos.op_setAutoMove((byte) 1, Double.valueOf(signalDataEvent.getX()), Double.valueOf(signalDataEvent.getY()), Double.valueOf(signalDataEvent.getE()));
+                        instruction_status = "1";
+                        BusinessRequest.UpdateInstructionStatue(instructionId, instruction_status, updateInstructionCallback);
+                    });
+                }
+
                 break;
             case MSG_UPDATE_INSTARUCTION_STATUS: //TODO 开始非导航操作任务
                 instructionType = signalDataEvent.getInstructionType();
@@ -1193,6 +1201,7 @@ public class RobotBrainService extends Service {
                 }
                 break;
             case MSG_CHANGE_POWER_LOCK:
+                Log.d(TAG,"MSG_CHANGE_POWER_LOCK : "+signalDataEvent.getPowerlock());
                 ExecutorManager.getInstance().executeTask(() -> jRos.op_setPowerlock((byte) signalDataEvent.getPowerlock()));
                 break;
             case MSG_INSTRUCTION_STATUS_FINISHED:  //终止当前任务

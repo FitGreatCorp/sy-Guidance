@@ -239,13 +239,74 @@
             android:background="@drawable/home_msg_bg"
             android:ellipsize="end"
             android:lineSpacingExtra="8dp"
-            android:text="你好"
+            android:text="您好"
             android:maxWidth="@dimen/px280"
             android:minWidth="@dimen/px280"
             android:padding="@dimen/px15"
             android:textColor="#FFFFFFFF"
             android:textSize="15sp" />
     </ScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout_mode_switch"
+        android:layout_width="@dimen/px277"
+        android:layout_height="@dimen/px168"
+        android:layout_marginTop="@dimen/px15"
+        android:layout_marginBottom="@dimen/px15"
+        android:padding="20dp"
+        android:background="@mipmap/main_tool_back"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout_hospital_introduction"
+        app:layout_constraintRight_toRightOf="@+id/constraintLayout_hospital_introduction">
+
+        <LinearLayout
+            android:id="@+id/home_power_mode_layout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/power_mode_layout_bg"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/without_recharge_power_mode_txt"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <ImageView
+                android:id="@+id/home_control_mode_image"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/home_power_mode_bg"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/home_control_mode_src" />
+
+            <ImageView
+                android:id="@+id/home_move_mode_image"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/home_power_mode_bg"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/home_move_mode_src" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/power_mode_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/drag_mode"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/home_power_mode_layout" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
         android:id="@+id/auto_recharge_bt"

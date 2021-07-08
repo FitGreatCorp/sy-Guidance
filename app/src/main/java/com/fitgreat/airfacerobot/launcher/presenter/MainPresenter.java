@@ -270,7 +270,7 @@ public class MainPresenter extends BasePresenterImpl<MainView> {
                         JSONObject jsonObject = new JSONObject(stringResponse);
                         String type = jsonObject.getString("type");
                         String msg = jsonObject.getString("msg");
-//                        LogUtils.json(DEFAULT_LOG_TAG, msg);
+                        LogUtils.json(DEFAULT_LOG_TAG, msg);
                         if (type.equals("success")) {
                             JSONObject msgObj = new JSONObject(msg);
                             if (msgObj.has("locationLists")) {
