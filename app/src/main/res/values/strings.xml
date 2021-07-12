@@ -101,7 +101,7 @@
     <string name="end_boot_bt">结束引导</string>
     <string name="no_data_title">暂无内容</string>
     <string name="emergency_click_recharge_tip">急停按钮已启动无法自动回充。</string>
-    <string name="tip_recharge_tip_content">我要回去冲电了。</string>
+    <string name="tip_recharge_tip_content">我要回去充电了。</string>
     <string name="battery_low_tip">当前电量低于20%,我要去充电了.</string>
     <string name="termination_bt_text">终止</string>
     <string name="prompt_enter_password">请输入机器人登录密码</string>
