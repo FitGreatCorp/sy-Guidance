@@ -42,6 +42,15 @@ public class RobotInfoData {
     private Object F_CreatorTime;
     private String UserAccount;
     private String F_Power;
+
+    public String getF_Speech() {
+        return F_Speech;
+    }
+
+    public void setF_Speech(String f_Speech) {
+        F_Speech = f_Speech;
+    }
+
     private String F_IsManual;
     private String F_Hospital;
     private String F_Department;
@@ -51,6 +60,7 @@ public class RobotInfoData {
     private String F_Exp3;
     private String F_Account;
     private String F_Setting;
+    private String F_Speech;
 
     public String getF_Id() {
         return F_Id;

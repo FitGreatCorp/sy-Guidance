@@ -461,7 +461,9 @@ public class SpeechManager {
         config.addConfig(DDSConfig.K_PRODUCT_KEY, "0213b227ca0f20ac73f2277a1b7de8af");
         config.addConfig(DDSConfig.K_PRODUCT_SECRET, "a5e0f89e47b77ac9e7309aefc454a1ab");
         config.addConfig(DDSConfig.K_API_KEY, "67d2c8d671b467d2c8d671b45f5ae920");
-        config.addConfig(DDSConfig.K_DEVICE_ID, RobotInfoUtils.getAirFaceDeviceId());
+//        config.addConfig(DDSConfig.K_DEVICE_ID, RobotInfoUtils.getAirFaceDeviceId());
+        Log.d(TAG,"F_Speech ====== "+RobotInfoUtils.getRobotInfo().getF_Speech());
+        config.addConfig(DDSConfig.K_DEVICE_NAME,RobotInfoUtils.getRobotInfo().getF_Speech());
         // 资源更新配置项
         config.addConfig(DDSConfig.K_DUICORE_ZIP, "ebff352b33eebe44f6b41995ef6f9f8f.zip");
         config.addConfig(DDSConfig.K_CUSTOM_ZIP, "product.zip");

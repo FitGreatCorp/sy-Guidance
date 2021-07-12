@@ -44,6 +44,7 @@ import butterknife.OnClick;
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_CHANGE_FLOATING_BALL;
 import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_RETRY_INIT_SIGNAL;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_START_INIT_VOICE;
 
 
 /**
@@ -189,7 +190,7 @@ public class RobotInitActivity extends MvpBaseActivity {
         }
         startService(new Intent(this, RobotBrainService.class));
         handler.postDelayed(() -> {
-            initVoice();
+
         }, 2 * 1000);
     }
 
@@ -258,6 +259,12 @@ public class RobotInitActivity extends MvpBaseActivity {
                         serverState.setText(R.string.net_success);
                         rosState.setText(R.string.ros_starting);
                         initRos();
+
+                        initVoice();
+                        InitEvent voiceevent = new InitEvent();
+                        voiceevent.setType(MSG_START_INIT_VOICE);
+                        EventBus.getDefault().post(voiceevent);
+
                     }, DEFAULT_ANIM_TIME);
 //                    EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_ROS_PROGRESS, String.valueOf(progress)));
                     signal_initaled = true;

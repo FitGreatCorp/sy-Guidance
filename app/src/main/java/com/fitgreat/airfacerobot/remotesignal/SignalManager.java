@@ -42,6 +42,7 @@ import okhttp3.Response;
 
 import static com.fitgreat.airfacerobot.constants.Constants.DEFAULT_LOG_TAG;
 import static com.fitgreat.airfacerobot.constants.Constants.INIT_SIGNAL_SUCCESS;
+import static com.fitgreat.airfacerobot.constants.RobotConfig.MSG_START_INIT_VOICE;
 
 /**
  * signal 远程服务器消息管理器<p>
@@ -113,6 +114,9 @@ public class SignalManager {
         Intent intent = new Intent();
         intent.setAction(INIT_SIGNAL_SUCCESS);
         MyApp.getContext().sendBroadcast(intent);
+
+
+
 //        try {
 //            destroy();
 //            hubConnection = new HubConnection(ApiRequestUrl.SIGNALR_URL, context, new LongPollingTransport()) {

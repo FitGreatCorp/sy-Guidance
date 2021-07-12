@@ -236,9 +236,6 @@ public class RobotBrainService extends Service {
                         EventBus.getDefault().post(new InitEvent(RobotConfig.TYPE_CHECK_STATE, RobotConfig.INIT_TYPE_SIGNAL_PROGRESS, "10"));
                         signalManager.getRobotToken();
 
-                        InitEvent voiceevent = new InitEvent();
-                        voiceevent.setType(MSG_START_INIT_VOICE);
-                        EventBus.getDefault().post(voiceevent);
                     }
                     break;
                 case MSG_SPEAK_POSITION:
